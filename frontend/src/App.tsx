@@ -14,41 +14,54 @@ import ColorCustomizationPage from '@/pages/ColorCustomizationPage';
 import LogoUploadPage from '@/pages/LogoUploadPage';
 import LeadListPage from '@/pages/LeadListPage';
 import LeadDetailPage from '@/pages/LeadDetailPage';
+import { ToastProvider } from '@/components/organisms/ToastContainer';
+import { useRealtimeLeads } from '@/hooks/useRealtimeLeads';
+
+function AppContent() {
+  // Initialize real-time lead notifications
+  useRealtimeLeads();
+
+  return (
+    <Routes>
+      {/* Public Routes */}
+      <Route path="/:slug" element={<PublicLandingPage />} />
+      <Route path="/:slug/vehicles/:vehicleId" element={<PublicVehicleDetailPage />} />
+
+      {/* Auth Routes */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route path="/onboarding" element={<OnboardingPage />} />
+
+      {/* Admin Routes */}
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route element={<DashboardLayout />}>
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/vehicles" element={<VehicleListPage />} />
+        <Route path="/vehicles/new" element={<VehicleFormPage />} />
+        <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
+        <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
+        <Route path="/leads" element={<LeadListPage />} />
+        <Route path="/leads/:id" element={<LeadDetailPage />} />
+        <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
+        <Route path="/sellers" element={<div>Sellers Page (TODO)</div>} />
+        <Route path="/financial" element={<div>Financial Page (TODO)</div>} />
+        <Route path="/integrations" element={<div>Integrations Page (TODO)</div>} />
+        <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
+        <Route path="/landing-page/colors" element={<ColorCustomizationPage />} />
+        <Route path="/landing-page/logo" element={<LogoUploadPage />} />
+        <Route path="/landing-page" element={<div>Landing Page Settings (TODO)</div>} />
+        <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
+      </Route>
+    </Routes>
+  );
+}
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/:slug" element={<PublicLandingPage />} />
-        <Route path="/:slug/vehicles/:vehicleId" element={<PublicVehicleDetailPage />} />
-
-        {/* Auth Routes */}
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/signup" element={<SignupPage />} />
-        <Route path="/onboarding" element={<OnboardingPage />} />
-
-        {/* Admin Routes */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/vehicles" element={<VehicleListPage />} />
-          <Route path="/vehicles/new" element={<VehicleFormPage />} />
-          <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
-          <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
-          <Route path="/leads" element={<LeadListPage />} />
-          <Route path="/leads/:id" element={<LeadDetailPage />} />
-          <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
-          <Route path="/sellers" element={<div>Sellers Page (TODO)</div>} />
-          <Route path="/financial" element={<div>Financial Page (TODO)</div>} />
-          <Route path="/integrations" element={<div>Integrations Page (TODO)</div>} />
-          <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
-          <Route path="/landing-page/colors" element={<ColorCustomizationPage />} />
-          <Route path="/landing-page/logo" element={<LogoUploadPage />} />
-          <Route path="/landing-page" element={<div>Landing Page Settings (TODO)</div>} />
-          <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
-        </Route>
-      </Routes>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
     </BrowserRouter>
   );
 }

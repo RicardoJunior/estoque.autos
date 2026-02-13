@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Lead, LeadStatus, LeadChannel, User, Vehicle } from '../types';
 import { api } from '../services/api';
+import { useRealtimeLeads } from '../hooks/useRealtimeLeads';
 
 interface LeadWithRelations extends Lead {
   vehicle?: Pick<
@@ -63,11 +64,7 @@ export default function LeadListPage() {
   const [sortBy, setSortBy] = useState<'created_at' | 'name' | 'status'>('created_at');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
-  useEffect(() => {
-    fetchLeads();
-  }, [pagination.page, statusFilter, channelFilter, search, sortBy, sortOrder]);
-
-  const fetchLeads = async () => {
+  const fetchLeads = useCallback(async () => {
     try {
       setLoading(true);
       const params: Record<string, string> = {
@@ -89,7 +86,20 @@ export default function LeadListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [pagination.page, pagination.limit, statusFilter, channelFilter, search, sortBy, sortOrder]);
+
+  useEffect(() => {
+    fetchLeads();
+  }, [fetchLeads]);
+
+  // Handle real-time new leads
+  const handleNewLead = useCallback(() => {
+    // Refresh leads list when new lead arrives
+    fetchLeads();
+  }, [fetchLeads]);
+
+  // Subscribe to real-time lead updates
+  useRealtimeLeads(handleNewLead);
 
   const formatCurrency = (value?: number) => {
     if (!value) return '-';

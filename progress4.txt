@@ -1141,16 +1141,80 @@ Next priority block to implement lead management features
    - Tests: 153/179 passing (8 pre-existing auth test failures, 18 skipped integration tests)
    - Lead detail page ready for production use
 
+26. ✅ Real-time Lead Notifications (Bloco 4 - P1)
+   - Created Toast atom component (src/components/atoms/Toast.tsx):
+     * Toast notification with auto-dismiss functionality
+     * Multiple types: success, error, info, warning
+     * Color-coded backgrounds and icons
+     * Close button for manual dismissal
+     * Configurable duration (default 5 seconds)
+     * Smooth fade-in animation
+   - Created ToastContainer organism (src/components/organisms/ToastContainer.tsx):
+     * Toast provider with context API
+     * useToast hook for adding toasts from anywhere
+     * Fixed position container (top-right)
+     * Multiple toast stacking support
+     * Auto-removal after duration
+   - Created useRealtimeLeads custom hook (src/hooks/useRealtimeLeads.ts):
+     * Supabase Realtime integration for leads table
+     * Real-time subscription to INSERT events on leads table
+     * Tenant isolation (only subscribes to current tenant's leads)
+     * Role-based notification filtering:
+       - Owner/manager: notified of all new leads
+       - Seller: only notified of leads assigned to them
+     * Toast notification on new lead arrival
+     * Notification includes lead name and type (proposal/whatsapp/phone)
+     * Optional audio notification (notification.mp3)
+     * Custom callback support for additional actions
+     * Automatic cleanup on unmount
+   - Updated App.tsx:
+     * Wrapped application with ToastProvider
+     * Created AppContent component to use hooks inside router
+     * Initialized useRealtimeLeads hook globally
+   - Updated LeadListPage:
+     * Integrated useRealtimeLeads hook with refresh callback
+     * Auto-refresh leads list when new lead arrives
+     * Uses useCallback for optimal performance
+     * Maintains current filters and pagination
+   - Business logic implemented:
+     * Real-time lead notifications via Supabase Realtime
+     * Toast notifications with 8-second duration for leads
+     * Audio feedback for new leads (optional)
+     * Automatic list refresh on new lead
+     * Role-based access control for notifications
+     * Tenant isolation for multi-tenant security
+   - Design features:
+     * Clean toast design with backdrop blur
+     * Color-coded notification types
+     * Icon indicators for each type
+     * Smooth animations and transitions
+     * Fixed positioning (top-right corner)
+     * Stacking support for multiple notifications
+   - Technical implementation:
+     * TypeScript strict mode compliance ✅
+     * Supabase Realtime channel subscription
+     * React Context API for toast management
+     * Custom hooks for reusability
+     * Proper cleanup and unsubscribe
+     * Backend compiles successfully ✅
+     * Frontend builds successfully ✅
+     * Tests: 153/179 passing (8 pre-existing auth test failures, 18 skipped integration tests)
+   - Real-time notifications ready for production use
+
 ## Next Priority Tasks
 
-### Bloco 4 — Gestão de Leads (P1)
-- [x] P1: Tabela leads + RLS (already done in Bloco 0)
-- [x] P1: API de Criação de Lead (already done in task #16)
-- [x] P1: Formulário de Proposta (already done in task #16)
-- [x] P1: Botão WhatsApp (already done in task #16)
+### Bloco 4 — Gestão de Leads (P1) - COMPLETE ✅
+All P1 tasks for lead management are complete!
+- [x] P1: Tabela leads + RLS ✅ (done in Bloco 0)
+- [x] P1: API de Criação de Lead ✅ (done in task #16)
+- [x] P1: Formulário de Proposta ✅ (done in task #16)
+- [x] P1: Botão WhatsApp ✅ (done in task #16)
 - [x] P1: Listagem de Leads (Admin) ✅
 - [x] P1: Detalhe do Lead ✅
 - [x] P1: Mudança de Status do Lead ✅ (integrated in detail page)
 - [x] P1: Atribuição a Vendedor ✅ (integrated in detail page)
-- [ ] P1: Notificação Realtime
+- [x] P1: Notificação Realtime ✅
+
+### Bloco 5 — Gestão de Vendedores (P1)
+Next priority block to implement seller/user management features
 
