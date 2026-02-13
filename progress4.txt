@@ -1435,11 +1435,66 @@ Next priority block to implement sales recording features
    - Tests: 246/272 passing (8 pre-existing auth test failures, 18 skipped integration tests)
    - Sale form ready for production use
 
+30. ✅ Frontend Sale List Page (Bloco 6 - P1)
+   - Created SaleListPage component (src/pages/SaleListPage.tsx):
+     * Integration with GET /api/sales endpoint
+     * Comprehensive sales listing with advanced filtering
+     * Luxury automotive aesthetic (Playfair Display + Outfit fonts, gold/silver accents)
+     * Mobile-responsive design with gradient background
+   - Advanced filtering implemented:
+     * Search by buyer name or document (real-time filtering)
+     * Date range filter (start date and end date)
+     * Sorting options (sold_at, final_price, gross_margin) with asc/desc toggle
+     * Pagination with prev/next controls
+   - Table view with comprehensive sale information:
+     * Vehicle details (photo, brand, model, version, year)
+     * Buyer information (name, document)
+     * Seller attribution (name)
+     * Final price display with trade value (if applicable)
+     * Margin display for owner/manager roles (gross margin + percentage)
+     * Payment method badge (cash, financing, consortium, trade_and_cash)
+     * Sale date with formatted display
+     * Row click navigation to sale detail (TODO)
+   - User experience features:
+     * Loading state with spinner
+     * Empty state with helpful messages
+     * Pagination with page count display
+     * Sale count display
+     * Hover effects on table rows
+     * Role-based visibility (sellers see only their sales - handled by API)
+   - Design features:
+     * Gradient background (slate-50 to white)
+     * Card-based filter panel with rounded corners
+     * Clean table design with alternating row hover
+     * Payment method badges with borders
+     * Premium typography hierarchy
+     * Responsive grid for filters (1/2/4 columns)
+     * Color-coded margins (green for positive, red for negative)
+   - Business logic:
+     * Client-side search with Enter key support
+     * Dynamic filter application
+     * Currency formatting (BRL)
+     * Date formatting (pt-BR)
+     * Margin percentage calculation
+     * Role-based access control (owner/manager see all sales, sellers see only their own)
+     * Trade value display when applicable
+   - Updated App.tsx routing:
+     * Imported SaleListPage component
+     * Updated route: /sales → SaleListPage (removed TODO placeholder)
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+   - Tests: 246/272 passing (8 pre-existing auth test failures, 18 skipped integration tests)
+   - Sale list page ready for production use
+
 ## Next Priority Tasks
 
-### Bloco 6 — Registro de Vendas (P1)
+### Bloco 6 — Registro de Vendas (P1) - COMPLETE ✅
+All P1 tasks for sales recording are complete!
 - [x] P1: Tabela sales + RLS ✅ (done in Bloco 0)
 - [x] P1: Backend Sales CRUD API ✅
 - [x] P1: Formulário de Venda (Frontend) ✅
-- [ ] P1: Listagem de Vendas (Frontend)
+- [x] P1: Listagem de Vendas (Frontend) ✅
+
+### Bloco 7 — Financeiro e Fluxo de Caixa (P2)
+Next priority block to implement financial management features
 
