@@ -848,3 +848,87 @@ Next priority block to implement public-facing landing page features
 - [x] P1: Personalização de Cores ✅
 - [ ] P1: Upload e Crop de Logo
 - [ ] P2: SEO e Meta Tags
+21. ✅ Logo Upload and Crop Functionality (Bloco 3 - P1)
+   - Created backend logo upload controller (src/controllers/logoController.ts):
+     * POST /api/tenant/logo/upload - Upload logo with crop data
+     * DELETE /api/tenant/logo - Delete tenant logo
+   - Implemented file upload with multer (memory storage):
+     * Single file upload (5MB max)
+     * Image-only validation
+   - Image processing with Sharp:
+     * Two versions generated automatically: square (1:1, 400x400) and wide (16:9, 800x450)
+     * Crop support for both aspect ratios
+     * PNG output with high quality (90%)
+     * Upload to Supabase Storage in tenant-logos bucket
+   - Business logic implemented:
+     * Tenant-specific folder structure: tenantId/uuid_suffix.png
+     * Public URL generation for both versions
+     * Automatic tenant logo_url update with square version
+     * Role-based access control (owner/manager only)
+   - Updated tenant routes (src/routes/tenantRoutes.ts):
+     * Added logo upload endpoint with authentication and role check
+     * Added logo delete endpoint
+     * Integrated uploadLogoMiddleware for multipart/form-data
+   - Created LogoUploadPage component (src/pages/LogoUploadPage.tsx):
+     * File upload with drag-and-drop interface
+     * React Image Crop integration for dual aspect ratios:
+       - Square crop (1:1) for header/icon
+       - Wide crop (16:9) for banner/hero sections
+     * Switchable aspect ratio preview
+     * Real-time image preview before upload
+     * Current logo display with delete option
+     * Visual crop tool with adjustable selection
+     * Upload progress and success/error messages
+     * Role-based access control (owner/manager only)
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Two-column layout (upload/crop | preview)
+     * Live preview cards for both logo versions
+     * Tips card with best practices for logo upload
+     * Luxury automotive aesthetic consistent with brand
+     * Responsive design (mobile-first approach)
+   - User experience:
+     * File type validation (images only)
+     * File size validation (5MB max)
+     * Clear instructions for crop aspect ratios
+     * Visual feedback for upload status
+     * Auto-redirect to template settings after successful upload
+     * Delete confirmation modal
+     * Preview of how logo will appear in different contexts
+   - Frontend dependencies:
+     * Installed react-image-crop package (npm install react-image-crop)
+     * Added ReactCrop CSS imports
+   - Updated App.tsx routing:
+     * Added route: /landing-page/logo → LogoUploadPage
+     * Protected route within DashboardLayout
+   - Sidebar navigation:
+     * Logo menu item already exists with icon 🖼️
+     * Under Landing Page submenu
+     * Owner/manager only access
+   - Technical implementation:
+     * TypeScript strict mode compliance ✅
+     * Type-only imports for Crop and PixelCrop
+     * Proper API client import (named export)
+     * Multipart/form-data handling
+     * JSON crop data serialization
+   - Backend compiles successfully ✅
+   - Frontend builds successfully ✅
+   - Tests: 114/140 passing (8 pre-existing auth test failures, 18 skipped integration tests)
+   - Logo upload ready for production use
+
+## Next Priority Tasks
+
+### Bloco 3 — Landing Page Pública (P1)
+- [x] P1: API Pública de Veículos ✅
+- [x] P1: Template Clássico ✅
+- [x] P1: Página de Detalhe Pública ✅
+- [x] P1: Template Moderno ✅
+- [x] P1: Template Premium ✅
+- [x] P1: Seletor de Template ✅
+- [x] P1: Personalização de Cores ✅
+- [x] P1: Upload e Crop de Logo ✅
+- [ ] P1: SEO e Meta Tags
+
+### Bloco 4 — Gestão de Leads (P1)
+Next priority block to implement lead management features
+
