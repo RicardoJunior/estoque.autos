@@ -2377,3 +2377,78 @@ All P2 tasks for seller management are complete!
 **Bloco 9 — Polimento e Features Extras (P3/P4)**
 - Various nice-to-have features
 
+### Bloco 5 — Gestão de Vendedores (P2) - COMPLETE ✅
+All P2 tasks for seller management are complete!
+- [x] P2: Dashboard do Vendedor ✅
+- [x] P2: Configuração de Comissão ✅
+
+### Bloco 8 — Integrações com Marketplaces (P2)
+Implementation in progress for marketplace integrations
+
+38. ✅ Marketplace Integration Architecture (Bloco 8 - P2)
+   - Created marketplace types and interfaces (backend/src/types/marketplace.ts):
+     * MarketplacePlatform type (webmotors, olx, icarros, mercado_livre)
+     * MarketplaceCredentials interface for API credentials
+     * MarketplaceVehicleData interface for vehicle publishing
+     * MarketplaceLead interface for lead reception
+     * MarketplacePublishResult interface for operation results
+     * MarketplaceAdapter interface defining the adapter pattern
+   - Implemented BaseMarketplaceAdapter abstract class (backend/src/services/marketplace/BaseMarketplaceAdapter.ts):
+     * Abstract methods: publish, update, remove, testConnection
+     * Optional method: receiveLeads
+     * Helper methods: validateCredentials, mapVehicleData, handleError
+     * Provides consistent error handling across all adapters
+   - Created WebmotorsAdapter implementation (backend/src/services/marketplace/WebmotorsAdapter.ts):
+     * Implements full adapter interface for Webmotors API
+     * Credential validation (apiKey + dealerId)
+     * Vehicle data mapping to Webmotors format
+     * Placeholder for actual API calls (TODO: implement HTTP client)
+     * Connection testing
+   - Created OLXAdapter implementation (backend/src/services/marketplace/OLXAdapter.ts):
+     * Implements full adapter interface for OLX/ZAP API
+     * Credential validation (username + password)
+     * Vehicle data mapping to OLX format
+     * Placeholder for actual API calls (TODO: implement HTTP client)
+     * Connection testing
+   - Created MarketplaceService orchestration layer (backend/src/services/marketplace/MarketplaceService.ts):
+     * Factory pattern for creating marketplace adapters
+     * Initialize method to load active marketplace configurations from database
+     * publishVehicle method to publish to multiple marketplaces
+     * updateVehicle method to update listings across platforms
+     * removeVehicle method to unpublish from marketplaces
+     * testConnection method for connection validation
+     * Automatic logging of all marketplace operations
+   - Created MarketplaceConfigController (backend/src/controllers/marketplaceConfigController.ts):
+     * GET /api/marketplace/configs - list all configurations
+     * GET /api/marketplace/configs/:id - get specific configuration
+     * POST /api/marketplace/configs - create new configuration
+     * PUT /api/marketplace/configs/:id - update configuration
+     * DELETE /api/marketplace/configs/:id - delete configuration
+     * POST /api/marketplace/test-connection - test marketplace connection
+     * GET /api/marketplace/logs/:vehicleId - get marketplace logs for vehicle
+     * Comprehensive Zod validation for all endpoints
+     * Credential sanitization (never send credentials to frontend)
+   - Architecture features:
+     * Adapter pattern for extensibility (easy to add new marketplaces)
+     * Factory pattern for adapter creation
+     * Consistent interface across all marketplace integrations
+     * Separation of concerns (adapters, service, controller)
+     * Database logging for all operations
+     * Error handling and recovery
+     * Credential encryption support
+   - Existing marketplace controller integration:
+     * Found pre-existing marketplaceController.ts with additional endpoints
+     * Found pre-existing MarketplaceService.ts and marketplaceAdapter.ts
+     * Architecture is compatible and can coexist
+     * Will need to consolidate implementations in next task
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Marketplace integration architecture COMPLETE ✅
+
+## Next Priority Tasks
+
+### Bloco 8 — Integrações com Marketplaces (P2)
+- [x] P2: Arquitetura de Integrações ✅
+- [ ] P2: Tela de Configuração (Admin UI for marketplace credentials)
+- [ ] P2: UI de Seleção no Veículo (Checkboxes for marketplace selection in vehicle form)
+
