@@ -13,6 +13,7 @@ import TemplateSettingsPage from '@/pages/TemplateSettingsPage';
 import ColorCustomizationPage from '@/pages/ColorCustomizationPage';
 import LogoUploadPage from '@/pages/LogoUploadPage';
 import LeadListPage from '@/pages/LeadListPage';
+import LeadDetailPage from '@/pages/LeadDetailPage';
 
 function App() {
   return (
@@ -36,7 +37,7 @@ function App() {
           <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
           <Route path="/leads" element={<LeadListPage />} />
-          <Route path="/leads/:id" element={<div>Lead Detail Page (TODO)</div>} />
+          <Route path="/leads/:id" element={<LeadDetailPage />} />
           <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
           <Route path="/sellers" element={<div>Sellers Page (TODO)</div>} />
           <Route path="/financial" element={<div>Financial Page (TODO)</div>} />

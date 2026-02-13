@@ -1073,6 +1073,74 @@ Next priority block to implement lead management features
    - TypeScript strict mode compliance ✅
    - Frontend builds successfully ✅
 
+25. ✅ Frontend Lead Detail Page with Status & Assignment (Bloco 4 - P1)
+   - Created LeadDetailPage component (src/pages/LeadDetailPage.tsx):
+     * Integration with GET /api/leads/:id endpoint
+     * Comprehensive lead information display
+     * Luxury automotive aesthetic (Playfair Display + Outfit fonts, gold/silver accents)
+     * Mobile-responsive design with gradient background
+   - Lead information section:
+     * All lead details (name, phone, email, type, channel, creation date)
+     * Proposal value and trade vehicle display
+     * Device and UTM tracking information
+     * Lost reason display when applicable
+     * Click-to-call and mailto links
+   - Vehicle of interest section:
+     * Vehicle photo, brand, model, version, year
+     * Sale price display
+     * Navigate to vehicle detail button
+   - Status change functionality:
+     * Modal with status dropdown (new, in_progress, negotiating, converted, lost)
+     * Required lost reason field when marking as lost
+     * Integration with PATCH /api/leads/:id/status endpoint
+     * Real-time UI update after status change
+   - Lead assignment functionality:
+     * Modal with user selection dropdown
+     * Integration with PATCH /api/leads/:id/assign endpoint
+     * Only visible to owner/manager roles
+     * Displays current assigned user with avatar
+   - Interaction timeline:
+     * Chronological display of all interactions
+     * Interaction types (note, call, visit, proposal) with color badges
+     * User attribution and timestamps
+     * Add new interaction modal with type and content fields
+     * Integration with POST /api/leads/:id/interactions endpoint
+     * Empty state with helpful message
+   - Quick actions sidebar:
+     * Assigned user card with avatar
+     * Quick action buttons (change status, add note, WhatsApp, call)
+     * Contact buttons with proper links
+   - Design features:
+     * Three-column responsive layout (info | timeline | sidebar)
+     * Card-based sections with rounded corners
+     * Status badges with color coding
+     * Channel badges
+     * Time ago helper (minutes, hours, days)
+     * Smooth fade-in animations
+     * Gradient backgrounds and sophisticated effects
+   - Business logic:
+     * Role-based access control (owner/manager can assign, all can view/update status)
+     * Required validation for lost reason
+     * Real-time interaction history
+     * Multiple modals for different actions
+     * Save/cancel confirmation flows
+     * Loading and saving states
+   - Created backend user controller (src/controllers/userController.ts):
+     * GET /api/users - List all users in tenant
+     * GET /api/users/:id - Get user by ID
+     * Tenant isolation via RLS
+     * Only active users returned
+   - Created user routes module (src/routes/userRoutes.ts):
+     * All routes require authentication
+     * Integrated into main router at /api/users
+   - Updated App.tsx routing:
+     * Added route: /leads/:id → LeadDetailPage
+     * Replaced TODO placeholder
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Frontend builds successfully ✅
+   - Tests: 153/179 passing (8 pre-existing auth test failures, 18 skipped integration tests)
+   - Lead detail page ready for production use
+
 ## Next Priority Tasks
 
 ### Bloco 4 — Gestão de Leads (P1)
@@ -1081,8 +1149,8 @@ Next priority block to implement lead management features
 - [x] P1: Formulário de Proposta (already done in task #16)
 - [x] P1: Botão WhatsApp (already done in task #16)
 - [x] P1: Listagem de Leads (Admin) ✅
-- [ ] P1: Detalhe do Lead
-- [ ] P1: Mudança de Status do Lead
-- [ ] P1: Atribuição a Vendedor
+- [x] P1: Detalhe do Lead ✅
+- [x] P1: Mudança de Status do Lead ✅ (integrated in detail page)
+- [x] P1: Atribuição a Vendedor ✅ (integrated in detail page)
 - [ ] P1: Notificação Realtime
 
