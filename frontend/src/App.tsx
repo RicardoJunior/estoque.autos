@@ -25,6 +25,7 @@ import MarginReportPage from '@/pages/MarginReportPage';
 import TurnoverReportPage from '@/pages/TurnoverReportPage';
 import SellerDashboardPage from '@/pages/SellerDashboardPage';
 import MarketplaceConfigPage from '@/pages/MarketplaceConfigPage';
+import { StoreTextsPage } from '@/pages/StoreTextsPage';
 import { ToastProvider } from '@/components/organisms/ToastContainer';
 import { useRealtimeLeads } from '@/hooks/useRealtimeLeads';
 
@@ -68,7 +69,7 @@ function AppContent() {
         <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
         <Route path="/landing-page/colors" element={<ColorCustomizationPage />} />
         <Route path="/landing-page/logo" element={<LogoUploadPage />} />
-        <Route path="/landing-page" element={<div>Landing Page Settings (TODO)</div>} />
+        <Route path="/landing-page/texts" element={<StoreTextsPage />} />
         <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
       </Route>
     </Routes>

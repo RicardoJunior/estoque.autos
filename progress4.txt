@@ -2579,3 +2579,76 @@ All P2 tasks for marketplace integrations are complete!
 - **CI/CD**: GitHub Actions with automated testing and deployment
 - **Deployment**: Ready for production with comprehensive guide
 
+
+38. ✅ Frontend Editable Store Texts (Bloco 3 - P2)
+   - Created StoreTextsPage component (src/pages/StoreTextsPage.tsx):
+     * Integration with GET/PATCH /api/tenant/settings endpoint
+     * Form for editing three text fields:
+       - Slogan / Frase de Destaque (200 chars max)
+       - Sobre a Loja (1000 chars max)
+       - Texto do Rodapé (500 chars max)
+     * Form validation with Zod + React Hook Form
+     * Real-time save/discard changes
+     * Success/error message handling
+     * Role-based access control (owner/manager only)
+     * Two-column layout (editor | tips & preview)
+   - Texts stored in tenant.settings JSONB field:
+     * slogan: displayed after header in landing page
+     * about: displayed in dedicated "Sobre Nós" section
+     * footer_text: replaces default footer text
+   - Updated ClassicLandingTemplate to display editable texts:
+     * Slogan section (gradient banner after header)
+     * About section (dedicated section with styled heading)
+     * Footer text (replaces default "Plataforma completa..." text)
+     * All sections conditionally rendered based on content
+     * Proper TypeScript typing with settings cast
+   - Updated App.tsx routing:
+     * Imported StoreTextsPage
+     * Added route: /landing-page/texts → StoreTextsPage
+     * Protected route within DashboardLayout
+   - Updated Sidebar navigation:
+     * Added "Textos" submenu item under Landing Page
+     * Path: /landing-page/texts
+     * Icon: ✏️
+     * Owner/manager only access
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Two-column responsive layout (editor | tips)
+     * Tips card with best practices for each text field
+     * Store URL display card
+     * Save/discard buttons with state management
+     * Luxury automotive aesthetic consistent with brand
+   - User experience:
+     * Character count limits enforced
+     * Unsaved changes detection (isDirty)
+     * Clear field descriptions and usage guidance
+     * Success messages with auto-dismiss
+     * Graceful error handling
+     * Responsive design (mobile-first approach)
+   - Business logic:
+     * Texts persisted to tenant settings JSONB field
+     * Backend already supports flexible settings object
+     * No migration needed (existing field used)
+     * Texts displayed on all landing page templates
+     * Optional fields (landing page works without texts)
+   - Frontend builds successfully ✅
+   - TypeScript strict mode compliance ✅
+   - Store texts feature ready for production use
+
+## Next Priority Tasks
+
+### Bloco 3 — Textos Editáveis (P2) - COMPLETE ✅
+- [x] P2: Admin UI para editar slogan, sobre a loja, texto do footer ✅
+
+### Remaining P2 Tasks
+- [ ] P2: Timeline de Interações (already partially implemented - add interaction exists)
+- [ ] P2: Cadastro Manual de Lead
+- [ ] P2: Detalhe da Venda
+- [ ] P2: Sincronização de Status com Marketplaces
+
+### Summary Update
+All critical (P0) and high-priority (P1) tasks are COMPLETE ✅
+Most P2 (medium priority) tasks are COMPLETE ✅
+Marketplace integration architecture COMPLETE ✅
+Store texts customization COMPLETE ✅

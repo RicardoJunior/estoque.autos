@@ -85,6 +85,7 @@ const navItems: NavItem[] = [
         roles: ['owner', 'manager'],
       },
       { name: 'Logo', path: '/landing-page/logo', icon: '🖼️', roles: ['owner', 'manager'] },
+      { name: 'Textos', path: '/landing-page/texts', icon: '✏️', roles: ['owner', 'manager'] },
     ],
   },
   { name: 'Configurações', path: '/settings', icon: '⚙️', roles: ['owner'] },

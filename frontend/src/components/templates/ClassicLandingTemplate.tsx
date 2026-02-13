@@ -14,6 +14,7 @@ export const ClassicLandingTemplate: React.FC<ClassicLandingTemplateProps> = ({
 }) => {
   const primaryColor = store.colors?.primary || '#D4AF37';
   const accentColor = store.colors?.accent || '#FFD700';
+  const settings = (store.settings as Record<string, string | undefined>) || {};
 
   return (
     <div className="min-h-screen bg-white">
@@ -80,6 +81,34 @@ export const ClassicLandingTemplate: React.FC<ClassicLandingTemplateProps> = ({
           </div>
         </div>
       </header>
+
+      {/* Slogan Section */}
+      {settings.slogan && (
+        <div className="bg-gradient-to-r from-gray-50 to-white py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <p
+              className="text-center text-2xl md:text-3xl font-bold italic"
+              style={{ color: primaryColor }}
+            >
+              "{settings.slogan}"
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* About Section */}
+      {settings.about && (
+        <div className="bg-white py-12">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: primaryColor }}>
+              Sobre Nós
+            </h2>
+            <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-line">
+              {settings.about}
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -302,13 +331,13 @@ export const ClassicLandingTemplate: React.FC<ClassicLandingTemplateProps> = ({
               )}
             </div>
 
-            {/* Powered By */}
+            {/* Custom Footer Text or Powered By */}
             <div>
               <h3 className="font-bold text-lg mb-4" style={{ color: primaryColor }}>
-                Sobre
+                {settings.footer_text ? 'Informações' : 'Sobre'}
               </h3>
-              <p className="text-gray-600 text-sm">
-                Plataforma completa de gestão para lojas de veículos.
+              <p className="text-gray-600 text-sm whitespace-pre-line">
+                {settings.footer_text || 'Plataforma completa de gestão para lojas de veículos.'}
               </p>
               <p className="text-gray-400 text-xs mt-4">
                 Powered by <span className="font-semibold">Estoque.autos</span>

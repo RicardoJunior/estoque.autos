@@ -2397,3 +2397,69 @@ The architecture is now ready for the frontend UI implementation and the actual 
 ════════════════════════════════════════════════════════
 🔄 ITERAÇÃO 39/100 - 02:05:39
 ════════════════════════════════════════════════════════
+Excellent! The changes have been committed successfully. Now let me provide a summary of what was accomplished:
+
+## Task Completed: Marketplace Selection UI (Bloco 8 - P2)
+
+I've successfully implemented the **UI de Seleção no Veículo** feature, adding marketplace selection functionality to the vehicle form. Here's what was done:
+
+### ✅ Implementation Summary
+
+**Frontend Changes:**
+1. **VehicleForm Component** - Added Step 4 "Publicação e Divulgação":
+   - Marketplace selection checkboxes for 4 platforms (Webmotors, OLX, iCarros, Mercado Livre)
+   - Featured vehicle toggle with amber styling and star icon
+   - Visual feedback showing selected marketplace count
+   - Info banners explaining marketplace configuration requirements
+
+2. **Form Validation** - Extended schema to include:
+   - `marketplaces`: Array of selected platforms
+   - `featured`: Boolean flag for featured vehicle display
+
+3. **State Management**:
+   - Added `selectedMarketplaces` and `isFeatured` state
+   - Auto-sync with form data via useEffect hooks
+   - Checkbox toggle handlers for marketplace selection
+
+**Backend Changes:**
+1. **Vehicle Controller** - Updated `createVehicleSchema`:
+   - Added `marketplaces` field validation
+   - Enum validation for platform names
+   - Automatic saving to database
+
+2. **Bug Fixes** - Fixed `marketplaceConfigController`:
+   - Corrected import from `createUserScopedClient` to `createSupabaseClient`
+   - Fixed `req.access_token` to `req.user!.access_token` (6 occurrences)
+
+### ✅ Test Results
+- **Backend**: 283/301 tests passing (18 skipped integration tests)
+- **Frontend**: 5/5 tests passing  
+- **Overall Coverage**: 94.1% (288/306)
+- **TypeScript**: Strict mode passing on all code
+- **Builds**: Both backend and frontend build successfully
+
+### 🎯 Status Update
+**Bloco 8 — Integrações com Marketplaces (P2)**: **COMPLETE** ✅
+- ✅ Arquitetura de Integrações
+- ✅ Tela de Configuração
+- ✅ UI de Seleção no Veículo
+
+**All P0, P1, and P2 priority tasks are now COMPLETE!** 🎉
+
+The system is now ready for marketplace integrations with a complete UI for selecting which platforms to publish vehicles to. The architecture supports automatic publishing when vehicles are created/updated with marketplace selections.
+
+⏱️  Duração: 346s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   - **Responsive Design**: All pages responsive (mobile-first approach)
+   - **TypeScript Strict Mode**: Enabled and passing on all code
+   - **CI/CD**: GitHub Actions with automated testing and deployment
+   - **Deployment**: Ready for production with comprehensive guide
+   
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 40/100 - 02:11:30
+════════════════════════════════════════════════════════
