@@ -276,13 +276,85 @@ Date: 2026-02-12
      * User confirmation for deletions
    - Frontend builds successfully ✅
 
+12. ✅ Frontend Vehicle Listing Page (Bloco 2 - P0)
+   - Created SearchBar molecule component (src/components/molecules/SearchBar.tsx):
+     * Full-text search with real-time filtering
+     * Elegant focus effects with gold gradient glow
+     * Clear button when search has value
+     * Responsive design with luxury automotive aesthetic
+   - Created VehicleCard molecule component (src/components/molecules/VehicleCard.tsx):
+     * Image display with fallback placeholder
+     * Status badge (available, reserved, sold, inactive) with color coding
+     * Featured vehicle badge with star icon
+     * Vehicle information: brand, model, version, category
+     * Technical specs: year, mileage, transmission, fuel type
+     * Price display with large typography
+     * Margin percentage display (visible for owner/manager only)
+     * Days in stock counter with warning for vehicles > 60 days
+     * Hover effects with scale animation and gold border
+     * Responsive card layout
+   - Created FilterPanel organism component (src/components/organisms/FilterPanel.tsx):
+     * Status filter (all, available, reserved, sold, inactive)
+     * Category filter (car, motorcycle, utility, truck)
+     * Brand filter (dynamic list from available vehicles)
+     * Price range filter (min/max inputs)
+     * Year range filter (min/max selects)
+     * Active filters count display
+     * Clear all filters button
+     * Gradient background with luxury aesthetic
+   - Created VehicleTable organism component (src/components/organisms/VehicleTable.tsx):
+     * Tabular view with sortable columns
+     * Vehicle thumbnail with hover zoom effect
+     * All key information in columns: year, km, transmission, price, status, days
+     * Margin display for owner/manager roles
+     * Featured vehicle indicator
+     * Responsive table with horizontal scroll
+     * Empty state with illustration
+     * Row click navigation to vehicle detail
+   - Created VehicleListPage page component (src/pages/VehicleListPage.tsx):
+     * GET /api/vehicles integration with tenant isolation
+     * Real-time search across brand, model, plate, version
+     * Multi-criteria filtering (status, category, brand, price, year)
+     * Sorting options: created date, price, mileage, margin (8 options total)
+     * View mode toggle (grid/table) with smooth transitions
+     * Pagination (12 items per page) with numbered buttons
+     * Export to CSV functionality with filtered results
+     * Role-based margin visibility (owner/manager only)
+     * Loading state with spinner
+     * Empty state with call-to-action
+     * "New Vehicle" button in header
+     * Responsive layout: sidebar filters + main content area
+     * Staggered fade-in animations for smooth entry
+     * Vehicle count display
+   - Updated App.tsx to include /vehicles route with VehicleListPage
+   - Implemented Atomic Design architecture:
+     * SearchBar molecule - reusable search component
+     * VehicleCard molecule - grid view card
+     * FilterPanel organism - complete filtering UI
+     * VehicleTable organism - table view
+     * VehicleListPage page - complete feature
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Smooth animations and transitions
+     * Gradient backgrounds and sophisticated effects
+     * Mobile-first responsive design
+     * Luxury automotive showroom aesthetic
+   - Business logic:
+     * Client-side filtering and sorting for performance
+     * Margin calculation with expenses consideration
+     * Days in stock calculation with warnings
+     * Dynamic brand list from actual inventory
+     * CSV export with current filters applied
+   - Frontend builds successfully ✅
+
 ## Next Priority Tasks
 
 ### Bloco 2 — Gestão de Estoque (P0)
 - [x] P0: Implement vehicle CRUD API endpoints ✅
 - [x] P0: Create vehicle form component with all fields ✅
 - [x] P0: Implement photo upload functionality ✅
-- [ ] P0: Create vehicle listing page with filters
+- [x] P0: Create vehicle listing page with filters ✅
 - [ ] P0: Create vehicle detail page (admin)
 
 ### Bloco 0 (Continued)
@@ -299,9 +371,11 @@ Date: 2026-02-12
 - Frontend vehicle form COMPLETE ✅
 - **Backend photo upload API COMPLETE** ✅
 - **Frontend photo upload component COMPLETE** ✅
+- **Frontend vehicle listing page COMPLETE** ✅
 - Auth flow tested and working (signup → onboarding → dashboard)
 - Vehicle API tested and working with 16 passing unit tests
 - Photo upload API tested and working with 28 passing unit tests
 - Vehicle form ready for use with distinctive luxury automotive aesthetic
 - Photo upload supports drag-and-drop, compression, and Supabase Storage
-- Next: Create vehicle listing page with filters
+- Vehicle listing page with advanced filtering, search, sorting, and dual view modes (grid/table)
+- Next: Create vehicle detail page (admin view)
