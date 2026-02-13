@@ -144,6 +144,60 @@ export interface Sale {
   created_at: string;
 }
 
+// Financial Dashboard types
+export interface FinancialKPIs {
+  revenue: number;
+  grossMargin: number;
+  salesCount: number;
+  inventorySaleValue: number;
+  inventoryCostValue: number;
+  inventoryCount: number;
+  activeLeadsCount: number;
+  conversionRate: number;
+  averageTicket: number;
+  averageMarginPercentage: number;
+}
+
+export interface MonthlyEvolution {
+  month: string;
+  revenue: number;
+  margin: number;
+  salesCount: number;
+}
+
+export interface DashboardData {
+  period: {
+    month: string;
+    start: string;
+    end: string;
+  };
+  kpis: FinancialKPIs;
+  monthlyEvolution: MonthlyEvolution[];
+  topVehicles: Array<{
+    id: string;
+    gross_margin: number;
+    final_price: number;
+    vehicles: {
+      id: string;
+      brand: string;
+      model: string;
+      version?: string;
+      year_model: number;
+      photos?: Photo[];
+    };
+  }>;
+  staleVehicles: Array<{
+    id: string;
+    brand: string;
+    model: string;
+    version?: string;
+    year_model: number;
+    created_at: string;
+    photos?: Photo[];
+    sale_price: number;
+  }>;
+}
+
 // Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;
