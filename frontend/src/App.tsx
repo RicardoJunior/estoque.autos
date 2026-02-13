@@ -19,6 +19,7 @@ import { UserFormPage } from '@/pages/UserFormPage';
 import { CommissionConfigPage } from '@/pages/CommissionConfigPage';
 import SaleFormPage from '@/pages/SaleFormPage';
 import SaleListPage from '@/pages/SaleListPage';
+import SaleDetailPage from '@/pages/SaleDetailPage';
 import FinancialDashboardPage from '@/pages/FinancialDashboardPage';
 import CashFlowPage from '@/pages/CashFlowPage';
 import MarginReportPage from '@/pages/MarginReportPage';
@@ -60,6 +61,7 @@ function AppContent() {
         <Route path="/users/commission" element={<CommissionConfigPage />} />
         <Route path="/sales" element={<SaleListPage />} />
         <Route path="/sales/new/:vehicleId" element={<SaleFormPage />} />
+        <Route path="/sales/:id" element={<SaleDetailPage />} />
         <Route path="/financial" element={<FinancialDashboardPage />} />
         <Route path="/cash-flow" element={<CashFlowPage />} />
         <Route path="/margin-report" element={<MarginReportPage />} />
