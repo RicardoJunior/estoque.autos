@@ -1671,12 +1671,40 @@ Implementation in progress for financial management features
    - All tests passing: 283/301 (18 skipped integration tests, 29 new cash flow tests) ✅
    - Cash flow management ready for production use
 
+33. ✅ Automatic Cash Flow Entries for Vehicle Expenses (Bloco 7 - P2)
+   - Updated vehicleController to create automatic cash flow entries:
+     * Vehicle purchase creates expense entry "Compra de Veículo"
+     * Each vehicle expense creates a separate expense entry
+     * Automatic entry creation on vehicle creation (createVehicle)
+     * Automatic entry update on vehicle update (updateVehicle)
+   - Business logic implemented:
+     * Purchase price change: deletes old entry, creates new one
+     * Expenses change: deletes all old expense entries, creates new ones
+     * Vehicle label format: "{brand} {model} {version} {year_model}"
+     * All entries linked to vehicle via reference_id and reference_type
+     * Entry date set to current date
+     * Created by current user
+   - Integration with existing cash flow system:
+     * Uses same cash_flow_entries table
+     * Type: 'expense' for all vehicle-related entries
+     * Categories: "Compra de Veículo" for purchase, custom for expenses
+     * Reference tracking for future analytics and reporting
+   - Complete automatic cash flow entry creation:
+     * ✅ Vehicle purchase → expense entry
+     * ✅ Vehicle expenses → multiple expense entries
+     * ✅ Sale → income entry (already implemented in task #28)
+     * All three automations now working correctly
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Automatic cash flow entries feature COMPLETE ✅
+
 ## Next Priority Tasks
 
 ### Bloco 7 — Financeiro e Fluxo de Caixa (P2) - IN PROGRESS
-- [x] P2: Dashboard Financeiro ✅
+- [x] P2: Tabela cash_flow + RLS ✅ (done in Bloco 0)
+- [x] P2: Lançamentos Automáticos ✅
 - [x] P2: Lançamentos Manuais ✅
-- [ ] P2: Lançamentos Automáticos (partially done - sales create entries, need vehicle expenses)
+- [x] P2: Dashboard Financeiro ✅
 - [ ] P2: Relatório de Margem
 - [ ] P2: Relatório de Giro
 

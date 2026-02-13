@@ -121,6 +121,40 @@ export const createVehicle = async (req: AuthRequest, res: Response) => {
       return res.status(400).json({ error: error.message });
     }
 
+    // AUTOMATIC CASH FLOW ENTRIES
+    // 1. Create expense entry for vehicle purchase
+    const vehicleLabel =
+      `${validatedData.brand} ${validatedData.model} ${validatedData.version || ''} ${validatedData.year_model}`.trim();
+
+    await supabase.from('cash_flow_entries').insert({
+      tenant_id: tenantId,
+      type: 'expense',
+      category: 'Compra de Veículo',
+      description: `Aquisição - ${vehicleLabel}`,
+      amount: validatedData.purchase_price,
+      reference_id: vehicle.id,
+      reference_type: 'vehicle',
+      entry_date: new Date().toISOString().split('T')[0],
+      created_by: userId,
+    });
+
+    // 2. Create expense entries for each vehicle expense
+    if (validatedData.expenses && Object.keys(validatedData.expenses).length > 0) {
+      const expenseEntries = Object.entries(validatedData.expenses).map(([category, amount]) => ({
+        tenant_id: tenantId,
+        type: 'expense' as const,
+        category: category,
+        description: `${category} - ${vehicleLabel}`,
+        amount: amount,
+        reference_id: vehicle.id,
+        reference_type: 'vehicle',
+        entry_date: new Date().toISOString().split('T')[0],
+        created_by: userId,
+      }));
+
+      await supabase.from('cash_flow_entries').insert(expenseEntries);
+    }
+
     res.status(201).json({
       message: 'Vehicle created successfully',
       vehicle,
@@ -266,10 +300,23 @@ export const updateVehicle = async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params;
     const validatedData = updateVehicleSchema.parse(req.body);
+    const userId = req.user!.id;
     const tenantId = req.user!.tenant_id;
 
     // Create user-scoped Supabase client
     const supabase = createSupabaseClient(req.user!.access_token);
+
+    // Get current vehicle data
+    const { data: currentVehicle } = await supabase
+      .from('vehicles')
+      .select('brand, model, version, year_model, purchase_price, sale_price, expenses')
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .single();
+
+    if (!currentVehicle) {
+      return res.status(404).json({ error: 'Vehicle not found' });
+    }
 
     // Recalculate gross margin if financial data changed
     const updates: Record<string, unknown> = { ...validatedData };
@@ -279,25 +326,15 @@ export const updateVehicle = async (req: AuthRequest, res: Response) => {
       validatedData.sale_price !== undefined ||
       validatedData.expenses !== undefined
     ) {
-      // Get current vehicle data
-      const { data: currentVehicle } = await supabase
-        .from('vehicles')
-        .select('purchase_price, sale_price, expenses')
-        .eq('id', id)
-        .eq('tenant_id', tenantId)
-        .single();
+      const purchasePrice = validatedData.purchase_price ?? currentVehicle.purchase_price;
+      const salePrice = validatedData.sale_price ?? currentVehicle.sale_price;
+      const expenses = validatedData.expenses ?? currentVehicle.expenses ?? {};
 
-      if (currentVehicle) {
-        const purchasePrice = validatedData.purchase_price ?? currentVehicle.purchase_price;
-        const salePrice = validatedData.sale_price ?? currentVehicle.sale_price;
-        const expenses = validatedData.expenses ?? currentVehicle.expenses ?? {};
-
-        const totalExpenses = Object.values(expenses).reduce(
-          (sum: number, val) => sum + (val as number),
-          0
-        );
-        updates.gross_margin = salePrice - purchasePrice - totalExpenses;
-      }
+      const totalExpenses = Object.values(expenses).reduce(
+        (sum: number, val) => sum + (val as number),
+        0
+      );
+      updates.gross_margin = salePrice - purchasePrice - totalExpenses;
     }
 
     const { data: vehicle, error } = await supabase
@@ -314,6 +351,67 @@ export const updateVehicle = async (req: AuthRequest, res: Response) => {
       }
       console.error('Error updating vehicle:', error);
       return res.status(400).json({ error: error.message });
+    }
+
+    // AUTOMATIC CASH FLOW ENTRIES UPDATE
+    const vehicleLabel =
+      `${vehicle.brand} ${vehicle.model} ${vehicle.version || ''} ${vehicle.year_model}`.trim();
+
+    // Update purchase price cash flow entry if changed
+    if (
+      validatedData.purchase_price !== undefined &&
+      validatedData.purchase_price !== currentVehicle.purchase_price
+    ) {
+      // Delete old purchase entry
+      await supabase
+        .from('cash_flow_entries')
+        .delete()
+        .eq('reference_id', id)
+        .eq('reference_type', 'vehicle')
+        .eq('category', 'Compra de Veículo');
+
+      // Create new purchase entry
+      await supabase.from('cash_flow_entries').insert({
+        tenant_id: tenantId,
+        type: 'expense',
+        category: 'Compra de Veículo',
+        description: `Aquisição - ${vehicleLabel}`,
+        amount: validatedData.purchase_price,
+        reference_id: id,
+        reference_type: 'vehicle',
+        entry_date: new Date().toISOString().split('T')[0],
+        created_by: userId,
+      });
+    }
+
+    // Update expenses cash flow entries if changed
+    if (validatedData.expenses !== undefined) {
+      const newExpenses = validatedData.expenses;
+
+      // Delete all old expense entries (except purchase)
+      await supabase
+        .from('cash_flow_entries')
+        .delete()
+        .eq('reference_id', id)
+        .eq('reference_type', 'vehicle')
+        .neq('category', 'Compra de Veículo');
+
+      // Create new expense entries
+      if (Object.keys(newExpenses).length > 0) {
+        const expenseEntries = Object.entries(newExpenses).map(([category, amount]) => ({
+          tenant_id: tenantId,
+          type: 'expense' as const,
+          category: category,
+          description: `${category} - ${vehicleLabel}`,
+          amount: amount,
+          reference_id: id,
+          reference_type: 'vehicle',
+          entry_date: new Date().toISOString().split('T')[0],
+          created_by: userId,
+        }));
+
+        await supabase.from('cash_flow_entries').insert(expenseEntries);
+      }
     }
 
     res.json({

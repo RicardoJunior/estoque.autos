@@ -1698,3 +1698,56 @@ The financial dashboard is now **production-ready** and provides store owners an
 ════════════════════════════════════════════════════════
 🔄 ITERAÇÃO 28/100 - 01:09:01
 ════════════════════════════════════════════════════════
+Perfect! I have successfully completed the **Manual Cash Flow Entries** feature (Bloco 7 - P2). Here's a summary of what was implemented:
+
+## ✅ Task Completed: Manual Cash Flow Entries Management
+
+### Backend Implementation
+- **Cash Flow Controller** with 5 endpoints:
+  - `POST /api/cash-flow` - Create manual cash flow entry
+  - `GET /api/cash-flow` - List entries with advanced filtering
+  - `GET /api/cash-flow/:id` - Get entry details
+  - `DELETE /api/cash-flow/:id` - Delete manual entries only
+  - `GET /api/cash-flow/summary` - Get income vs expenses summary
+
+- **Comprehensive validation** with Zod schemas
+- **Advanced filtering**: type, category, date range, search, pagination
+- **Business logic**: Manual entries deletable, automatic entries protected
+- **29 unit tests** - all passing ✅
+
+### Frontend Implementation
+- **CashFlowPage** with comprehensive UI:
+  - Summary cards showing total income, expenses, and balance
+  - Create entry form with type-dependent categories
+  - Advanced filters (type, date range)
+  - Entries table with delete functionality
+  - Pagination controls
+  - Delete confirmation modal
+  - Luxury automotive aesthetic maintained
+
+### Integration
+- Added `/cash-flow` route to App.tsx
+- Updated Sidebar with Financeiro submenu structure (Dashboard + Fluxo de Caixa)
+- TypeScript strict mode compliance ✅
+- **All tests passing: 283/301** (18 skipped integration tests) ✅
+
+### Commit
+Successfully committed with message: "feat: Implement manual cash flow entries management (Bloco 7 - P2)"
+
+The ESTOQUE.AUTOS platform now has a complete cash flow management system where owners and managers can create manual entries for income and expenses, view summaries, and track their cash flow over time. The system automatically creates entries for sales (already implemented) and will support vehicle expense entries in the future.
+
+⏱️  Duração: 503s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   - [x] P2: Lançamentos Manuais ✅
+   - [ ] P2: Lançamentos Automáticos (partially done - sales create entries, need vehicle expenses)
+   - [ ] P2: Relatório de Margem
+   - [ ] P2: Relatório de Giro
+   
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 29/100 - 01:17:29
+════════════════════════════════════════════════════════
