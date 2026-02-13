@@ -986,3 +986,103 @@ All P1 tasks for public landing page are complete!
 ### Bloco 4 — Gestão de Leads (P1)
 Next priority block to implement lead management features
 
+23. ✅ Backend Lead Management API (Bloco 4 - P1)
+   - Created lead controller (src/controllers/leadController.ts):
+     * GET /api/leads - List all leads with advanced filtering
+     * GET /api/leads/:id - Get lead details with full interaction history
+     * PATCH /api/leads/:id/status - Update lead status
+     * PATCH /api/leads/:id/assign - Assign lead to a user
+     * POST /api/leads/:id/interactions - Add interaction to lead
+   - Implemented comprehensive validation with Zod schemas:
+     * Query parameters validation (page, limit, status, assigned_to, vehicle_id, channel, search, sort_by, sort_order, date range)
+     * Status update validation (new, in_progress, negotiating, converted, lost)
+     * Lost reason required when marking as lost
+     * Assignment validation with user verification
+     * Interaction type validation (note, call, visit, proposal)
+   - Created lead routes module (src/routes/leadRoutes.ts):
+     * All routes require authentication
+     * Integrated into main router at /api/leads
+   - Business logic implemented:
+     * Role-based access control (sellers only see their assigned leads)
+     * Advanced filtering (status, assigned user, vehicle, channel, date range)
+     * Full-text search across name, email, phone
+     * Sorting by created_at, name, status (asc/desc)
+     * Pagination support (default 20 per page)
+     * Lead detail with vehicle and interaction data
+     * User verification for lead assignment
+     * Interaction creation with user tracking
+   - Response format:
+     * List endpoint: { leads[], pagination }
+     * Detail endpoint: { lead } with nested vehicle, assigned_user, interactions
+     * Interactions include user info and timestamps
+   - Created comprehensive unit tests (src/__tests__/lead.unit.test.ts):
+     * 39 test cases covering all functionality
+     * All tests passing ✅
+   - Backend compiles successfully with TypeScript strict mode ✅
+
+24. ✅ Frontend Lead List Page (Bloco 4 - P1)
+   - Created LeadListPage component (src/pages/LeadListPage.tsx):
+     * Integration with GET /api/leads endpoint
+     * Luxury automotive aesthetic (Playfair Display + Outfit fonts, gold/silver accents)
+     * Mobile-responsive design with gradient background
+   - Advanced filtering implemented:
+     * Search by name, email, or phone (real-time filtering)
+     * Status filter (new, in_progress, negotiating, converted, lost)
+     * Channel filter (landing_page, webmotors, olx, icarros, mercado_livre, manual)
+     * Sorting options (created_at, name, status) with asc/desc toggle
+   - Table view with comprehensive lead information:
+     * Lead details (name, phone, email) with avatar initial
+     * Vehicle information (brand, model, version, year, sale price)
+     * Channel badge display
+     * Status badge with color coding:
+       - new = blue
+       - in_progress = yellow
+       - negotiating = purple
+       - converted = green
+       - lost = red
+     * Proposal value display with trade vehicle info
+     * Assigned user display with avatar
+     * Created date with time ago helper
+     * New lead indicator with animated pulse
+   - User experience features:
+     * Click row to view lead detail
+     * Loading state with spinner
+     * Empty state with helpful messages
+     * Pagination with prev/next controls
+     * Lead count display
+     * Hover effects on table rows
+     * Staggered fade-in animations
+   - Design features:
+     * Gradient background (slate-50 to white)
+     * Card-based filter panel with rounded corners
+     * Clean table design with alternating row hover
+     * Status and channel badges with borders
+     * Avatar bubbles for users (gradient backgrounds)
+     * Premium typography hierarchy
+     * Responsive grid for filters (1/2/4 columns)
+   - Business logic:
+     * Role-based filtering (sellers see only their leads - handled by API)
+     * Client-side search debouncing
+     * Dynamic filter application
+     * Currency formatting (BRL)
+     * Date formatting (pt-BR)
+     * Time ago calculation (minutes, hours, days)
+   - Updated App.tsx routing:
+     * Added route: /leads → LeadListPage
+     * Added route: /leads/:id → Lead Detail (TODO)
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+
+## Next Priority Tasks
+
+### Bloco 4 — Gestão de Leads (P1)
+- [x] P1: Tabela leads + RLS (already done in Bloco 0)
+- [x] P1: API de Criação de Lead (already done in task #16)
+- [x] P1: Formulário de Proposta (already done in task #16)
+- [x] P1: Botão WhatsApp (already done in task #16)
+- [x] P1: Listagem de Leads (Admin) ✅
+- [ ] P1: Detalhe do Lead
+- [ ] P1: Mudança de Status do Lead
+- [ ] P1: Atribuição a Vendedor
+- [ ] P1: Notificação Realtime
+
