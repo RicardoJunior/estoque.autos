@@ -13,9 +13,7 @@ export default {
     '^.+\\.tsx?$': [
       'ts-jest',
       {
-        tsconfig: {
-          jsx: 'react-jsx',
-        },
+        tsconfig: 'tsconfig.test.json',
       },
     ],
   },
@@ -25,7 +23,7 @@ export default {
     '!src/main.tsx',
     '!src/vite-env.d.ts',
   ],
-  coverageThresholds: {
+  coverageThreshold: {
     global: {
       branches: 70,
       functions: 70,
