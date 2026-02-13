@@ -378,4 +378,55 @@ Date: 2026-02-12
 - Vehicle form ready for use with distinctive luxury automotive aesthetic
 - Photo upload supports drag-and-drop, compression, and Supabase Storage
 - Vehicle listing page with advanced filtering, search, sorting, and dual view modes (grid/table)
-- Next: Create vehicle detail page (admin view)
+- **Frontend vehicle detail page COMPLETE** ✅
+
+13. ✅ Frontend Vehicle Detail Page (Bloco 2 - P0)
+   - Created VehicleDetailPage component (src/pages/VehicleDetailPage.tsx):
+     * Integration with GET /api/vehicles/:id endpoint
+     * Detailed vehicle information display with luxury aesthetic
+     * Photo gallery with thumbnail navigation
+     * Main image viewer with image selection
+     * Comprehensive vehicle specifications display
+     * Price and financial information (role-based visibility)
+     * Margin calculation with visual indicators
+     * Expenses breakdown for owner/manager roles
+     * Status badge with color coding
+     * Featured vehicle indicator
+     * Days in stock calculation with warnings
+     * Action buttons (Edit, Change Status, Delete)
+     * Status change modal with dropdown selection
+     * Status history table with audit trail
+     * Vehicle description display
+     * Features and optionals list with badges
+     * Metadata display (created date, updated date, created by user)
+     * Responsive design with grid layout
+     * Loading state with spinner
+     * Error handling with fallback UI
+   - Business logic implemented:
+     * Role-based access control (owner/manager can edit, all can view)
+     * Status change with PATCH /api/vehicles/:id/status
+     * Soft delete with DELETE /api/vehicles/:id
+     * Real-time margin calculation from purchase price, expenses, and sale price
+     * Margin percentage calculation
+     * Days in stock calculation with visual warnings
+     * Total expenses calculation from expense array
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Smooth fade-in animations
+     * Gradient backgrounds for price card
+     * Luxury automotive aesthetic consistent with brand
+     * Mobile-first responsive design
+     * Card-based layout for information sections
+   - Added route to App.tsx (/vehicles/:id)
+   - Added animate-fade-in CSS animation to index.css
+   - Frontend builds successfully ✅
+   - Navigation from VehicleListPage grid and table views working
+
+## Next Priority Tasks
+
+### Bloco 2 — Gestão de Estoque (P0) - COMPLETE ✅
+All P0 tasks for vehicle management are complete!
+
+### Bloco 3 — Landing Page Pública (P1)
+Next priority block to implement public-facing landing page features

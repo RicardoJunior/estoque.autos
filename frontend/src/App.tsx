@@ -6,6 +6,7 @@ import { OnboardingPage } from '@/pages/OnboardingPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { VehicleFormPage } from '@/pages/VehicleFormPage';
 import { VehicleListPage } from '@/pages/VehicleListPage';
+import { VehicleDetailPage } from '@/pages/VehicleDetailPage';
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/vehicles" element={<VehicleListPage />} />
           <Route path="/vehicles/new" element={<VehicleFormPage />} />
+          <Route path="/vehicles/:id" element={<VehicleDetailPage />} />
           <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
           <Route path="/leads" element={<div>Leads Page (TODO)</div>} />
           <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
