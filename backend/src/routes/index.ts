@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from './authRoutes';
 import vehicleRoutes from './vehicleRoutes';
 import photoRoutes from './photoRoutes';
+import publicRoutes from './publicRoutes';
 
 const router = Router();
 
@@ -27,10 +28,10 @@ router.get('/', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/vehicles', vehicleRoutes);
 router.use('/photos', photoRoutes);
+router.use('/public', publicRoutes);
 
 // TODO: Add route modules here as they are implemented
 // router.use('/leads', leadRoutes);
 // router.use('/sales', salesRoutes);
-// router.use('/public', publicRoutes);
 
 export default router;

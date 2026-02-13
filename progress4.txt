@@ -430,3 +430,38 @@ All P0 tasks for vehicle management are complete!
 
 ### Bloco 3 — Landing Page Pública (P1)
 Next priority block to implement public-facing landing page features
+
+14. ✅ Backend Public Vehicle API (Bloco 3 - P1)
+   - Created public vehicle controller (src/controllers/publicVehicleController.ts):
+     * GET /api/public/:slug/vehicles - List available vehicles by store slug
+     * GET /api/public/:slug/vehicles/:id - Get vehicle detail by store slug and vehicle ID
+   - Implemented comprehensive validation with Zod schemas:
+     * Query parameters validation (page, limit, category, brand, fuel, transmission, price range, year range, search, sort, featured filter)
+     * Slug parameter validation for store lookup
+     * Featured-only filter support
+   - Created public routes module (src/routes/publicRoutes.ts):
+     * No authentication required (public access)
+     * Integrated into main router at /api/public
+   - Business logic implemented:
+     * Tenant lookup by slug
+     * Only returns vehicles with status 'available'
+     * Excludes financial data (purchase_price, expenses, gross_margin, max_discount)
+     * Includes store information (name, logo, phone, whatsapp, email, address)
+     * Advanced filtering (category, brand, fuel, transmission, price, year)
+     * Full-text search across brand, model, version
+     * Sorting by created_at, sale_price, mileage, year_model
+     * Pagination support (default 20 per page)
+     * Featured vehicle filtering
+     * Returns 404 for non-existent stores or unavailable vehicles
+   - Security features:
+     * No authentication required (public endpoint)
+     * No sensitive data exposure
+     * Tenant isolation via slug lookup
+     * Only available vehicles visible
+   - Created comprehensive unit tests (src/__tests__/publicVehicle.unit.test.ts):
+     * 29 test cases covering all functionality
+     * All tests passing ✅
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Response format:
+     * List endpoint: { store, vehicles[], pagination }
+     * Detail endpoint: { store, vehicle }
