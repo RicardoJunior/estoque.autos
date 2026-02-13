@@ -1,12 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuthStore } from '@/store/authStore';
 
 interface NavItem {
   name: string;
-  path: string;
+  path?: string;
   icon: string;
   roles?: Array<'owner' | 'manager' | 'seller'>;
+  children?: NavItem[];
 }
 
 const navItems: NavItem[] = [
@@ -17,16 +18,48 @@ const navItems: NavItem[] = [
   { name: 'Vendedores', path: '/sellers', icon: '👤', roles: ['owner', 'manager'] },
   { name: 'Financeiro', path: '/financial', icon: '📈', roles: ['owner', 'manager'] },
   { name: 'Integrações', path: '/integrations', icon: '🔗', roles: ['owner', 'manager'] },
-  { name: 'Landing Page', path: '/landing-page', icon: '🌐', roles: ['owner', 'manager'] },
+  {
+    name: 'Landing Page',
+    icon: '🌐',
+    roles: ['owner', 'manager'],
+    children: [
+      {
+        name: 'Seletor de Template',
+        path: '/landing-page/template',
+        icon: '🎨',
+        roles: ['owner', 'manager'],
+      },
+      {
+        name: 'Personalização',
+        path: '/landing-page/customization',
+        icon: '✨',
+        roles: ['owner', 'manager'],
+      },
+      { name: 'Logo', path: '/landing-page/logo', icon: '🖼️', roles: ['owner', 'manager'] },
+    ],
+  },
   { name: 'Configurações', path: '/settings', icon: '⚙️', roles: ['owner'] },
 ];
 
 export const Sidebar: React.FC = () => {
   const { user } = useAuthStore();
+  const [openSubmenus, setOpenSubmenus] = useState<Record<string, boolean>>({});
+
+  const toggleSubmenu = (itemName: string) => {
+    setOpenSubmenus((prev) => ({
+      ...prev,
+      [itemName]: !prev[itemName],
+    }));
+  };
 
   const filteredItems = navItems.filter(
     (item) => !item.roles || (user && item.roles.includes(user.role))
   );
+
+  const filterChildren = (children?: NavItem[]) => {
+    if (!children) return [];
+    return children.filter((child) => !child.roles || (user && child.roles.includes(user.role)));
+  };
 
   return (
     <aside className="w-64 bg-base-200 min-h-screen border-r border-base-300">
@@ -34,19 +67,57 @@ export const Sidebar: React.FC = () => {
         <h2 className="text-2xl font-bold text-primary">Estoque.autos</h2>
       </div>
       <ul className="menu p-4 w-full">
-        {filteredItems.map((item) => (
-          <li key={item.path}>
-            <NavLink
-              to={item.path}
-              className={({ isActive }) =>
-                isActive ? 'active bg-primary text-primary-content' : ''
-              }
-            >
-              <span className="text-xl">{item.icon}</span>
-              {item.name}
-            </NavLink>
-          </li>
-        ))}
+        {filteredItems.map((item) => {
+          const hasChildren = item.children && filterChildren(item.children).length > 0;
+
+          if (hasChildren) {
+            return (
+              <li key={item.name}>
+                <button
+                  onClick={() => toggleSubmenu(item.name)}
+                  className="flex items-center justify-between w-full"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{item.icon}</span>
+                    <span>{item.name}</span>
+                  </div>
+                  <span className="text-xs">{openSubmenus[item.name] ? '▼' : '▶'}</span>
+                </button>
+                {openSubmenus[item.name] && (
+                  <ul className="ml-4">
+                    {filterChildren(item.children).map((child) => (
+                      <li key={child.path}>
+                        <NavLink
+                          to={child.path!}
+                          className={({ isActive }) =>
+                            isActive ? 'active bg-primary text-primary-content' : ''
+                          }
+                        >
+                          <span className="text-lg">{child.icon}</span>
+                          {child.name}
+                        </NavLink>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            );
+          }
+
+          return (
+            <li key={item.path}>
+              <NavLink
+                to={item.path!}
+                className={({ isActive }) =>
+                  isActive ? 'active bg-primary text-primary-content' : ''
+                }
+              >
+                <span className="text-xl">{item.icon}</span>
+                {item.name}
+              </NavLink>
+            </li>
+          );
+        })}
       </ul>
     </aside>
   );

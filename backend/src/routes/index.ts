@@ -3,6 +3,7 @@ import authRoutes from './authRoutes';
 import vehicleRoutes from './vehicleRoutes';
 import photoRoutes from './photoRoutes';
 import publicRoutes from './publicRoutes';
+import tenantRoutes from './tenantRoutes';
 
 const router = Router();
 
@@ -29,6 +30,7 @@ router.use('/auth', authRoutes);
 router.use('/vehicles', vehicleRoutes);
 router.use('/photos', photoRoutes);
 router.use('/public', publicRoutes);
+router.use('/tenant', tenantRoutes);
 
 // TODO: Add route modules here as they are implemented
 // router.use('/leads', leadRoutes);

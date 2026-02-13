@@ -9,6 +9,7 @@ import { VehicleListPage } from '@/pages/VehicleListPage';
 import { VehicleDetailPage } from '@/pages/VehicleDetailPage';
 import { PublicLandingPage } from '@/pages/PublicLandingPage';
 import { PublicVehicleDetailPage } from '@/pages/PublicVehicleDetailPage';
+import TemplateSettingsPage from '@/pages/TemplateSettingsPage';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/sellers" element={<div>Sellers Page (TODO)</div>} />
           <Route path="/financial" element={<div>Financial Page (TODO)</div>} />
           <Route path="/integrations" element={<div>Integrations Page (TODO)</div>} />
+          <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
           <Route path="/landing-page" element={<div>Landing Page Settings (TODO)</div>} />
           <Route path="/settings" element={<div>Settings Page (TODO)</div>} />
         </Route>
