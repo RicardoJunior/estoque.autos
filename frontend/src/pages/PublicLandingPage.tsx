@@ -4,6 +4,7 @@ import axios from 'axios';
 import type { Tenant, Vehicle } from '../types';
 import { ClassicLandingTemplate } from '../components/templates/ClassicLandingTemplate';
 import { ModernLandingTemplate } from '../components/templates/ModernLandingTemplate';
+import { PremiumLandingTemplate } from '../components/templates/PremiumLandingTemplate';
 
 interface StoreData {
   store: Tenant;
@@ -110,6 +111,14 @@ export const PublicLandingPage: React.FC = () => {
     case 'modern':
       return (
         <ModernLandingTemplate
+          store={data.store}
+          vehicles={data.vehicles}
+          onVehicleClick={handleVehicleClick}
+        />
+      );
+    case 'premium':
+      return (
+        <PremiumLandingTemplate
           store={data.store}
           vehicles={data.vehicles}
           onVehicleClick={handleVehicleClick}
