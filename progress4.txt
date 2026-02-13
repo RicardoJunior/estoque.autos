@@ -168,10 +168,39 @@ Date: 2026-02-12
      * User creates tenant → redirected to dashboard
      * User logs in → redirected to onboarding or dashboard based on state
 
+8. ✅ Backend Vehicle CRUD API (Bloco 2 - P0)
+   - Created vehicle controller (src/controllers/vehicleController.ts):
+     * POST /api/vehicles - Create vehicle with full validation
+     * GET /api/vehicles - List vehicles with filters, search, pagination, sorting
+     * GET /api/vehicles/:id - Get vehicle details with status log
+     * PUT /api/vehicles/:id - Update vehicle with automatic margin recalculation
+     * PATCH /api/vehicles/:id/status - Update vehicle status with history logging
+     * DELETE /api/vehicles/:id - Soft delete (set status to inactive)
+   - Implemented comprehensive validation with Zod schemas:
+     * Vehicle data validation (brand, model, year, fuel, transmission, etc.)
+     * Query parameters validation (pagination, filters, sorting)
+     * Status update validation
+     * File structure validation for photos
+   - Created vehicle routes module (src/routes/vehicleRoutes.ts):
+     * All routes require authentication
+     * CRUD operations restricted to owner/manager roles
+     * Read-only access for seller role
+   - Integrated vehicle routes into main router
+   - Implemented business logic:
+     * Automatic gross margin calculation: sale_price - purchase_price - expenses
+     * Margin recalculation on financial data updates
+     * Vehicle status change logging with user tracking
+     * User-scoped Supabase client for RLS enforcement
+   - Created comprehensive unit tests (src/__tests__/vehicle.unit.test.ts):
+     * 16 tests covering validation, authorization, query parameters
+     * All tests passing ✅
+   - Updated AuthRequest interface to include access_token for RLS
+   - Backend compiles successfully with TypeScript strict mode
+
 ## Next Priority Tasks
 
 ### Bloco 2 — Gestão de Estoque (P0)
-- [ ] P0: Implement vehicle CRUD API endpoints
+- [x] P0: Implement vehicle CRUD API endpoints ✅
 - [ ] P0: Create vehicle form component with all fields
 - [ ] P0: Implement photo upload functionality
 - [ ] P0: Create vehicle listing page with filters
@@ -185,7 +214,9 @@ Date: 2026-02-12
 - Database schema complete with all tables and RLS policies
 - Backend infrastructure complete and tested
 - Backend authentication API complete with full validation
+- **Backend vehicle CRUD API COMPLETE** ✅
 - Frontend infrastructure complete with Atomic Design structure
-- **Frontend authentication integration COMPLETE** ✅
+- Frontend authentication integration COMPLETE ✅
 - Auth flow tested and working (signup → onboarding → dashboard)
-- Ready to implement vehicle management features (Bloco 2)
+- Vehicle API tested and working with 16 passing unit tests
+- Ready to implement vehicle frontend features (Bloco 2)

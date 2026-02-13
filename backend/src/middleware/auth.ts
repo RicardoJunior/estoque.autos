@@ -7,7 +7,8 @@ export interface AuthRequest extends Request {
     id: string;
     email: string;
     role: 'owner' | 'manager' | 'seller';
-    tenantId: string;
+    tenant_id: string;
+    access_token: string;
   };
 }
 
@@ -47,7 +48,8 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
       id: userData.id,
       email: userData.email,
       role: userData.role,
-      tenantId: userData.tenant_id,
+      tenant_id: userData.tenant_id,
+      access_token: token,
     };
 
     next();
