@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from './authRoutes';
 import vehicleRoutes from './vehicleRoutes';
+import photoRoutes from './photoRoutes';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.get('/', (req, res) => {
 // Route modules
 router.use('/auth', authRoutes);
 router.use('/vehicles', vehicleRoutes);
+router.use('/photos', photoRoutes);
 
 // TODO: Add route modules here as they are implemented
 // router.use('/leads', leadRoutes);

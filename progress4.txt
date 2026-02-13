@@ -224,12 +224,64 @@ Date: 2026-02-12
    - Connected to backend API POST /vehicles
    - Build verified - TypeScript compilation successful ✅
 
+10. ✅ Backend Photo Upload API (Bloco 2 - P0)
+   - Installed dependencies: multer, sharp, @types/multer
+   - Created photo upload controller (src/controllers/photoController.ts):
+     * POST /api/photos/upload - Upload photos with multipart/form-data
+     * DELETE /api/photos/:vehicle_id/:photo_index - Delete specific photo
+     * PATCH /api/photos/:vehicle_id/reorder - Reorder photos via drag-and-drop
+     * PATCH /api/photos/:vehicle_id/:photo_index/primary - Set primary photo
+   - Implemented comprehensive validation:
+     * File type validation (images only)
+     * File size limit (10MB per file)
+     * Maximum 30 photos per vehicle
+     * Vehicle ownership verification via RLS
+   - Created photo routes module (src/routes/photoRoutes.ts):
+     * All routes require authentication
+     * Upload/delete/reorder restricted to owner/manager roles
+     * Integrated into main router at /api/photos
+   - Implemented business logic:
+     * Automatic image compression using Sharp (1920x1080, 85% quality, JPEG)
+     * Tenant-specific folder structure: tenantId/vehicleId/uuid.jpg
+     * Upload to Supabase Storage with public URLs
+     * Automatic primary flag management (first photo or explicit)
+     * Photo order auto-assignment and reindexing on delete
+     * Update vehicle photos array in database
+   - Created unit tests (src/__tests__/photo.unit.test.ts):
+     * 28 test cases covering all endpoints
+     * All tests passing ✅
+   - Backend compiles successfully with TypeScript strict mode ✅
+
+11. ✅ Frontend Photo Upload Component (Bloco 2 - P0)
+   - Created PhotoUpload molecule component (src/components/molecules/PhotoUpload.tsx):
+     * Drag-and-drop interface for photo upload
+     * File input with multi-select support
+     * Photo preview grid with management controls
+     * Set primary photo functionality
+     * Delete photo with confirmation
+     * Real-time photo count display
+     * Maximum 30 photos enforcement
+   - Features implemented:
+     * Visual drag-and-drop zone with active state
+     * Image previews before upload
+     * Upload progress indicator
+     * Integration with backend API endpoints
+     * Responsive grid layout (2/3/4 columns)
+     * Hover effects for photo actions
+     * Primary photo badge indicator
+   - Validation:
+     * File type validation (images only)
+     * File size validation (10MB max)
+     * Photo count limits (30 max)
+     * User confirmation for deletions
+   - Frontend builds successfully ✅
+
 ## Next Priority Tasks
 
 ### Bloco 2 — Gestão de Estoque (P0)
 - [x] P0: Implement vehicle CRUD API endpoints ✅
 - [x] P0: Create vehicle form component with all fields ✅
-- [ ] P0: Implement photo upload functionality
+- [x] P0: Implement photo upload functionality ✅
 - [ ] P0: Create vehicle listing page with filters
 - [ ] P0: Create vehicle detail page (admin)
 
@@ -244,8 +296,12 @@ Date: 2026-02-12
 - Backend vehicle CRUD API COMPLETE ✅
 - Frontend infrastructure complete with Atomic Design structure
 - Frontend authentication integration COMPLETE ✅
-- **Frontend vehicle form COMPLETE** ✅
+- Frontend vehicle form COMPLETE ✅
+- **Backend photo upload API COMPLETE** ✅
+- **Frontend photo upload component COMPLETE** ✅
 - Auth flow tested and working (signup → onboarding → dashboard)
 - Vehicle API tested and working with 16 passing unit tests
+- Photo upload API tested and working with 28 passing unit tests
 - Vehicle form ready for use with distinctive luxury automotive aesthetic
-- Next: Implement photo upload functionality for vehicles
+- Photo upload supports drag-and-drop, compression, and Supabase Storage
+- Next: Create vehicle listing page with filters
