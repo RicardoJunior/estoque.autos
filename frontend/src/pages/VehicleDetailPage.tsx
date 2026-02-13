@@ -207,6 +207,14 @@ export const VehicleDetailPage: React.FC = () => {
           >
             Edit Vehicle
           </button>
+          {vehicle.status === 'available' && (
+            <button
+              onClick={() => navigate(`/sales/new/${vehicle.id}`)}
+              className="btn bg-gradient-to-r from-green-600 to-emerald-500 text-white hover:from-green-700 hover:to-emerald-600 border-0"
+            >
+              Mark as Sold
+            </button>
+          )}
           <button onClick={() => setShowStatusModal(true)} className="btn btn-outline">
             Change Status
           </button>

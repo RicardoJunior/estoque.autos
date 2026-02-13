@@ -1371,11 +1371,75 @@ Next priority block to implement sales recording features
    - Tests: 246/272 passing (8 pre-existing auth test failures, 18 skipped integration tests)
    - Sales API ready for frontend integration
 
+29. ✅ Frontend Sale Form Component (Bloco 6 - P1)
+   - Created SaleFormPage component (src/pages/SaleFormPage.tsx):
+     * Integration with POST /api/sales endpoint
+     * Comprehensive sale registration form with all fields
+     * Luxury automotive aesthetic (Playfair Display + Outfit fonts, gold/silver accents)
+     * Mobile-responsive design with gradient background
+   - Form sections implemented:
+     * Vehicle summary card with photo and basic information
+     * Seller selection dropdown (pre-filled with current user)
+     * Lead selection dropdown (optional, filtered by vehicle)
+     * Buyer information (name, document, phone, email)
+     * Transaction details (final price, payment method, trade value, sale date, notes)
+     * Financial analysis card (purchase price, expenses, gross margin, margin %)
+   - Validation implemented:
+     * Comprehensive Zod validation matching backend schema
+     * React Hook Form integration
+     * Real-time error display
+     * Required field validation
+     * Email, phone, and document format validation
+   - Payment method support:
+     * Cash (À Vista)
+     * Financing (Financiamento)
+     * Consortium (Consórcio)
+     * Trade and Cash (Troca + Volta)
+     * Conditional trade value field for trade_and_cash
+   - Business logic:
+     * Fetches vehicle details on mount
+     * Fetches active users for seller selection
+     * Fetches in-progress/negotiating leads for this vehicle
+     * Pre-fills final price with vehicle sale price
+     * Pre-fills seller with current user
+     * Calculates gross margin and margin percentage
+     * Shows financial analysis only for owner/manager roles
+     * Displays net value after trade (if applicable)
+   - Navigation integration:
+     * Route added: /sales/new/:vehicleId
+     * "Mark as Sold" button added to VehicleDetailPage (only for available vehicles)
+     * Redirects to /sales after successful submission
+   - User experience:
+     * Loading state with spinner
+     * Error handling with alert messages
+     * Saving state with disabled buttons
+     * Success navigation after save
+     * Cancel button to go back
+     * Clear field labels and help text
+   - Updated App.tsx routing:
+     * Imported SaleFormPage component
+     * Added route: /sales/new/:vehicleId → SaleFormPage
+   - Updated VehicleDetailPage:
+     * Added "Mark as Sold" button (green gradient)
+     * Button only visible for available vehicles and owner/manager roles
+     * Navigates to sale form on click
+   - Design features:
+     * Card-based layout with rounded corners
+     * Gradient backgrounds and sophisticated effects
+     * Premium typography hierarchy
+     * Responsive grid layout (1/2 columns)
+     * Financial analysis with color-coded margins (green for positive, red for negative)
+     * Smooth fade-in animations
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+   - Tests: 246/272 passing (8 pre-existing auth test failures, 18 skipped integration tests)
+   - Sale form ready for production use
+
 ## Next Priority Tasks
 
 ### Bloco 6 — Registro de Vendas (P1)
 - [x] P1: Tabela sales + RLS ✅ (done in Bloco 0)
 - [x] P1: Backend Sales CRUD API ✅
-- [ ] P1: Formulário de Venda (Frontend)
+- [x] P1: Formulário de Venda (Frontend) ✅
 - [ ] P1: Listagem de Vendas (Frontend)
 

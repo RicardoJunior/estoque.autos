@@ -16,6 +16,7 @@ import LeadListPage from '@/pages/LeadListPage';
 import LeadDetailPage from '@/pages/LeadDetailPage';
 import { UserListPage } from '@/pages/UserListPage';
 import { UserFormPage } from '@/pages/UserFormPage';
+import SaleFormPage from '@/pages/SaleFormPage';
 import { ToastProvider } from '@/components/organisms/ToastContainer';
 import { useRealtimeLeads } from '@/hooks/useRealtimeLeads';
 
@@ -48,6 +49,7 @@ function AppContent() {
         <Route path="/users/new" element={<UserFormPage />} />
         <Route path="/users/:id/edit" element={<UserFormPage />} />
         <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
+        <Route path="/sales/new/:vehicleId" element={<SaleFormPage />} />
         <Route path="/financial" element={<div>Financial Page (TODO)</div>} />
         <Route path="/integrations" element={<div>Integrations Page (TODO)</div>} />
         <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
