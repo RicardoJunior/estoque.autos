@@ -20,6 +20,7 @@ import SaleFormPage from '@/pages/SaleFormPage';
 import SaleListPage from '@/pages/SaleListPage';
 import FinancialDashboardPage from '@/pages/FinancialDashboardPage';
 import CashFlowPage from '@/pages/CashFlowPage';
+import MarginReportPage from '@/pages/MarginReportPage';
 import { ToastProvider } from '@/components/organisms/ToastContainer';
 import { useRealtimeLeads } from '@/hooks/useRealtimeLeads';
 
@@ -55,6 +56,7 @@ function AppContent() {
         <Route path="/sales/new/:vehicleId" element={<SaleFormPage />} />
         <Route path="/financial" element={<FinancialDashboardPage />} />
         <Route path="/cash-flow" element={<CashFlowPage />} />
+        <Route path="/margin-report" element={<MarginReportPage />} />
         <Route path="/integrations" element={<div>Integrations Page (TODO)</div>} />
         <Route path="/landing-page/template" element={<TemplateSettingsPage />} />
         <Route path="/landing-page/colors" element={<ColorCustomizationPage />} />

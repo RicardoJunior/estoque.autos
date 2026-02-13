@@ -1698,6 +1698,72 @@ Implementation in progress for financial management features
    - All tests passing: 283/301 (18 skipped integration tests) ✅
    - Automatic cash flow entries feature COMPLETE ✅
 
+34. ✅ Margin Report (Bloco 7 - P2)
+   - Created backend margin report controller (src/controllers/financialController.ts):
+     * GET /api/financial/margin-report endpoint with comprehensive filtering
+     * Query parameters validation (start_date, end_date, sort_by, sort_order)
+     * Sort options: gross_margin, margin_percentage, sold_at, final_price
+     * Default date range: last 30 days
+   - Business logic implemented:
+     * Fetch all sales with vehicle and seller details
+     * Calculate margin percentage for each sale
+     * Calculate total cost (purchase_price + expenses)
+     * Summary statistics (total sales, revenue, cost, margin)
+     * Average margin and margin percentage
+     * Best and worst margin identification
+     * Manual sort by margin percentage (calculated field)
+   - Created margin report routes (src/routes/financialRoutes.ts):
+     * Added /margin-report endpoint
+     * Restricted to owner/manager roles
+     * All routes require authentication
+   - Created frontend types (src/types/index.ts):
+     * MarginReportSale interface with vehicle and seller data
+     * MarginReportSummary interface with statistics
+     * MarginReportData interface for complete response
+   - Created MarginReportPage component (src/pages/MarginReportPage.tsx):
+     * Integration with GET /api/financial/margin-report endpoint
+     * Date range filters (start date, end date)
+     * Sorting controls (sort by, sort order)
+     * Summary cards section:
+       - Total sales count (blue card)
+       - Total revenue (green card)
+       - Total margin with average percentage (amber card)
+       - Average margin per sale (purple card)
+     * Best and worst margin cards:
+       - Best margin (green border) with vehicle name and percentage
+       - Worst margin (red border) with vehicle name and percentage
+     * Detailed sales table:
+       - Vehicle photo, brand, model, version, year
+       - Seller attribution
+       - Sale date
+       - Total cost breakdown
+       - Final price
+       - Gross margin (color-coded green/red)
+       - Margin percentage with color indicators (green >15%, yellow >10%, red <10%)
+     * Empty state for no sales in period
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Gradient background (slate-50 to white)
+     * Card-based layout with rounded corners
+     * Color-coded KPI cards with gradients
+     * Smooth animations and transitions
+     * Luxury automotive aesthetic consistent with brand
+     * Mobile-first responsive design
+   - Updated App.tsx routing:
+     * Imported MarginReportPage component
+     * Added route: /margin-report → MarginReportPage
+     * Protected route within DashboardLayout
+   - Updated Sidebar navigation:
+     * Added "Relatório de Margem" to Financeiro submenu
+     * Path: /margin-report
+     * Icon: 📈
+     * Owner/manager only access
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Frontend builds successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Margin report ready for production use
+
 ## Next Priority Tasks
 
 ### Bloco 7 — Financeiro e Fluxo de Caixa (P2) - IN PROGRESS
@@ -1705,6 +1771,6 @@ Implementation in progress for financial management features
 - [x] P2: Lançamentos Automáticos ✅
 - [x] P2: Lançamentos Manuais ✅
 - [x] P2: Dashboard Financeiro ✅
-- [ ] P2: Relatório de Margem
+- [x] P2: Relatório de Margem ✅
 - [ ] P2: Relatório de Giro
 

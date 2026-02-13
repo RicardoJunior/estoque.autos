@@ -226,6 +226,59 @@ export interface DashboardData {
   }>;
 }
 
+// Margin Report types
+export interface MarginReportSale {
+  id: string;
+  sold_at: string;
+  final_price: number;
+  gross_margin: number;
+  margin_percentage: number;
+  total_cost: number;
+  vehicle: {
+    id: string;
+    brand: string;
+    model: string;
+    version?: string;
+    year_model: number;
+    purchase_price: number;
+    total_expenses: number;
+    photo?: string | null;
+  } | null;
+  seller: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
+}
+
+export interface MarginReportSummary {
+  total_sales: number;
+  total_revenue: number;
+  total_cost: number;
+  total_margin: number;
+  average_margin: number;
+  average_margin_percentage: number;
+  best_margin: {
+    vehicle: string;
+    margin: number;
+    percentage: number;
+  } | null;
+  worst_margin: {
+    vehicle: string;
+    margin: number;
+    percentage: number;
+  } | null;
+}
+
+export interface MarginReportData {
+  period: {
+    start: string;
+    end: string;
+  };
+  summary: MarginReportSummary;
+  sales: MarginReportSale[];
+}
+
 // Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;

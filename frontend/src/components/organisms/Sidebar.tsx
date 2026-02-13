@@ -33,6 +33,12 @@ const navItems: NavItem[] = [
         icon: '💵',
         roles: ['owner', 'manager'],
       },
+      {
+        name: 'Relatório de Margem',
+        path: '/margin-report',
+        icon: '📈',
+        roles: ['owner', 'manager'],
+      },
     ],
   },
   { name: 'Integrações', path: '/integrations', icon: '🔗', roles: ['owner', 'manager'] },

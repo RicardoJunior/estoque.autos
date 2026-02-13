@@ -12,6 +12,19 @@ const dashboardQuerySchema = z.object({
     .optional(), // Format: YYYY-MM
 });
 
+const marginReportQuerySchema = z.object({
+  start_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(), // Format: YYYY-MM-DD
+  end_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(), // Format: YYYY-MM-DD
+  sort_by: z.enum(['gross_margin', 'margin_percentage', 'sold_at', 'final_price']).optional(),
+  sort_order: z.enum(['asc', 'desc']).optional(),
+});
+
 /**
  * GET /api/financial/dashboard
  * Get financial dashboard KPIs for current month or specified month
@@ -182,6 +195,182 @@ export const getDashboard = async (req: AuthRequest, res: Response, next: NextFu
       monthlyEvolution: monthlyEvolutionData,
       topVehicles: topVehicles || [],
       staleVehicles: staleVehicles || [],
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/financial/margin-report
+ * Get detailed margin report for all sold vehicles
+ */
+export const getMarginReport = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError(401, 'Authentication required');
+    }
+
+    const {
+      start_date,
+      end_date,
+      sort_by = 'sold_at',
+      sort_order = 'desc',
+    } = marginReportQuerySchema.parse(req.query);
+
+    const tenantId = req.user.tenant_id;
+
+    // Default to last 30 days if no dates provided
+    const endDate = end_date || new Date().toISOString().split('T')[0];
+    const startDate =
+      start_date ||
+      (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 30);
+        return date.toISOString().split('T')[0];
+      })();
+
+    // Fetch all sales with vehicle details
+    let query = supabaseAdmin
+      .from('sales')
+      .select(
+        `
+        id,
+        final_price,
+        gross_margin,
+        sold_at,
+        vehicles (
+          id,
+          brand,
+          model,
+          version,
+          year_model,
+          purchase_price,
+          expenses,
+          photos
+        ),
+        users!sales_seller_id_fkey (
+          id,
+          name,
+          email
+        )
+      `
+      )
+      .eq('tenant_id', tenantId)
+      .gte('sold_at', startDate)
+      .lte('sold_at', endDate + 'T23:59:59');
+
+    // Apply sorting
+    const sortColumn = sort_by === 'margin_percentage' ? 'gross_margin' : sort_by;
+    query = query.order(sortColumn, { ascending: sort_order === 'asc' });
+
+    const { data: salesData, error: salesError } = await query;
+
+    if (salesError) {
+      throw new AppError(500, 'Error fetching sales data');
+    }
+
+    // Calculate margin percentage and format data
+    const salesWithMargin = (salesData || []).map((sale: any) => {
+      const vehicle = sale.vehicles;
+      const seller = sale.users;
+
+      // Calculate total expenses
+      const expenses = (vehicle?.expenses as Array<{ description: string; amount: number }>) || [];
+      const totalExpenses = expenses.reduce((sum, exp) => sum + (exp.amount || 0), 0);
+
+      // Calculate margin percentage
+      const marginPercentage =
+        sale.final_price > 0 ? ((sale.gross_margin || 0) / sale.final_price) * 100 : 0;
+
+      // Calculate cost (purchase price + expenses)
+      const totalCost = (vehicle?.purchase_price || 0) + totalExpenses;
+
+      return {
+        id: sale.id,
+        sold_at: sale.sold_at,
+        final_price: sale.final_price,
+        gross_margin: sale.gross_margin,
+        margin_percentage: Math.round(marginPercentage * 100) / 100,
+        total_cost: totalCost,
+        vehicle: vehicle
+          ? {
+              id: vehicle.id,
+              brand: vehicle.brand,
+              model: vehicle.model,
+              version: vehicle.version,
+              year_model: vehicle.year_model,
+              purchase_price: vehicle.purchase_price,
+              total_expenses: totalExpenses,
+              photo: (vehicle.photos as any[])?.[0]?.url || null,
+            }
+          : null,
+        seller: seller
+          ? {
+              id: seller.id,
+              name: seller.name,
+              email: seller.email,
+            }
+          : null,
+      };
+    });
+
+    // Sort by margin percentage if requested (manual sort since it's calculated)
+    if (sort_by === 'margin_percentage') {
+      salesWithMargin.sort((a, b) => {
+        return sort_order === 'asc'
+          ? a.margin_percentage - b.margin_percentage
+          : b.margin_percentage - a.margin_percentage;
+      });
+    }
+
+    // Calculate summary statistics
+    const totalSales = salesWithMargin.length;
+    const totalRevenue = salesWithMargin.reduce((sum, sale) => sum + (sale.final_price || 0), 0);
+    const totalMargin = salesWithMargin.reduce((sum, sale) => sum + (sale.gross_margin || 0), 0);
+    const totalCost = salesWithMargin.reduce((sum, sale) => sum + (sale.total_cost || 0), 0);
+    const averageMargin = totalSales > 0 ? totalMargin / totalSales : 0;
+    const averageMarginPercentage = totalRevenue > 0 ? (totalMargin / totalRevenue) * 100 : 0;
+
+    // Find best and worst margins
+    const bestMargin =
+      salesWithMargin.length > 0
+        ? salesWithMargin.reduce((max, sale) => (sale.gross_margin > max.gross_margin ? sale : max))
+        : null;
+
+    const worstMargin =
+      salesWithMargin.length > 0
+        ? salesWithMargin.reduce((min, sale) => (sale.gross_margin < min.gross_margin ? sale : min))
+        : null;
+
+    res.json({
+      period: {
+        start: startDate,
+        end: endDate,
+      },
+      summary: {
+        total_sales: totalSales,
+        total_revenue: totalRevenue,
+        total_cost: totalCost,
+        total_margin: totalMargin,
+        average_margin: Math.round(averageMargin * 100) / 100,
+        average_margin_percentage: Math.round(averageMarginPercentage * 100) / 100,
+        best_margin: bestMargin
+          ? {
+              vehicle: `${bestMargin.vehicle?.brand} ${bestMargin.vehicle?.model}`,
+              margin: bestMargin.gross_margin,
+              percentage: bestMargin.margin_percentage,
+            }
+          : null,
+        worst_margin: worstMargin
+          ? {
+              vehicle: `${worstMargin.vehicle?.brand} ${worstMargin.vehicle?.model}`,
+              margin: worstMargin.gross_margin,
+              percentage: worstMargin.margin_percentage,
+            }
+          : null,
+      },
+      sales: salesWithMargin,
     });
   } catch (error) {
     next(error);
