@@ -6,7 +6,7 @@
 import type { Request, Response } from 'express';
 import { z } from 'zod';
 import type { AuthRequest } from '../middleware/auth';
-import { createUserScopedClient } from '../config/supabase';
+import { createSupabaseClient } from '../config/supabase';
 
 // Validation schemas
 const createConfigSchema = z.object({
@@ -31,7 +31,7 @@ const testConnectionSchema = z.object({
 export const getMarketplaceConfigs = async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     const { data: configs, error } = await supabase
       .from('marketplace_configs')
@@ -57,7 +57,7 @@ export const getMarketplaceConfig = async (req: AuthRequest, res: Response): Pro
   try {
     const { id } = req.params;
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     const { data: config, error } = await supabase
       .from('marketplace_configs')
@@ -92,7 +92,7 @@ export const createMarketplaceConfig = async (req: AuthRequest, res: Response): 
     }
 
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     // Check if configuration already exists for this platform
     const { data: existing } = await supabase
@@ -148,7 +148,7 @@ export const updateMarketplaceConfig = async (req: AuthRequest, res: Response): 
     }
 
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     const { data: config, error } = await supabase
       .from('marketplace_configs')
@@ -176,7 +176,7 @@ export const deleteMarketplaceConfig = async (req: AuthRequest, res: Response): 
   try {
     const { id } = req.params;
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     const { error } = await supabase
       .from('marketplace_configs')
@@ -256,7 +256,7 @@ export const getMarketplaceLogs = async (req: AuthRequest, res: Response): Promi
   try {
     const { vehicleId } = req.params;
     const tenantId = req.user?.tenant_id;
-    const supabase = createUserScopedClient(req.access_token!);
+    const supabase = createSupabaseClient(req.user!.access_token);
 
     // Verify vehicle belongs to tenant
     const { data: vehicle } = await supabase

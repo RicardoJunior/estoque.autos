@@ -49,6 +49,10 @@ const vehicleSchema = z.object({
     .optional(),
   sale_price: z.number().min(0, 'Preço de venda é obrigatório'),
   max_discount: z.number().min(0).optional(),
+
+  // Marketplace Publishing
+  marketplaces: z.array(z.enum(['webmotors', 'olx', 'icarros', 'mercado_livre'])).optional(),
+  featured: z.boolean().optional(),
 });
 
 type VehicleFormData = z.infer<typeof vehicleSchema>;
@@ -63,6 +67,7 @@ const STEPS = [
   { id: 1, label: 'Informações Básicas', description: 'Marca, modelo e ano' },
   { id: 2, label: 'Detalhes Técnicos', description: 'Motor e opcionais' },
   { id: 3, label: 'Dados Financeiros', description: 'Preços e margem' },
+  { id: 4, label: 'Publicação', description: 'Marketplaces e divulgação' },
 ];
 
 const OPTIONALS = [
@@ -94,6 +99,8 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
   const [selectedOptionals, setSelectedOptionals] = useState<string[]>(
     initialData?.optionals || []
   );
+  const [selectedMarketplaces, setSelectedMarketplaces] = useState<string[]>([]);
+  const [isFeatured, setIsFeatured] = useState(false);
 
   const {
     register,
@@ -138,9 +145,25 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
     setValue('optionals', selectedOptionals);
   }, [selectedOptionals, setValue]);
 
+  // Update marketplaces in form data
+  useEffect(() => {
+    setValue('marketplaces', selectedMarketplaces as any);
+  }, [selectedMarketplaces, setValue]);
+
+  // Update featured in form data
+  useEffect(() => {
+    setValue('featured', isFeatured);
+  }, [isFeatured, setValue]);
+
   const handleOptionalToggle = (optional: string) => {
     setSelectedOptionals((prev) =>
       prev.includes(optional) ? prev.filter((o) => o !== optional) : [...prev, optional]
+    );
+  };
+
+  const handleMarketplaceToggle = (marketplace: string) => {
+    setSelectedMarketplaces((prev) =>
+      prev.includes(marketplace) ? prev.filter((m) => m !== marketplace) : [...prev, marketplace]
     );
   };
 
@@ -149,6 +172,8 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
       ...data,
       expenses,
       optionals: selectedOptionals,
+      marketplaces: selectedMarketplaces as any,
+      featured: isFeatured,
     });
   };
 
@@ -622,6 +647,154 @@ export const VehicleForm: React.FC<VehicleFormProps> = ({
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Marketplace Publishing */}
+          {currentStep === 4 && (
+            <div className="form-step">
+              <h2 className="form-section-title">Publicação e Divulgação</h2>
+
+              <div className="mb-8">
+                <div className="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg
+                        className="h-5 w-5 text-blue-400"
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-blue-700">
+                        Selecione em quais marketplaces deseja publicar este veículo. Certifique-se
+                        de ter configurado as credenciais de cada marketplace antes.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mb-6">
+                  <label className="flex items-center space-x-3 p-4 border-2 border-amber-300 bg-amber-50 rounded-lg cursor-pointer hover:bg-amber-100 transition-colors">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-warning"
+                      checked={isFeatured}
+                      onChange={(e) => setIsFeatured(e.target.checked)}
+                    />
+                    <div>
+                      <div className="font-semibold text-amber-900 flex items-center">
+                        <span className="text-xl mr-2">⭐</span>
+                        Veículo em Destaque
+                      </div>
+                      <div className="text-sm text-amber-700">
+                        Exibir este veículo na seção de destaques da landing page
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Marketplaces Integrados
+                  </h3>
+
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={selectedMarketplaces.includes('webmotors')}
+                      onChange={() => handleMarketplaceToggle('webmotors')}
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">Webmotors</div>
+                      <div className="text-sm text-gray-600">
+                        Maior portal de veículos do Brasil
+                      </div>
+                    </div>
+                    <span className="badge badge-primary">Recomendado</span>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={selectedMarketplaces.includes('olx')}
+                      onChange={() => handleMarketplaceToggle('olx')}
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">OLX / ZAP Imóveis</div>
+                      <div className="text-sm text-gray-600">
+                        Plataforma de classificados com grande alcance
+                      </div>
+                    </div>
+                    <span className="badge badge-primary">Recomendado</span>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={selectedMarketplaces.includes('icarros')}
+                      onChange={() => handleMarketplaceToggle('icarros')}
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">iCarros</div>
+                      <div className="text-sm text-gray-600">Portal especializado em veículos</div>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center space-x-3 p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                    <input
+                      type="checkbox"
+                      className="checkbox checkbox-primary"
+                      checked={selectedMarketplaces.includes('mercado_livre')}
+                      onChange={() => handleMarketplaceToggle('mercado_livre')}
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900">Mercado Livre</div>
+                      <div className="text-sm text-gray-600">
+                        Maior marketplace da América Latina
+                      </div>
+                    </div>
+                  </label>
+                </div>
+
+                {selectedMarketplaces.length > 0 && (
+                  <div className="mt-6 p-4 bg-green-50 border-l-4 border-green-400 rounded-lg">
+                    <div className="flex">
+                      <div className="flex-shrink-0">
+                        <svg
+                          className="h-5 w-5 text-green-400"
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm text-green-700">
+                          <span className="font-semibold">{selectedMarketplaces.length}</span>{' '}
+                          marketplace(s) selecionado(s). O veículo será publicado automaticamente
+                          após o salvamento.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

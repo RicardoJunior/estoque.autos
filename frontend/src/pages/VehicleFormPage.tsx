@@ -17,7 +17,6 @@ export const VehicleFormPage: React.FC = () => {
       const response = await api.post<{ vehicle: Vehicle }>('/vehicles', {
         ...data,
         status: 'available',
-        featured: false,
       });
 
       console.log('Vehicle created:', response.data.vehicle);

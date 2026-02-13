@@ -34,6 +34,7 @@ const createVehicleSchema = z.object({
   max_discount: z.number().min(0).optional(),
   status: z.enum(['available', 'reserved', 'sold', 'inactive']).default('available'),
   featured: z.boolean().default(false),
+  marketplaces: z.array(z.enum(['webmotors', 'olx', 'icarros', 'mercado_livre'])).optional(),
   photos: z
     .array(
       z.object({
