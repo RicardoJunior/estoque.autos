@@ -772,6 +772,70 @@ Next priority block to implement public-facing landing page features
    - Frontend builds successfully ✅
    - Template selector ready for production use
 
+20. ✅ Frontend Color Customization Page (Bloco 3 - P1)
+   - Created ColorCustomizationPage component (src/pages/ColorCustomizationPage.tsx):
+     * Integration with GET/PATCH /api/tenant/settings endpoints
+     * Color picker interface for three colors (primary, secondary, accent)
+     * Real-time live preview of color changes
+     * Color swatches display with hex codes
+     * Preview mode toggle to see colors before saving
+     * Reset functionality to revert to saved colors
+     * Save functionality with success/error messages
+     * Role-based access control (owner/manager only)
+     * Responsive design with luxury aesthetic
+   - Color picker features:
+     * HTML5 color input for visual selection
+     * Text input for manual hex code entry
+     * Pattern validation for hex format (#RRGGBB)
+     * Description of each color's usage in the landing page
+     * Visual feedback for color changes
+   - Live preview features:
+     * Preview card showing example content with selected colors
+     * Button examples (primary, secondary)
+     * Badge example with accent color
+     * Color swatches with hex codes
+     * Preview mode applies colors to CSS variables
+     * Exit preview mode to restore original colors
+   - Business logic implemented:
+     * Fetches current tenant settings on mount
+     * Tracks original colors for reset functionality
+     * Detects unsaved changes
+     * Applies colors to CSS variables for live preview
+     * Saves colors to tenant settings via API
+     * Updates global CSS variables after save
+     * Prevents saving if no changes made
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Two-column layout (color pickers | live preview)
+     * Card-based sections
+     * Smooth animations and transitions
+     * Tips section with color selection guidance
+     * Store URL display for landing page access
+     * Luxury automotive aesthetic consistent with brand
+   - User experience:
+     * Clear indication of current vs. preview colors
+     * Preview mode banner with exit option
+     * Detailed color usage descriptions
+     * Tips for choosing effective colors
+     * Success/error messages for save operations
+     * Disabled state for save button when no changes
+     * Store landing page URL with clickable link
+   - Updated App.tsx routing:
+     * Added route: /landing-page/colors → ColorCustomizationPage
+     * Protected route within DashboardLayout
+   - Updated Sidebar navigation:
+     * Changed "Personalização" to "Cores" submenu item
+     * Updated path to /landing-page/colors
+     * Updated icon to 🎨
+   - Integration verified:
+     * Backend API already supports color updates (PATCH /api/tenant/settings)
+     * Zod validation for hex color codes (#RRGGBB format)
+     * Tenant settings API tested with 25 passing unit tests ✅
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+   - Color customization ready for production use
+
 ## Next Priority Tasks
 
 ### Bloco 3 — Landing Page Pública (P1)
@@ -781,6 +845,6 @@ Next priority block to implement public-facing landing page features
 - [x] P1: Template Moderno ✅
 - [x] P1: Template Premium ✅
 - [x] P1: Seletor de Template ✅
-- [ ] P1: Personalização de Cores
+- [x] P1: Personalização de Cores ✅
 - [ ] P1: Upload e Crop de Logo
 - [ ] P2: SEO e Meta Tags

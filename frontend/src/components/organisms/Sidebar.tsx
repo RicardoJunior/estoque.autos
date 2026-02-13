@@ -30,9 +30,9 @@ const navItems: NavItem[] = [
         roles: ['owner', 'manager'],
       },
       {
-        name: 'Personalização',
-        path: '/landing-page/customization',
-        icon: '✨',
+        name: 'Cores',
+        path: '/landing-page/colors',
+        icon: '🎨',
         roles: ['owner', 'manager'],
       },
       { name: 'Logo', path: '/landing-page/logo', icon: '🖼️', roles: ['owner', 'manager'] },
