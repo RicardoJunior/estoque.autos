@@ -1764,13 +1764,95 @@ Implementation in progress for financial management features
    - All tests passing: 283/301 (18 skipped integration tests) ✅
    - Margin report ready for production use
 
+35. ✅ Inventory Turnover Report (Bloco 7 - P2)
+   - Created backend turnover report controller (src/controllers/financialController.ts):
+     * GET /api/financial/turnover-report endpoint with comprehensive filtering
+     * Query parameters validation (start_date, end_date, min_days)
+     * Default date range: last 90 days
+   - Business logic implemented:
+     * Fetch all sold vehicles in period with days in stock calculation
+     * Fetch current inventory (available + reserved) with days in stock
+     * Calculate average days to sell from sold vehicles
+     * Calculate turnover rate (vehicles sold per month)
+     * Identify fastest and slowest sales in period
+     * Count stale vehicles (> 60 days)
+     * Count critical vehicles (> 90 days)
+     * Filter by minimum days in stock (optional)
+   - Response format:
+     * Summary statistics (average_days_to_sell, turnover_rate, stale/critical counts, fastest/slowest sale)
+     * Sold vehicles list with days in stock, final price, margin
+     * Current inventory list with days in stock, status
+   - Updated financial routes (src/routes/financialRoutes.ts):
+     * Added /turnover-report endpoint
+     * Restricted to owner/manager roles
+     * All routes require authentication
+   - Created frontend types (src/types/index.ts):
+     * TurnoverVehicle interface with all vehicle data
+     * TurnoverReportSummary interface with statistics
+     * TurnoverReportData interface for complete response
+   - Created TurnoverReportPage component (src/pages/TurnoverReportPage.tsx):
+     * Integration with GET /api/financial/turnover-report endpoint
+     * Date range filters (start date, end date)
+     * Min days filter (optional)
+     * Summary cards section:
+       - Average days to sell (blue card)
+       - Turnover rate (green card)
+       - Stale vehicles count > 60 days (amber card)
+       - Critical vehicles count > 90 days (red card)
+     * Best and worst sale times cards:
+       - Fastest sale (green border) with vehicle name and days
+       - Slowest sale (red border) with vehicle name and days
+     * Tabbed interface:
+       - Current Inventory tab with all vehicles in stock
+       - Sold Vehicles tab with all vehicles sold in period
+     * Current inventory table:
+       - Vehicle photo, brand, model, version, year
+       - Entry date (created_at)
+       - Days in stock with color-coded badges (green < 30, yellow < 60, amber < 90, red > 90)
+       - Status badge (available/reserved)
+       - Navigate to vehicle detail button
+     * Sold vehicles table:
+       - Vehicle photo, brand, model, version, year
+       - Entry date and sale date
+       - Days in stock with color indicators
+       - Final price and gross margin
+     * Empty states for both tabs
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Gradient background (slate-50 to white)
+     * Card-based layout with rounded corners
+     * Color-coded KPI cards with gradients
+     * Color-coded days badges (green/yellow/amber/red based on thresholds)
+     * Smooth animations and transitions
+     * Luxury automotive aesthetic consistent with brand
+     * Mobile-first responsive design
+   - Updated App.tsx routing:
+     * Imported TurnoverReportPage component
+     * Added route: /turnover-report → TurnoverReportPage
+     * Protected route within DashboardLayout
+   - Updated Sidebar navigation:
+     * Added "Relatório de Giro" to Financeiro submenu
+     * Path: /turnover-report
+     * Icon: 🔄
+     * Owner/manager only access
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Frontend builds successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Turnover report ready for production use
+
 ## Next Priority Tasks
 
-### Bloco 7 — Financeiro e Fluxo de Caixa (P2) - IN PROGRESS
+### Bloco 7 — Financeiro e Fluxo de Caixa (P2) - COMPLETE ✅
+All P2 tasks for financial management are complete!
 - [x] P2: Tabela cash_flow + RLS ✅ (done in Bloco 0)
 - [x] P2: Lançamentos Automáticos ✅
 - [x] P2: Lançamentos Manuais ✅
 - [x] P2: Dashboard Financeiro ✅
 - [x] P2: Relatório de Margem ✅
-- [ ] P2: Relatório de Giro
+- [x] P2: Relatório de Giro ✅
+
+### Bloco 8 — Integrações com Marketplaces (P2)
+Next priority block to implement marketplace integrations
+Note: This is a complex module requiring external APIs. Should be implemented one integration at a time.
 

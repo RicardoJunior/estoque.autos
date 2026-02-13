@@ -25,6 +25,18 @@ const marginReportQuerySchema = z.object({
   sort_order: z.enum(['asc', 'desc']).optional(),
 });
 
+const turnoverReportQuerySchema = z.object({
+  start_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(), // Format: YYYY-MM-DD
+  end_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(), // Format: YYYY-MM-DD
+  min_days: z.coerce.number().min(0).optional(), // Filter vehicles with min days in stock
+});
+
 /**
  * GET /api/financial/dashboard
  * Get financial dashboard KPIs for current month or specified month
@@ -371,6 +383,195 @@ export const getMarginReport = async (req: AuthRequest, res: Response, next: Nex
           : null,
       },
       sales: salesWithMargin,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/financial/turnover-report
+ * Get inventory turnover report showing how long vehicles stay in stock
+ */
+export const getTurnoverReport = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (!req.user) {
+      throw new AppError(401, 'Authentication required');
+    }
+
+    const { start_date, end_date, min_days } = turnoverReportQuerySchema.parse(req.query);
+
+    const tenantId = req.user.tenant_id;
+
+    // Default to last 90 days if no dates provided
+    const endDate = end_date || new Date().toISOString().split('T')[0];
+    const startDate =
+      start_date ||
+      (() => {
+        const date = new Date();
+        date.setDate(date.getDate() - 90);
+        return date.toISOString().split('T')[0];
+      })();
+
+    // 1. Fetch all sold vehicles in the period with created_at (entry date)
+    const { data: soldVehicles, error: soldError } = await supabaseAdmin
+      .from('sales')
+      .select(
+        `
+        id,
+        sold_at,
+        final_price,
+        gross_margin,
+        vehicles (
+          id,
+          brand,
+          model,
+          version,
+          year_model,
+          created_at,
+          photos
+        )
+      `
+      )
+      .eq('tenant_id', tenantId)
+      .gte('sold_at', startDate)
+      .lte('sold_at', endDate + 'T23:59:59');
+
+    if (soldError) {
+      throw new AppError(500, 'Error fetching sold vehicles data');
+    }
+
+    // Calculate days in stock for sold vehicles
+    const soldVehiclesWithDays = (soldVehicles || []).map((sale: any) => {
+      const vehicle = sale.vehicles;
+      const createdAt = new Date(vehicle?.created_at);
+      const soldAt = new Date(sale.sold_at);
+      const daysInStock = Math.floor(
+        (soldAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      return {
+        id: vehicle?.id,
+        brand: vehicle?.brand,
+        model: vehicle?.model,
+        version: vehicle?.version,
+        year_model: vehicle?.year_model,
+        photo: (vehicle?.photos as any[])?.[0]?.url || null,
+        created_at: vehicle?.created_at,
+        sold_at: sale.sold_at,
+        days_in_stock: daysInStock,
+        final_price: sale.final_price,
+        gross_margin: sale.gross_margin,
+        status: 'sold' as const,
+      };
+    });
+
+    // 2. Fetch currently available/reserved vehicles (still in stock)
+    const { data: currentInventory, error: inventoryError } = await supabaseAdmin
+      .from('vehicles')
+      .select('id, brand, model, version, year_model, created_at, photos, sale_price, status')
+      .eq('tenant_id', tenantId)
+      .in('status', ['available', 'reserved']);
+
+    if (inventoryError) {
+      throw new AppError(500, 'Error fetching current inventory data');
+    }
+
+    // Calculate days in stock for current inventory
+    const currentInventoryWithDays = (currentInventory || []).map((vehicle: any) => {
+      const createdAt = new Date(vehicle.created_at);
+      const today = new Date();
+      const daysInStock = Math.floor(
+        (today.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24)
+      );
+
+      return {
+        id: vehicle.id,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        version: vehicle.version,
+        year_model: vehicle.year_model,
+        photo: (vehicle.photos as any[])?.[0]?.url || null,
+        created_at: vehicle.created_at,
+        sold_at: null,
+        days_in_stock: daysInStock,
+        final_price: null,
+        gross_margin: null,
+        status: vehicle.status,
+      };
+    });
+
+    // Filter by min_days if provided
+    let filteredSoldVehicles = soldVehiclesWithDays;
+    let filteredCurrentInventory = currentInventoryWithDays;
+
+    if (min_days !== undefined) {
+      filteredSoldVehicles = soldVehiclesWithDays.filter((v) => v.days_in_stock >= min_days);
+      filteredCurrentInventory = currentInventoryWithDays.filter(
+        (v) => v.days_in_stock >= min_days
+      );
+    }
+
+    // 3. Calculate statistics
+    const allSoldDays = soldVehiclesWithDays.map((v) => v.days_in_stock);
+    const averageDaysToSell =
+      allSoldDays.length > 0
+        ? Math.round(allSoldDays.reduce((sum, days) => sum + days, 0) / allSoldDays.length)
+        : 0;
+
+    const fastestSale =
+      soldVehiclesWithDays.length > 0
+        ? soldVehiclesWithDays.reduce((min, v) => (v.days_in_stock < min.days_in_stock ? v : min))
+        : null;
+
+    const slowestSale =
+      soldVehiclesWithDays.length > 0
+        ? soldVehiclesWithDays.reduce((max, v) => (v.days_in_stock > max.days_in_stock ? v : max))
+        : null;
+
+    // Vehicles in stock > 60 days
+    const staleVehiclesCount = currentInventoryWithDays.filter((v) => v.days_in_stock > 60).length;
+
+    // Vehicles in stock > 90 days (critical)
+    const criticalVehiclesCount = currentInventoryWithDays.filter(
+      (v) => v.days_in_stock > 90
+    ).length;
+
+    // Calculate turnover rate (vehicles sold per month)
+    const periodDays = Math.floor(
+      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
+    );
+    const periodMonths = periodDays / 30;
+    const turnoverRate =
+      periodMonths > 0 ? Math.round((soldVehiclesWithDays.length / periodMonths) * 100) / 100 : 0;
+
+    res.json({
+      period: {
+        start: startDate,
+        end: endDate,
+      },
+      summary: {
+        average_days_to_sell: averageDaysToSell,
+        total_sold_in_period: soldVehiclesWithDays.length,
+        current_inventory_count: currentInventoryWithDays.length,
+        stale_vehicles_count: staleVehiclesCount, // > 60 days
+        critical_vehicles_count: criticalVehiclesCount, // > 90 days
+        turnover_rate: turnoverRate, // vehicles sold per month
+        fastest_sale: fastestSale
+          ? {
+              vehicle: `${fastestSale.brand} ${fastestSale.model} ${fastestSale.version}`,
+              days: fastestSale.days_in_stock,
+            }
+          : null,
+        slowest_sale: slowestSale
+          ? {
+              vehicle: `${slowestSale.brand} ${slowestSale.model} ${slowestSale.version}`,
+              days: slowestSale.days_in_stock,
+            }
+          : null,
+      },
+      sold_vehicles: filteredSoldVehicles,
+      current_inventory: filteredCurrentInventory,
     });
   } catch (error) {
     next(error);

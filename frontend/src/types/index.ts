@@ -279,6 +279,49 @@ export interface MarginReportData {
   sales: MarginReportSale[];
 }
 
+// Turnover Report Types
+export interface TurnoverVehicle {
+  id: string;
+  brand: string;
+  model: string;
+  version: string;
+  year_model: number;
+  photo: string | null;
+  created_at: string;
+  sold_at: string | null;
+  days_in_stock: number;
+  final_price: number | null;
+  gross_margin: number | null;
+  status: 'sold' | 'available' | 'reserved';
+}
+
+export interface TurnoverReportSummary {
+  average_days_to_sell: number;
+  total_sold_in_period: number;
+  current_inventory_count: number;
+  stale_vehicles_count: number; // > 60 days
+  critical_vehicles_count: number; // > 90 days
+  turnover_rate: number; // vehicles sold per month
+  fastest_sale: {
+    vehicle: string;
+    days: number;
+  } | null;
+  slowest_sale: {
+    vehicle: string;
+    days: number;
+  } | null;
+}
+
+export interface TurnoverReportData {
+  period: {
+    start: string;
+    end: string;
+  };
+  summary: TurnoverReportSummary;
+  sold_vehicles: TurnoverVehicle[];
+  current_inventory: TurnoverVehicle[];
+}
+
 // Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;
