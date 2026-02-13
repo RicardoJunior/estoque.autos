@@ -1,6 +1,12 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth';
-import { getUsers, getUserById } from '../controllers/userController';
+import { authenticate, requireRole } from '../middleware/auth';
+import {
+  getUsers,
+  getUserById,
+  createUser,
+  updateUser,
+  toggleUserStatus,
+} from '../controllers/userController';
 
 const router = Router();
 
@@ -12,5 +18,14 @@ router.get('/', getUsers);
 
 // GET /api/users/:id - Get user by ID
 router.get('/:id', getUserById);
+
+// POST /api/users - Create new user (owner/manager only)
+router.post('/', requireRole('owner', 'manager'), createUser);
+
+// PUT /api/users/:id - Update user (owner/manager only)
+router.put('/:id', requireRole('owner', 'manager'), updateUser);
+
+// PATCH /api/users/:id/toggle-status - Activate/deactivate user (owner/manager only)
+router.patch('/:id/toggle-status', requireRole('owner', 'manager'), toggleUserStatus);
 
 export default router;
