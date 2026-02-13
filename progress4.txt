@@ -465,3 +465,68 @@ Next priority block to implement public-facing landing page features
    - Response format:
      * List endpoint: { store, vehicles[], pagination }
      * Detail endpoint: { store, vehicle }
+
+15. ✅ Frontend Classic Landing Page Template (Bloco 3 - P1)
+   - Created ClassicLandingTemplate component (src/components/templates/ClassicLandingTemplate.tsx):
+     * Clean, professional layout with header, grid, and footer
+     * Responsive design (mobile-first approach)
+     * Dynamic colors via CSS variables from tenant settings
+     * Store logo display with fallback initial letter
+     * Contact information in header (phone, WhatsApp)
+     * Vehicle grid with 3-column responsive layout
+     * Vehicle cards with:
+       - Image display with placeholder fallback
+       - Featured badge for highlighted vehicles
+       - Vehicle specs (year, mileage, transmission, fuel)
+       - Price display with tenant primary color
+       - "Ver Detalhes" button
+       - Hover effects with shadow and scale
+     * Empty state with illustration
+     * Footer with store information:
+       - Store address with map icon
+       - Contact information (email, phone, WhatsApp)
+       - Powered by Estoque.autos branding
+       - Copyright notice
+     * Floating WhatsApp button (bottom-right)
+     * Clean, neutral color scheme (customizable via tenant colors)
+   - Created PublicLandingPage component (src/pages/PublicLandingPage.tsx):
+     * Integration with GET /api/public/:slug/vehicles endpoint
+     * Store lookup by slug parameter from URL
+     * Loading state with spinner
+     * Error handling with 404 page for non-existent stores
+     * Vehicle click navigation to detail page
+     * Template selection based on store template_id (defaults to classic)
+     * Supports up to 50 vehicles on landing page
+   - Updated App.tsx routing:
+     * Added public route: /:slug → PublicLandingPage
+     * Route placed before auth routes to avoid conflicts
+     * Public routes accessible without authentication
+   - Design features:
+     * Tenant branding with custom colors (primary, secondary, accent)
+     * Logo support with 1:1 aspect ratio fallback
+     * WhatsApp integration with formatted links
+     * Click-to-call phone links
+     * Responsive grid (1/2/3 columns based on screen size)
+     * Clean, professional aesthetic suitable for automotive showrooms
+   - Business logic:
+     * Only displays vehicles with status 'available'
+     * No financial data exposure (purchase price, margin, etc.)
+     * Featured vehicles highlighted with badge
+     * Vehicle count display
+     * Navigation to vehicle detail page
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+   - Public vehicle API tests: 29/29 passing ✅
+
+## Next Priority Tasks
+
+### Bloco 3 — Landing Page Pública (P1)
+- [x] P1: API Pública de Veículos ✅
+- [x] P1: Template Clássico ✅
+- [ ] P1: Template Moderno
+- [ ] P1: Template Premium
+- [ ] P1: Seletor de Template
+- [ ] P1: Personalização de Cores
+- [ ] P1: Upload e Crop de Logo
+- [ ] P1: Página de Detalhe Pública
+- [ ] P1: SEO e Meta Tags

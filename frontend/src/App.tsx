@@ -7,14 +7,21 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { VehicleFormPage } from '@/pages/VehicleFormPage';
 import { VehicleListPage } from '@/pages/VehicleListPage';
 import { VehicleDetailPage } from '@/pages/VehicleDetailPage';
+import { PublicLandingPage } from '@/pages/PublicLandingPage';
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
+        <Route path="/:slug" element={<PublicLandingPage />} />
+
+        {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/onboarding" element={<OnboardingPage />} />
+
+        {/* Admin Routes */}
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
