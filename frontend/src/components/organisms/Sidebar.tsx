@@ -66,7 +66,7 @@ const navItems: NavItem[] = [
       },
     ],
   },
-  { name: 'Integrações', path: '/integrations', icon: '🔗', roles: ['owner', 'manager'] },
+  { name: 'Marketplaces', path: '/marketplace', icon: '🔗', roles: ['owner', 'manager'] },
   {
     name: 'Landing Page',
     icon: '🌐',

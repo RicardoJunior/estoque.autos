@@ -388,6 +388,30 @@ export interface SellerDashboardData {
   };
 }
 
+// Marketplace types
+export type MarketplacePlatform = 'webmotors' | 'olx' | 'icarros' | 'mercado_livre';
+
+export interface MarketplaceConfig {
+  id: string;
+  tenant_id: string;
+  platform: MarketplacePlatform;
+  credentials?: Record<string, string>;
+  is_active: boolean;
+  last_sync_at?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MarketplaceLog {
+  id: string;
+  vehicle_id: string;
+  platform: MarketplacePlatform;
+  action: 'publish' | 'update' | 'remove';
+  status: 'success' | 'error';
+  error_detail?: string;
+  created_at: string;
+}
+
 // Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;
