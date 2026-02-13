@@ -588,13 +588,70 @@ Next priority block to implement public-facing landing page features
    - Frontend builds successfully ✅
    - Backend compiles successfully with TypeScript strict mode ✅
 
+17. ✅ Frontend Modern Landing Page Template (Bloco 3 - P1)
+   - Created ModernLandingTemplate component (src/components/templates/ModernLandingTemplate.tsx):
+     * Hero section with gradient background and overlay
+     * Store logo display with fallback placeholder
+     * Integrated search functionality:
+       - Text search for brand/model
+       - Price range filter (under 50k, 50-100k, over 100k)
+       - Real-time filtering of vehicles
+     * Hero statistics display:
+       - Total vehicles available count
+       - Featured vehicles count (when applicable)
+     * Contact action buttons in hero:
+       - WhatsApp button with pre-formatted message
+       - Phone call button with click-to-call
+     * Featured vehicles section:
+       - Dedicated carousel-style grid for featured vehicles
+       - Large cards with hover overlay effects
+       - "Ver Detalhes" button on hover
+       - Star badge indicator
+       - Image with zoom effect on hover
+     * All vehicles grid section:
+       - Responsive grid (1/2/3 columns)
+       - Modern card design with icons for specs
+       - Featured badge for highlighted vehicles
+       - Hover effects with border highlight and scale
+       - Detailed specs with SVG icons (year, mileage, transmission, fuel)
+     * Empty state with clear filters button
+     * Modern footer with three-column layout:
+       - About section with store info and address
+       - Contact section with phone, email, WhatsApp links
+       - Hours of operation section
+       - Powered by Estoque.autos branding
+     * Floating WhatsApp button (bottom-right)
+   - Design features:
+     * Bold, modern aesthetic with gradient hero
+     * Dynamic tenant color scheme via CSS variables
+     * Smooth animations and transitions
+     * Micro-interactions on hover
+     * Card-based layout with elevated shadows
+     * Modern typography with clean hierarchy
+     * Responsive design (mobile-first approach)
+     * Premium feel with polished UI elements
+   - Business logic:
+     * Client-side search and filtering
+     * Dynamic price range filtering
+     * Featured vehicles prioritization
+     * Vehicle count display
+     * Click-to-call and WhatsApp integration
+   - Updated PublicLandingPage component:
+     * Imported ModernLandingTemplate
+     * Added switch statement for template selection
+     * Support for template_id: 'modern' or 'classic'
+     * Default fallback to classic template
+   - TypeScript strict mode compliance ✅
+   - Frontend builds successfully ✅
+   - Modern template ready for production use
+
 ## Next Priority Tasks
 
 ### Bloco 3 — Landing Page Pública (P1)
 - [x] P1: API Pública de Veículos ✅
 - [x] P1: Template Clássico ✅
 - [x] P1: Página de Detalhe Pública ✅
-- [ ] P1: Template Moderno
+- [x] P1: Template Moderno ✅
 - [ ] P1: Template Premium
 - [ ] P1: Seletor de Template
 - [ ] P1: Personalização de Cores

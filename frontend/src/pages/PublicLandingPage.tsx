@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import type { Tenant, Vehicle } from '../types';
 import { ClassicLandingTemplate } from '../components/templates/ClassicLandingTemplate';
+import { ModernLandingTemplate } from '../components/templates/ModernLandingTemplate';
 
 interface StoreData {
   store: Tenant;
@@ -103,25 +104,25 @@ export const PublicLandingPage: React.FC = () => {
   }
 
   // Render template based on store template_id
-  // For now, we only have the classic template
   const templateId = data.store.template_id || 'classic';
 
-  if (templateId === 'classic') {
-    return (
-      <ClassicLandingTemplate
-        store={data.store}
-        vehicles={data.vehicles}
-        onVehicleClick={handleVehicleClick}
-      />
-    );
+  switch (templateId) {
+    case 'modern':
+      return (
+        <ModernLandingTemplate
+          store={data.store}
+          vehicles={data.vehicles}
+          onVehicleClick={handleVehicleClick}
+        />
+      );
+    case 'classic':
+    default:
+      return (
+        <ClassicLandingTemplate
+          store={data.store}
+          vehicles={data.vehicles}
+          onVehicleClick={handleVehicleClick}
+        />
+      );
   }
-
-  // Default fallback to classic template
-  return (
-    <ClassicLandingTemplate
-      store={data.store}
-      vehicles={data.vehicles}
-      onVehicleClick={handleVehicleClick}
-    />
-  );
 };
