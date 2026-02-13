@@ -16,7 +16,25 @@ const navItems: NavItem[] = [
   { name: 'Leads', path: '/leads', icon: '👥' },
   { name: 'Vendas', path: '/sales', icon: '💰', roles: ['owner', 'manager'] },
   { name: 'Usuários', path: '/users', icon: '👤', roles: ['owner', 'manager'] },
-  { name: 'Financeiro', path: '/financial', icon: '📈', roles: ['owner', 'manager'] },
+  {
+    name: 'Financeiro',
+    icon: '📈',
+    roles: ['owner', 'manager'],
+    children: [
+      {
+        name: 'Dashboard',
+        path: '/financial',
+        icon: '📊',
+        roles: ['owner', 'manager'],
+      },
+      {
+        name: 'Fluxo de Caixa',
+        path: '/cash-flow',
+        icon: '💵',
+        roles: ['owner', 'manager'],
+      },
+    ],
+  },
   { name: 'Integrações', path: '/integrations', icon: '🔗', roles: ['owner', 'manager'] },
   {
     name: 'Landing Page',

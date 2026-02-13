@@ -1,6 +1,34 @@
 // User roles
 export type UserRole = 'owner' | 'manager' | 'seller';
 
+// Cash flow types
+export type CashFlowType = 'income' | 'expense';
+
+export interface CashFlowEntry {
+  id: string;
+  tenant_id: string;
+  type: CashFlowType;
+  category: string;
+  description: string;
+  amount: number;
+  entry_date: string;
+  reference_id?: string;
+  reference_type?: string;
+  created_by: string;
+  created_at: string;
+  created_by_user?: {
+    id: string;
+    name: string;
+    email: string;
+  };
+}
+
+export interface CashFlowSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  balance: number;
+}
+
 // User type
 export interface User {
   id: string;
