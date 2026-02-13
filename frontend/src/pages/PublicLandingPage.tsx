@@ -5,6 +5,7 @@ import type { Tenant, Vehicle } from '../types';
 import { ClassicLandingTemplate } from '../components/templates/ClassicLandingTemplate';
 import { ModernLandingTemplate } from '../components/templates/ModernLandingTemplate';
 import { PremiumLandingTemplate } from '../components/templates/PremiumLandingTemplate';
+import { SEOHead } from '../components/atoms/SEOHead';
 
 interface StoreData {
   store: Tenant;
@@ -107,31 +108,55 @@ export const PublicLandingPage: React.FC = () => {
   // Render template based on store template_id
   const templateId = data.store.template_id || 'classic';
 
-  switch (templateId) {
-    case 'modern':
-      return (
-        <ModernLandingTemplate
-          store={data.store}
-          vehicles={data.vehicles}
-          onVehicleClick={handleVehicleClick}
-        />
-      );
-    case 'premium':
-      return (
-        <PremiumLandingTemplate
-          store={data.store}
-          vehicles={data.vehicles}
-          onVehicleClick={handleVehicleClick}
-        />
-      );
-    case 'classic':
-    default:
-      return (
-        <ClassicLandingTemplate
-          store={data.store}
-          vehicles={data.vehicles}
-          onVehicleClick={handleVehicleClick}
-        />
-      );
-  }
+  // Generate SEO metadata
+  const seoTitle = `${data.store.name} - Veículos à Venda`;
+  const seoDescription = `Confira ${data.vehicles.length} veículos disponíveis na ${data.store.name}. ${
+    data.store.address ? `Localizada em ${data.store.address}.` : ''
+  } Carros, motos e utilitários com as melhores condições.`;
+  const seoImage = data.store.logo_url || data.vehicles[0]?.photos?.[0]?.url;
+  const seoUrl = `${window.location.origin}/${slug}`;
+
+  const renderTemplate = () => {
+    switch (templateId) {
+      case 'modern':
+        return (
+          <ModernLandingTemplate
+            store={data.store}
+            vehicles={data.vehicles}
+            onVehicleClick={handleVehicleClick}
+          />
+        );
+      case 'premium':
+        return (
+          <PremiumLandingTemplate
+            store={data.store}
+            vehicles={data.vehicles}
+            onVehicleClick={handleVehicleClick}
+          />
+        );
+      case 'classic':
+      default:
+        return (
+          <ClassicLandingTemplate
+            store={data.store}
+            vehicles={data.vehicles}
+            onVehicleClick={handleVehicleClick}
+          />
+        );
+    }
+  };
+
+  return (
+    <>
+      <SEOHead
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        url={seoUrl}
+        type="website"
+        siteName={data.store.name}
+      />
+      {renderTemplate()}
+    </>
+  );
 };
