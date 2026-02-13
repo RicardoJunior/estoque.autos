@@ -17,6 +17,13 @@ const updateUserSchema = z.object({
   role: z.enum(['owner', 'manager', 'seller']).optional(),
 });
 
+const updateCommissionSchema = z.object({
+  commission_percentage: z
+    .number()
+    .min(0, 'Commission must be at least 0')
+    .max(100, 'Commission cannot exceed 100'),
+});
+
 /**
  * Get all users in the tenant
  */
@@ -33,7 +40,9 @@ export const getUsers = async (req: AuthRequest, res: Response) => {
     // Get all users in the tenant (including inactive)
     const { data: users, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, avatar_url, role, is_active, created_at')
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
       .eq('tenant_id', tenantId)
       .order('name', { ascending: true });
 
@@ -66,7 +75,9 @@ export const getUserById = async (req: AuthRequest, res: Response) => {
     // Get user by ID
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, name, email, phone, avatar_url, role, is_active, created_at')
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
       .eq('id', id)
       .eq('tenant_id', tenantId)
       .single();
@@ -139,8 +150,11 @@ export const createUser = async (req: AuthRequest, res: Response) => {
         phone: phone || null,
         role,
         is_active: true,
+        commission_percentage: 0,
       })
-      .select('id, name, email, phone, avatar_url, role, is_active, created_at')
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
       .single();
 
     if (userError) {
@@ -206,7 +220,9 @@ export const updateUser = async (req: AuthRequest, res: Response) => {
       .update(updateData)
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .select('id, name, email, phone, avatar_url, role, is_active, created_at')
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
       .single();
 
     if (error) {
@@ -264,7 +280,9 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
       .update({ is_active: newStatus })
       .eq('id', id)
       .eq('tenant_id', tenantId)
-      .select('id, name, email, phone, avatar_url, role, is_active, created_at')
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
       .single();
 
     if (error) {
@@ -278,6 +296,61 @@ export const toggleUserStatus = async (req: AuthRequest, res: Response) => {
     });
   } catch (error) {
     console.error('Error in toggleUserStatus:', error);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
+/**
+ * Update user commission percentage
+ */
+export const updateUserCommission = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const tenantId = req.user?.tenant_id;
+
+    if (!tenantId || !req.user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    // Validate input
+    const validationResult = updateCommissionSchema.safeParse(req.body);
+    if (!validationResult.success) {
+      return res.status(400).json({
+        error: 'Validation failed',
+        details: validationResult.error.errors,
+      });
+    }
+
+    const { commission_percentage } = validationResult.data;
+
+    const supabase = createSupabaseClient(req.user.access_token);
+
+    // Update commission
+    const { data: updatedUser, error } = await supabase
+      .from('users')
+      .update({ commission_percentage })
+      .eq('id', id)
+      .eq('tenant_id', tenantId)
+      .select(
+        'id, name, email, phone, avatar_url, role, is_active, commission_percentage, created_at'
+      )
+      .single();
+
+    if (error) {
+      console.error('Error updating commission:', error);
+      return res.status(500).json({ error: 'Failed to update commission' });
+    }
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    return res.json({
+      user: updatedUser,
+      message: 'Commission updated successfully',
+    });
+  } catch (error) {
+    console.error('Error in updateUserCommission:', error);
     return res.status(500).json({ error: 'Internal server error' });
   }
 };

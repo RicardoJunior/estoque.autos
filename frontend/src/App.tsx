@@ -16,6 +16,7 @@ import LeadListPage from '@/pages/LeadListPage';
 import LeadDetailPage from '@/pages/LeadDetailPage';
 import { UserListPage } from '@/pages/UserListPage';
 import { UserFormPage } from '@/pages/UserFormPage';
+import { CommissionConfigPage } from '@/pages/CommissionConfigPage';
 import SaleFormPage from '@/pages/SaleFormPage';
 import SaleListPage from '@/pages/SaleListPage';
 import FinancialDashboardPage from '@/pages/FinancialDashboardPage';
@@ -54,6 +55,7 @@ function AppContent() {
         <Route path="/users" element={<UserListPage />} />
         <Route path="/users/new" element={<UserFormPage />} />
         <Route path="/users/:id/edit" element={<UserFormPage />} />
+        <Route path="/users/commission" element={<CommissionConfigPage />} />
         <Route path="/sales" element={<SaleListPage />} />
         <Route path="/sales/new/:vehicleId" element={<SaleFormPage />} />
         <Route path="/financial" element={<FinancialDashboardPage />} />

@@ -16,7 +16,25 @@ const navItems: NavItem[] = [
   { name: 'Estoque', path: '/vehicles', icon: '🚗' },
   { name: 'Leads', path: '/leads', icon: '👥' },
   { name: 'Vendas', path: '/sales', icon: '💰', roles: ['owner', 'manager'] },
-  { name: 'Usuários', path: '/users', icon: '👤', roles: ['owner', 'manager'] },
+  {
+    name: 'Usuários',
+    icon: '👤',
+    roles: ['owner', 'manager'],
+    children: [
+      {
+        name: 'Gerenciar Usuários',
+        path: '/users',
+        icon: '👥',
+        roles: ['owner', 'manager'],
+      },
+      {
+        name: 'Comissões',
+        path: '/users/commission',
+        icon: '💸',
+        roles: ['owner', 'manager'],
+      },
+    ],
+  },
   {
     name: 'Financeiro',
     icon: '📈',

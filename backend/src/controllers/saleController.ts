@@ -69,7 +69,7 @@ export const createSale = async (req: AuthRequest, res: Response): Promise<void>
     // 2. Verify seller exists and belongs to tenant
     const { data: seller, error: sellerError } = await supabase
       .from('users')
-      .select('id, name, tenant_id')
+      .select('id, name, tenant_id, commission_percentage')
       .eq('id', saleData.seller_id)
       .single();
 
@@ -85,8 +85,9 @@ export const createSale = async (req: AuthRequest, res: Response): Promise<void>
 
     const grossMargin = saleData.final_price - vehicle.purchase_price - totalExpenses;
 
-    // TODO: Get commission percentage from user settings (default to 0 for now)
-    const commissionValue = 0;
+    // Calculate commission based on gross margin
+    const commissionPercentage = seller.commission_percentage || 0;
+    const commissionValue = grossMargin * (commissionPercentage / 100);
 
     // 4. Create sale record
     const { data: sale, error: saleError } = await supabase

@@ -6,6 +6,7 @@ import {
   createUser,
   updateUser,
   toggleUserStatus,
+  updateUserCommission,
 } from '../controllers/userController';
 
 const router = Router();
@@ -27,5 +28,8 @@ router.put('/:id', requireRole('owner', 'manager'), updateUser);
 
 // PATCH /api/users/:id/toggle-status - Activate/deactivate user (owner/manager only)
 router.patch('/:id/toggle-status', requireRole('owner', 'manager'), toggleUserStatus);
+
+// PATCH /api/users/:id/commission - Update user commission (owner/manager only)
+router.patch('/:id/commission', requireRole('owner', 'manager'), updateUserCommission);
 
 export default router;

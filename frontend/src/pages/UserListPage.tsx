@@ -236,11 +236,13 @@ export const UserListPage = () => {
                 </div>
 
                 {/* User Info */}
-                {user.phone && (
-                  <div className="mb-4">
-                    <p className="text-sm text-slate-600">📱 {user.phone}</p>
-                  </div>
-                )}
+                <div className="space-y-2 mb-4">
+                  {user.phone && <p className="text-sm text-slate-600">📱 {user.phone}</p>}
+                  <p className="text-sm text-slate-600">
+                    💸 Comissão:{' '}
+                    <span className="font-semibold">{user.commission_percentage || 0}%</span>
+                  </p>
+                </div>
 
                 <div className="text-xs text-slate-400 mb-4">
                   Cadastrado em {new Date(user.created_at).toLocaleDateString('pt-BR')}

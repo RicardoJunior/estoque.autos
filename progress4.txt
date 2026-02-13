@@ -1931,10 +1931,75 @@ Note: This is a complex module requiring external APIs. Should be implemented on
    - All tests passing: 283/301 (18 skipped integration tests) ✅
    - Seller dashboard ready for production use
 
+37. ✅ Commission Configuration (Bloco 5 - P2)
+   - Updated backend user controller (src/controllers/userController.ts):
+     * Added updateUserCommission endpoint (PATCH /api/users/:id/commission)
+     * Zod validation for commission_percentage (0-100 range)
+     * Restricted to owner/manager roles
+   - Updated commission_percentage schema validation:
+     * Min value: 0
+     * Max value: 100
+     * Decimal precision supported (e.g., 5.5%)
+   - Updated user routes (src/routes/userRoutes.ts):
+     * Added /api/users/:id/commission endpoint
+     * Integrated with authentication and role checks
+   - Updated all user endpoints to include commission_percentage:
+     * getUsers - list endpoint
+     * getUserById - detail endpoint
+     * createUser - set default 0% on creation
+     * updateUser - select field in response
+     * toggleUserStatus - select field in response
+   - Updated sale creation logic (src/controllers/saleController.ts):
+     * Merged seller verification queries (removed duplicate)
+     * Fetch seller commission_percentage along with other data
+     * Calculate commission based on gross margin: margin × (percentage / 100)
+     * Removed TODO comment - commission now fully implemented
+   - Updated frontend User type (src/types/index.ts):
+     * Added commission_percentage optional field
+   - Created CommissionConfigPage component (src/pages/CommissionConfigPage.tsx):
+     * Integration with GET /api/users and PATCH /api/users/:id/commission
+     * User table with commission configuration
+     * Commission percentage input (0-100) for each user
+     * Individual save buttons per user
+     * Real-time validation and success/error feedback
+     * Info card explaining commission calculation
+     * Role-based access control (owner/manager only)
+     * Luxury automotive aesthetic maintained
+   - Updated UserListPage component:
+     * Added commission percentage display (💸 Comissão: X%)
+     * Shows commission for all users in card view
+   - Updated Sidebar navigation:
+     * Changed Usuários to submenu structure
+     * Added "Gerenciar Usuários" submenu item (/users)
+     * Added "Comissões" submenu item (/users/commission)
+     * Both restricted to owner/manager roles
+   - Updated App.tsx routing:
+     * Imported CommissionConfigPage
+     * Added route: /users/commission → CommissionConfigPage
+   - Commission calculation details:
+     * Formula: Commission = Gross Margin × (Percentage / 100)
+     * Example: R$ 10,000 margin × 10% = R$ 1,000 commission
+     * Calculated automatically during sale registration
+     * Stored in sales.commission_value field
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Gradient background (slate-50 to white)
+     * Card-based layout with rounded corners
+     * User avatars with gradient backgrounds
+     * Role and status badges with color coding
+     * Responsive table design
+     * Luxury automotive aesthetic consistent with brand
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Frontend builds successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Commission configuration ready for production use
+
 ## Next Priority Tasks
 
-### Bloco 5 — Gestão de Vendedores (P2)
+### Bloco 5 — Gestão de Vendedores (P2) - COMPLETE ✅
+All P2 tasks for seller management are complete!
 - [x] P2: Dashboard do Vendedor ✅
-- [ ] P2: Configuração de Comissão (next task)
-- [ ] P3: Relatório de Performance
+- [x] P2: Configuração de Comissão ✅
+- [ ] P3: Relatório de Performance (next task - P3 priority)
 

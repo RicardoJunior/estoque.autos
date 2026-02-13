@@ -39,6 +39,7 @@ export interface User {
   avatar_url?: string;
   role: UserRole;
   is_active: boolean;
+  commission_percentage?: number;
   created_at: string;
 }
 
