@@ -1856,3 +1856,85 @@ All P2 tasks for financial management are complete!
 Next priority block to implement marketplace integrations
 Note: This is a complex module requiring external APIs. Should be implemented one integration at a time.
 
+36. ✅ Seller Dashboard (Bloco 5 - P2)
+   - Created backend seller dashboard controller (src/controllers/sellerDashboardController.ts):
+     * GET /api/seller/dashboard endpoint with month parameter
+     * Personal KPIs for seller (leads, sales, commission)
+     * Period filtering by month (YYYY-MM format)
+     * Accessible to all authenticated users (sellers see their own data)
+   - Business logic implemented:
+     * Current period statistics (selected month):
+       - Total leads with status breakdown (new, in_progress, negotiating, converted, lost)
+       - Conversion rate calculation
+       - Total sales count and revenue
+       - Total gross margin
+       - Total commission earned
+       - Average ticket calculation
+       - Recent leads (last 10)
+       - Recent sales (last 5)
+     * All-time statistics:
+       - Total sales count and revenue
+       - Total commission earned
+       - Total leads and conversion rate
+     * Automatic seller filtering (sellers only see their own data)
+     * Lead and sale aggregation with vehicle details
+   - Created seller routes module (src/routes/sellerRoutes.ts):
+     * All routes require authentication
+     * No role restrictions (sellers can access their own dashboard)
+     * Integrated into main router at /api/seller
+   - Created frontend types (src/types/index.ts):
+     * SellerDashboardData interface with complete response structure
+     * Period, current period, and all-time statistics types
+     * Recent leads and sales with vehicle details
+   - Created SellerDashboardPage component (src/pages/SellerDashboardPage.tsx):
+     * Integration with GET /api/seller/dashboard endpoint
+     * Month selector for period filtering
+     * Current period KPI cards:
+       - Total leads with conversion rate
+       - Sales count with average ticket
+       - Revenue with margin (green gradient card)
+       - Commission (amber gradient card)
+     * Lead status breakdown (visual distribution of lead statuses)
+     * Recent leads section:
+       - List of last 10 leads with vehicle info
+       - Status badges with color coding
+       - Time ago display (minutes, hours, days)
+       - Click to navigate to lead detail
+     * Recent sales section:
+       - List of last 5 sales with vehicle info
+       - Commission display for each sale
+       - Sale date display
+     * All-time statistics card:
+       - Total sales, revenue, commission
+       - Total leads and conversion rate
+       - Dark gradient background with gold accents
+     * Luxury automotive aesthetic maintained
+     * Responsive design (mobile-first approach)
+   - Updated App.tsx routing:
+     * Imported SellerDashboardPage component
+     * Added route: /seller-dashboard → SellerDashboardPage
+     * Protected route within DashboardLayout
+   - Updated Sidebar navigation:
+     * Added "Meu Dashboard" menu item for sellers only
+     * Path: /seller-dashboard
+     * Icon: 🎯
+     * Visible only to users with role 'seller'
+   - Design features:
+     * Playfair Display + Outfit font pairing maintained
+     * Gold/silver accent colors throughout
+     * Gradient background (slate-50 to white)
+     * Card-based layout with hover effects
+     * Color-coded KPI cards (green for revenue, amber for commission)
+     * Smooth animations and transitions
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Frontend builds successfully with TypeScript strict mode ✅
+   - All tests passing: 283/301 (18 skipped integration tests) ✅
+   - Seller dashboard ready for production use
+
+## Next Priority Tasks
+
+### Bloco 5 — Gestão de Vendedores (P2)
+- [x] P2: Dashboard do Vendedor ✅
+- [ ] P2: Configuração de Comissão (next task)
+- [ ] P3: Relatório de Performance
+

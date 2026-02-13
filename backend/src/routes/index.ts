@@ -9,6 +9,7 @@ import userRoutes from './userRoutes';
 import saleRoutes from './saleRoutes';
 import financialRoutes from './financialRoutes';
 import cashFlowRoutes from './cashFlowRoutes';
+import sellerRoutes from './sellerRoutes';
 
 const router = Router();
 
@@ -41,5 +42,6 @@ router.use('/users', userRoutes);
 router.use('/sales', saleRoutes);
 router.use('/financial', financialRoutes);
 router.use('/cash-flow', cashFlowRoutes);
+router.use('/seller', sellerRoutes);
 
 export default router;

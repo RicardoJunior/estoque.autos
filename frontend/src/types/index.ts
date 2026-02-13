@@ -322,6 +322,71 @@ export interface TurnoverReportData {
   current_inventory: TurnoverVehicle[];
 }
 
+// Seller Dashboard types
+export interface SellerDashboardData {
+  period: {
+    start: string;
+    end: string;
+    month: string;
+  };
+  currentPeriod: {
+    leads: {
+      total: number;
+      new: number;
+      inProgress: number;
+      negotiating: number;
+      converted: number;
+      lost: number;
+      conversionRate: number;
+    };
+    sales: {
+      total: number;
+      revenue: number;
+      margin: number;
+      commission: number;
+      averageTicket: number;
+    };
+    recentLeads: Array<{
+      id: string;
+      name: string;
+      phone: string;
+      email: string;
+      status: string;
+      type: string;
+      created_at: string;
+      vehicle: {
+        id: string;
+        brand: string;
+        model: string;
+        version?: string;
+        year_model: number;
+      } | null;
+    }>;
+    recentSales: Array<{
+      id: string;
+      final_price: number;
+      gross_margin: number;
+      commission_value: number;
+      sold_at: string;
+      vehicle: {
+        id: string;
+        brand: string;
+        model: string;
+        version?: string;
+        year_model: number;
+        photos?: Photo[];
+      } | null;
+    }>;
+  };
+  allTime: {
+    totalSales: number;
+    totalRevenue: number;
+    totalCommission: number;
+    totalLeads: number;
+    conversionRate: number;
+  };
+}
+
 // Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;
