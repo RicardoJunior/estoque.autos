@@ -8,6 +8,7 @@ import { VehicleFormPage } from '@/pages/VehicleFormPage';
 import { VehicleListPage } from '@/pages/VehicleListPage';
 import { VehicleDetailPage } from '@/pages/VehicleDetailPage';
 import { PublicLandingPage } from '@/pages/PublicLandingPage';
+import { PublicVehicleDetailPage } from '@/pages/PublicVehicleDetailPage';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Routes>
         {/* Public Routes */}
         <Route path="/:slug" element={<PublicLandingPage />} />
+        <Route path="/:slug/vehicles/:vehicleId" element={<PublicVehicleDetailPage />} />
 
         {/* Auth Routes */}
         <Route path="/login" element={<LoginPage />} />

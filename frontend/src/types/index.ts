@@ -47,6 +47,13 @@ export type TransmissionType = 'manual' | 'automatic' | 'cvt' | 'automated';
 // Fuel type
 export type FuelType = 'gasoline' | 'ethanol' | 'flex' | 'diesel' | 'electric' | 'hybrid';
 
+// Photo type
+export interface Photo {
+  url: string;
+  order: number;
+  is_primary: boolean;
+}
+
 // Vehicle type
 export interface Vehicle {
   id: string;
@@ -65,14 +72,14 @@ export interface Vehicle {
   power?: string;
   category: VehicleCategory;
   description?: string;
-  optionals?: string[];
+  optionals?: Record<string, boolean>;
   purchase_price?: number;
   expenses?: { description: string; amount: number }[];
   sale_price: number;
   max_discount?: number;
   status: VehicleStatus;
   featured: boolean;
-  photos?: string[];
+  photos?: Photo[];
   marketplace_ids?: Record<string, string>;
   created_by: string;
   created_at: string;

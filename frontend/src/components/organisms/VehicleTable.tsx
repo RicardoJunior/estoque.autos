@@ -143,7 +143,7 @@ export const VehicleTable: React.FC<VehicleTableProps> = ({
                       <div className="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-br from-neutral-100 to-neutral-200 flex-shrink-0">
                         {vehicle.photos && vehicle.photos.length > 0 ? (
                           <img
-                            src={vehicle.photos[0]}
+                            src={vehicle.photos[0].url}
                             alt={`${vehicle.brand} ${vehicle.model}`}
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                           />

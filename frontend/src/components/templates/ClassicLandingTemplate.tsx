@@ -108,7 +108,7 @@ export const ClassicLandingTemplate: React.FC<ClassicLandingTemplateProps> = ({
                 <figure className="relative aspect-[4/3] overflow-hidden">
                   {vehicle.photos && vehicle.photos.length > 0 ? (
                     <img
-                      src={vehicle.photos[0]}
+                      src={vehicle.photos[0].url}
                       alt={`${vehicle.brand} ${vehicle.model}`}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />

@@ -223,7 +223,7 @@ export const VehicleDetailPage: React.FC = () => {
           <div className="bg-base-200 rounded-lg overflow-hidden aspect-video">
             {vehicle.photos && vehicle.photos.length > 0 ? (
               <img
-                src={vehicle.photos[selectedImage]}
+                src={vehicle.photos[selectedImage].url}
                 alt={`${vehicle.brand} ${vehicle.model}`}
                 className="w-full h-full object-cover"
               />
@@ -260,7 +260,7 @@ export const VehicleDetailPage: React.FC = () => {
                   }`}
                 >
                   <img
-                    src={photo}
+                    src={photo.url}
                     alt={`Thumbnail ${index + 1}`}
                     className="w-full h-full object-cover"
                   />
@@ -427,16 +427,18 @@ export const VehicleDetailPage: React.FC = () => {
           </div>
 
           {/* Optionals */}
-          {vehicle.optionals && vehicle.optionals.length > 0 && (
+          {vehicle.optionals && Object.keys(vehicle.optionals).length > 0 && (
             <div className="card bg-base-100 shadow-lg">
               <div className="card-body">
                 <h2 className="card-title font-playfair text-xl mb-3">Features & Optionals</h2>
                 <div className="flex flex-wrap gap-2">
-                  {vehicle.optionals.map((optional, index) => (
-                    <span key={index} className="badge badge-outline badge-lg">
-                      ✓ {optional}
-                    </span>
-                  ))}
+                  {Object.entries(vehicle.optionals)
+                    .filter(([, value]) => value)
+                    .map(([key]) => (
+                      <span key={key} className="badge badge-outline badge-lg">
+                        ✓ {key.replace(/_/g, ' ')}
+                      </span>
+                    ))}
                 </div>
               </div>
             </div>

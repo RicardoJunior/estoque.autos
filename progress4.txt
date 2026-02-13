@@ -518,15 +518,85 @@ Next priority block to implement public-facing landing page features
    - Frontend builds successfully ✅
    - Public vehicle API tests: 29/29 passing ✅
 
+16. ✅ Public Vehicle Detail Page & Lead Creation API (Bloco 3 - P1)
+   - Created PublicVehicleDetailPage component (src/pages/PublicVehicleDetailPage.tsx):
+     * Integration with GET /api/public/:slug/vehicles/:id endpoint
+     * Photo gallery with lightbox modal
+     * Main image viewer with thumbnail navigation
+     * Left/right navigation arrows for lightbox
+     * Comprehensive vehicle information display
+     * Specifications grid (year, mileage, transmission, fuel)
+     * Additional details (color, doors, power, category)
+     * Vehicle description display
+     * Features and optionals list with checkmarks
+     * Store information card with address and contact
+     * Responsive design (mobile-first approach)
+   - Lead capture functionality:
+     * Proposal form modal with comprehensive fields:
+       - Name, phone, email (required)
+       - Proposal value (optional)
+       - Trade vehicle (optional)
+       - Message (required)
+     * Form validation with Zod
+     * Success state with auto-close
+     * Integration with POST /api/public/:slug/leads endpoint
+   - Contact buttons:
+     * WhatsApp button with pre-formatted message including vehicle details
+     * Phone call button (click-to-call)
+     * "Fazer Proposta" button to open proposal form
+     * Floating WhatsApp button (bottom-right)
+   - Lead logging:
+     * Automatic lead creation on WhatsApp click (type: 'whatsapp')
+     * Automatic lead creation on phone click (type: 'phone')
+     * Lead creation on proposal submit (type: 'proposal')
+     * Device detection (mobile/tablet/desktop)
+     * UTM parameter tracking support
+   - Created backend publicLeadController (src/controllers/publicLeadController.ts):
+     * POST /api/public/:slug/leads endpoint
+     * Comprehensive Zod validation
+     * Tenant lookup by slug
+     * Vehicle verification
+     * Lead creation with all fields
+     * Lead interaction creation for messages
+     * Device detection from user-agent
+     * Rate limiting via publicLeadLimiter
+   - Updated public routes (src/routes/publicRoutes.ts):
+     * Added lead creation endpoint
+     * Integrated rate limiting
+   - Design features:
+     * Tenant branding with custom colors (CSS variables)
+     * Dynamic color scheme from store settings
+     * Luxury automotive aesthetic maintained
+     * Smooth animations and transitions
+     * Responsive grid layout
+     * Card-based information sections
+     * Gradient price card
+     * Safety notice card for buyers
+   - Business logic:
+     * Only shows available vehicles
+     * No financial data exposure
+     * Lead tracking with channel attribution
+     * WhatsApp message pre-formatting
+     * Store information display
+   - Fixed TypeScript type definitions:
+     * Updated Photo interface with url, order, is_primary fields
+     * Updated Vehicle optionals to Record<string, boolean>
+     * Fixed photo references across all components (VehicleCard, VehicleTable, ClassicLandingTemplate, VehicleDetailPage)
+   - Updated App.tsx routing:
+     * Added route: /:slug/vehicles/:vehicleId → PublicVehicleDetailPage
+     * Public routes accessible without authentication
+   - Frontend builds successfully ✅
+   - Backend compiles successfully with TypeScript strict mode ✅
+
 ## Next Priority Tasks
 
 ### Bloco 3 — Landing Page Pública (P1)
 - [x] P1: API Pública de Veículos ✅
 - [x] P1: Template Clássico ✅
+- [x] P1: Página de Detalhe Pública ✅
 - [ ] P1: Template Moderno
 - [ ] P1: Template Premium
 - [ ] P1: Seletor de Template
 - [ ] P1: Personalização de Cores
 - [ ] P1: Upload e Crop de Logo
-- [ ] P1: Página de Detalhe Pública
-- [ ] P1: SEO e Meta Tags
+- [ ] P2: SEO e Meta Tags

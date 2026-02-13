@@ -679,3 +679,112 @@ I've successfully completed the **highest-priority P0 task** from the project ro
 ════════════════════════════════════════════════════════
 🔄 ITERAÇÃO 11/100 - 23:43:02
 ════════════════════════════════════════════════════════
+Perfect! Commit successful. Let me create a summary of what was accomplished:
+
+## Summary
+
+I successfully implemented the **Backend Public Vehicle API** (Bloco 3 - P1), which is the first task in the Landing Page Pública priority block.
+
+### What Was Completed:
+
+**Backend Implementation:**
+- ✅ Created `publicVehicleController.ts` with two public endpoints:
+  - `GET /api/public/:slug/vehicles` - List available vehicles by store slug
+  - `GET /api/public/:slug/vehicles/:id` - Get vehicle detail
+- ✅ Comprehensive filtering: category, brand, fuel, transmission, price range, year range, search, featured filter
+- ✅ Sorting options: created_at, sale_price, mileage, year_model
+- ✅ Pagination with configurable limits (default 20 per page)
+- ✅ Security measures:
+  - Only returns vehicles with `available` status
+  - Excludes all financial data (purchase_price, expenses, gross_margin, max_discount)
+  - Tenant isolation via slug lookup
+  - No authentication required (public endpoint)
+- ✅ Includes store information in response (name, logo, contact details)
+
+**Testing:**
+- ✅ Created 29 comprehensive unit tests - **ALL PASSING**
+- ✅ Tests cover validation, filtering, sorting, pagination, security, and error cases
+- ✅ Backend compiles successfully with TypeScript strict mode
+
+**Files Created/Modified:**
+- `backend/src/controllers/publicVehicleController.ts` (new)
+- `backend/src/routes/publicRoutes.ts` (new)
+- `backend/src/routes/index.ts` (modified - integrated public routes)
+- `backend/src/__tests__/publicVehicle.unit.test.ts` (new - 29 tests)
+- `progress4.txt` (updated)
+
+**Next Task:** According to project.md, the next task in Bloco 3 (P1) is to implement the **Template Clássico** (first landing page template).
+
+The public API is now ready to serve vehicle data to the frontend landing pages! 🚀
+
+⏱️  Duração: 300s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   * All tests passing ✅
+   - Backend compiles successfully with TypeScript strict mode ✅
+   - Response format:
+   * List endpoint: { store, vehicles[], pagination }
+   * Detail endpoint: { store, vehicle }
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 12/100 - 23:48:07
+════════════════════════════════════════════════════════
+Perfect! The changes have been committed successfully. The pre-commit hooks ran and formatted the code with Prettier.
+
+## Summary
+
+I've successfully implemented the **Template Clássico (Classic Template)** for the public landing page (Bloco 3 - P1). Here's what was accomplished:
+
+### ✅ Completed:
+1. **ClassicLandingTemplate Component** - A clean, professional template with:
+   - Responsive header with store logo, name, and contact buttons
+   - Vehicle grid with 3-column responsive layout
+   - Vehicle cards showing image, specs, price, and featured badge
+   - Footer with store information and branding
+   - Floating WhatsApp button
+   - Dynamic tenant branding (colors, logo)
+
+2. **PublicLandingPage Component** - Main page with:
+   - Integration with public vehicle API
+   - Store lookup by slug
+   - Loading and error states
+   - 404 handling for non-existent stores
+
+3. **Routing Updates**:
+   - Added public route `/:slug` accessible without authentication
+   - Connected to existing public vehicle API
+
+4. **Testing**:
+   - All 29 public vehicle API tests passing ✅
+   - Frontend builds successfully ✅
+   - TypeScript strict mode compliance ✅
+
+### 📊 Project Status:
+- **Bloco 0** (Infrastructure): Mostly complete
+- **Bloco 1** (Auth & Multi-Tenancy): ✅ Complete
+- **Bloco 2** (Vehicle Management): ✅ Complete
+- **Bloco 3** (Landing Page): In progress - 2/9 tasks complete
+  - ✅ API Pública de Veículos
+  - ✅ Template Clássico
+  - ⏳ Template Moderno (next)
+
+The Classic Landing Page template is now ready for use and provides a professional, responsive public storefront for vehicle dealerships.
+
+⏱️  Duração: 254s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   - [ ] P1: Seletor de Template
+   - [ ] P1: Personalização de Cores
+   - [ ] P1: Upload e Crop de Logo
+   - [ ] P1: Página de Detalhe Pública
+   - [ ] P1: SEO e Meta Tags
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 13/100 - 23:52:26
+════════════════════════════════════════════════════════
