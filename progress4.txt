@@ -1,0 +1,53 @@
+=== ESTOQUE.AUTOS SaaS - Development Progress ===
+Date: 2026-02-12
+
+## Completed Tasks
+
+### Bloco 0 — Infraestrutura e Setup (P0)
+
+1. ✅ Setup Repositório
+   - Created monorepo structure with backend/, frontend/, and shared/ directories
+   - Configured workspace-based package.json with npm workspaces
+   - Set up ESLint with TypeScript support
+   - Configured Prettier for code formatting
+   - Created TypeScript configuration with strict mode
+   - Set up Husky pre-commit hooks with lint-staged
+   - Created .gitignore with comprehensive exclusions
+   - Added README.md with project overview
+
+2. ✅ Setup Supabase Database Schema
+   - Created initial migration (20260212000001_initial_schema.sql) with all tables:
+     * tenants - Multi-tenant isolation with slug, branding, and settings
+     * users - User management with roles (owner, manager, seller)
+     * vehicles - Complete vehicle inventory with financials and status
+     * vehicle_status_log - Audit trail for status changes
+     * leads - Lead capture and management with UTM tracking
+     * lead_interactions - Timeline of interactions per lead
+     * sales - Sales transactions with margins and commissions
+     * cash_flow_entries - Financial entries for cash flow tracking
+     * marketplace_configs - Integration credentials per marketplace
+     * marketplace_logs - Audit logs for marketplace operations
+   - Added comprehensive indexes for query performance
+   - Created updated_at triggers for automatic timestamp updates
+
+3. ✅ Setup Row Level Security (RLS)
+   - Created RLS policies migration (20260212000002_rls_policies.sql)
+   - Enabled RLS on all tables
+   - Created helper functions: get_user_tenant_id(), has_role()
+   - Implemented tenant isolation policies for all tables
+   - Set up role-based access control (owner, manager, seller)
+   - Configured public access for lead creation endpoint
+   - Secured financial data (only owner/manager access)
+
+## Next Priority Tasks
+
+### Bloco 0 (Continued)
+- [ ] P0: Setup Backend Express with TypeScript
+- [ ] P0: Setup Frontend React with Vite and DaisyUI
+- [ ] P0: CI/CD Pipeline configuration
+- [ ] P0: Environment variables setup
+
+### Notes
+- Database schema follows the complete specification from project.md
+- All RLS policies ensure proper tenant isolation
+- Ready to proceed with backend API implementation
