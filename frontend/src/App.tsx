@@ -4,6 +4,7 @@ import { LoginPage } from '@/pages/LoginPage';
 import { SignupPage } from '@/pages/SignupPage';
 import { OnboardingPage } from '@/pages/OnboardingPage';
 import { DashboardPage } from '@/pages/DashboardPage';
+import { VehicleFormPage } from '@/pages/VehicleFormPage';
 
 function App() {
   return (
@@ -15,7 +16,9 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
-          <Route path="/vehicles" element={<div>Vehicles Page (TODO)</div>} />
+          <Route path="/vehicles" element={<div>Vehicles List Page (TODO)</div>} />
+          <Route path="/vehicles/new" element={<VehicleFormPage />} />
+          <Route path="/vehicles/:id/edit" element={<VehicleFormPage />} />
           <Route path="/leads" element={<div>Leads Page (TODO)</div>} />
           <Route path="/sales" element={<div>Sales Page (TODO)</div>} />
           <Route path="/sellers" element={<div>Sellers Page (TODO)</div>} />
