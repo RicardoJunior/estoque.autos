@@ -6,6 +6,7 @@ import publicRoutes from './publicRoutes';
 import tenantRoutes from './tenantRoutes';
 import leadRoutes from './leadRoutes';
 import userRoutes from './userRoutes';
+import saleRoutes from './saleRoutes';
 
 const router = Router();
 
@@ -35,8 +36,6 @@ router.use('/public', publicRoutes);
 router.use('/tenant', tenantRoutes);
 router.use('/leads', leadRoutes);
 router.use('/users', userRoutes);
-
-// TODO: Add route modules here as they are implemented
-// router.use('/sales', salesRoutes);
+router.use('/sales', saleRoutes);
 
 export default router;

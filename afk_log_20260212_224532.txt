@@ -1350,3 +1350,127 @@ This task involves setting up real-time notifications when new leads arrive, usi
 ════════════════════════════════════════════════════════
 🔄 ITERAÇÃO 22/100 - 00:39:47
 ════════════════════════════════════════════════════════
+Perfect! The real-time lead notification feature has been successfully implemented and committed. Let me create a summary of what was accomplished:
+
+## Summary
+
+I've successfully implemented **P1: Notificação Realtime** (Real-time Lead Notifications) from Bloco 4, completing all P1 tasks for the Lead Management block.
+
+### What Was Implemented:
+
+1. **Toast Notification System**:
+   - Created `Toast` atom component with auto-dismiss functionality
+   - Implemented `ToastContainer` with React Context for global toast management
+   - Support for multiple notification types (success, error, info, warning)
+   - Color-coded backgrounds and icons
+   - Fixed positioning in top-right corner
+
+2. **Real-time Lead Notifications**:
+   - Created `useRealtimeLeads` custom hook using Supabase Realtime
+   - Subscribes to INSERT events on the `leads` table
+   - Role-based filtering:
+     - **Owner/Manager**: Notified of all new leads
+     - **Seller**: Only notified of leads assigned to them
+   - Tenant isolation for multi-tenant security
+
+3. **Integration**:
+   - Wrapped the app with `ToastProvider` in `App.tsx`
+   - Auto-refresh leads list when new lead arrives
+   - Optional audio notification support
+   - Toast notifications display for 8 seconds with lead details
+
+4. **Testing & Build**:
+   - ✅ Frontend builds successfully
+   - ✅ TypeScript strict mode compliant
+   - ✅ Backend tests: 153/179 passing (8 pre-existing auth failures)
+   - ✅ Changes committed with detailed commit message
+
+### Status Update:
+
+**Bloco 4 — Gestão de Leads (P1)** is now **COMPLETE** ✅
+
+All P1 tasks completed:
+- ✅ Tabela leads + RLS
+- ✅ API de Criação de Lead
+- ✅ Formulário de Proposta
+- ✅ Botão WhatsApp
+- ✅ Listagem de Leads
+- ✅ Detalhe do Lead
+- ✅ Mudança de Status
+- ✅ Atribuição a Vendedor
+- ✅ **Notificação Realtime** (just completed)
+
+**Next Priority**: Bloco 5 — Gestão de Vendedores (P1)
+
+⏱️  Duração: 188s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   - [x] P1: Notificação Realtime ✅
+   
+   ### Bloco 5 — Gestão de Vendedores (P1)
+   Next priority block to implement seller/user management features
+   
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 23/100 - 00:43:00
+════════════════════════════════════════════════════════
+Perfect! Commit successful. Now let me create a summary of what was completed:
+
+## Summary
+
+I successfully completed **Bloco 5 - P1: CRUD Vendedores (User Management)**, the highest-priority task from the project roadmap.
+
+### What was implemented:
+
+**Backend (Node.js + TypeScript + Express):**
+- ✅ Created full CRUD API for user management:
+  - `POST /api/users` - Create user with Supabase Auth + invite email
+  - `PUT /api/users/:id` - Update user information
+  - `PATCH /api/users/:id/toggle-status` - Activate/deactivate users
+  - `GET /api/users` - List all users (updated)
+  - `GET /api/users/:id` - Get user details (existing)
+- ✅ Zod validation for all inputs (name, email, role)
+- ✅ Supabase Auth integration with automatic invite emails
+- ✅ Rollback mechanism if user creation fails
+- ✅ Role-based access control (owner/manager only)
+- ✅ Business logic: prevent self-role change and self-deactivation
+- ✅ 42 unit tests created (all passing)
+
+**Frontend (React + TypeScript + DaisyUI):**
+- ✅ **UserListPage**: Grid layout with user cards, filtering (search, role, status), actions (edit, toggle status)
+- ✅ **UserFormPage**: Create/edit forms with validation, email immutability in edit mode
+- ✅ Updated Sidebar navigation (Vendedores → Usuários)
+- ✅ Luxury automotive aesthetic maintained throughout
+- ✅ Responsive design (mobile-first)
+- ✅ Integration with all backend endpoints
+
+**Test Results:**
+- 195/221 tests passing (42 new user tests added)
+- 8 pre-existing auth test failures (unrelated)
+- 18 skipped integration tests (require real Supabase)
+
+**Git Commit:**
+- Successfully committed with descriptive message
+- All lint and prettier checks passed
+
+### Next Priority:
+**Bloco 6 — Registro de Vendas (P1)** - Implement sales recording features
+
+⏱️  Duração: 409s
+📝 Log completo: afk_log_20260212_224532.txt
+
+📋 Último progresso:
+   - [x] P1: Perfis de Acesso (RBAC) ✅ (already implemented in Bloco 1, verified working)
+   
+   ### Bloco 6 — Registro de Vendas (P1)
+   Next priority block to implement sales recording features
+   
+
+⏳ Aguardando 5s antes da próxima iteração...
+
+════════════════════════════════════════════════════════
+🔄 ITERAÇÃO 24/100 - 00:49:54
+════════════════════════════════════════════════════════
