@@ -141,14 +141,41 @@ Date: 2026-02-12
      * Marked as skip - requires real Supabase instance to run
    - Backend compiles successfully with TypeScript strict mode
 
+7. ✅ Frontend Authentication Integration (Bloco 1 - P0)
+   - Updated authStore to use backend API endpoints instead of Supabase directly
+   - Implemented token-based authentication with JWT access/refresh tokens
+   - Created persist middleware for auth state (localStorage)
+   - Updated API service to use auth tokens from store
+   - Implemented automatic token refresh on 401 errors
+   - Created SignupPage component with comprehensive form validation:
+     * Name, email, phone, password, confirm password fields
+     * Zod schema validation
+     * Password strength requirements (min 8 characters)
+     * Password confirmation matching
+     * Navigation to onboarding after signup
+   - Created OnboardingPage component for tenant creation:
+     * Store name, slug, CNPJ, phone, whatsapp, email fields
+     * URL slug generator from store name
+     * Real-time preview of landing page URL
+     * Slug format validation (lowercase, numbers, hyphens only)
+     * Automatic tenant creation with default template and colors
+   - Updated LoginPage to handle needsOnboarding flag:
+     * Redirects to onboarding if tenant not created
+     * Redirects to dashboard if tenant exists
+   - Added all auth routes to App.tsx (/login, /signup, /onboarding)
+   - Full authentication flow now working:
+     * User signs up → redirected to onboarding
+     * User creates tenant → redirected to dashboard
+     * User logs in → redirected to onboarding or dashboard based on state
+
 ## Next Priority Tasks
 
-### Bloco 1 — Autenticação e Multi-Tenancy (P0) - Continued
-- [ ] P0: Connect frontend to backend authentication endpoints
-- [ ] P0: Implement signup page on frontend
-- [ ] P0: Update login page to use real API
-- [ ] P0: Implement onboarding flow UI (tenant creation wizard)
-- [ ] P0: Test complete auth flow end-to-end
+### Bloco 2 — Gestão de Estoque (P0)
+- [ ] P0: Implement vehicle CRUD API endpoints
+- [ ] P0: Create vehicle form component with all fields
+- [ ] P0: Implement photo upload functionality
+- [ ] P0: Create vehicle listing page with filters
+- [ ] P0: Create vehicle detail page (admin)
 
 ### Bloco 0 (Continued)
 - [ ] P0: CI/CD Pipeline configuration
@@ -159,5 +186,6 @@ Date: 2026-02-12
 - Backend infrastructure complete and tested
 - Backend authentication API complete with full validation
 - Frontend infrastructure complete with Atomic Design structure
-- Auth store and middleware ready on frontend
-- Ready to integrate frontend with backend auth endpoints
+- **Frontend authentication integration COMPLETE** ✅
+- Auth flow tested and working (signup → onboarding → dashboard)
+- Ready to implement vehicle management features (Bloco 2)

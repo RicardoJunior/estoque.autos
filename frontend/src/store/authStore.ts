@@ -1,82 +1,263 @@
 import { create } from 'zustand';
-import { supabase } from '@/services/supabase';
-import { api } from '@/services/api';
-import type { AuthState, User, Tenant } from '@/types';
+import { persist } from 'zustand/middleware';
+import type { User, Tenant } from '@/types';
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
-  tenant: null,
-  loading: true,
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-  signIn: async (email: string, password: string) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user: User;
+  tenant: Tenant | null;
+  needsOnboarding: boolean;
+}
 
-    if (error) throw error;
+interface SignupResponse {
+  user: User;
+  needsOnboarding: boolean;
+}
 
-    if (data.user) {
-      // Fetch user profile
-      const { data: profile } = await api.get<User>('/auth/profile');
-      const { data: tenant } = await api.get<Tenant>('/tenants/current');
+interface MeResponse {
+  user: User;
+  tenant: Tenant | null;
+  needsOnboarding: boolean;
+}
 
-      set({ user: profile, tenant, loading: false });
-    }
-  },
+interface AuthState {
+  user: User | null;
+  tenant: Tenant | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  needsOnboarding: boolean;
+  loading: boolean;
+  signIn: (email: string, password: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, phone?: string) => Promise<void>;
+  signOut: () => Promise<void>;
+  refreshAccessToken: () => Promise<string>;
+  fetchMe: () => Promise<void>;
+  createTenant: (data: {
+    name: string;
+    slug: string;
+    cnpj?: string;
+    phone: string;
+    whatsapp?: string;
+    email: string;
+  }) => Promise<void>;
+}
 
-  signUp: async (email: string, password: string, name: string) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name,
-        },
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      user: null,
+      tenant: null,
+      accessToken: null,
+      refreshToken: null,
+      needsOnboarding: false,
+      loading: true,
+
+      signIn: async (email: string, password: string) => {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Login failed');
+        }
+
+        const data: AuthResponse = await response.json();
+
+        set({
+          user: data.user,
+          tenant: data.tenant,
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+          needsOnboarding: data.needsOnboarding,
+          loading: false,
+        });
       },
-    });
 
-    if (error) throw error;
+      signUp: async (email: string, password: string, name: string, phone?: string) => {
+        const response = await fetch(`${API_URL}/auth/signup`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ email, password, name, phone }),
+        });
 
-    if (data.user) {
-      const { data: profile } = await api.get<User>('/auth/profile');
-      set({ user: profile, loading: false });
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Signup failed');
+        }
+
+        const data: SignupResponse = await response.json();
+
+        set({
+          user: data.user,
+          tenant: null,
+          needsOnboarding: data.needsOnboarding,
+          loading: false,
+        });
+      },
+
+      signOut: async () => {
+        const token = get().accessToken;
+
+        if (token) {
+          try {
+            await fetch(`${API_URL}/auth/logout`, {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
+          } catch {
+            // Ignore logout errors
+          }
+        }
+
+        set({
+          user: null,
+          tenant: null,
+          accessToken: null,
+          refreshToken: null,
+          needsOnboarding: false,
+          loading: false,
+        });
+      },
+
+      refreshAccessToken: async () => {
+        const token = get().refreshToken;
+
+        if (!token) {
+          throw new Error('No refresh token available');
+        }
+
+        const response = await fetch(`${API_URL}/auth/refresh`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ refreshToken: token }),
+        });
+
+        if (!response.ok) {
+          // Refresh token is invalid, clear auth state
+          set({
+            user: null,
+            tenant: null,
+            accessToken: null,
+            refreshToken: null,
+            needsOnboarding: false,
+            loading: false,
+          });
+          throw new Error('Session expired');
+        }
+
+        const data = await response.json();
+
+        set({
+          accessToken: data.accessToken,
+          refreshToken: data.refreshToken,
+        });
+
+        return data.accessToken;
+      },
+
+      fetchMe: async () => {
+        const token = get().accessToken;
+
+        if (!token) {
+          set({ loading: false });
+          return;
+        }
+
+        try {
+          const response = await fetch(`${API_URL}/auth/me`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            // Token is invalid, try to refresh
+            try {
+              await get().refreshAccessToken();
+              // Retry fetchMe with new token
+              await get().fetchMe();
+              return;
+            } catch {
+              // Refresh failed, clear state
+              set({
+                user: null,
+                tenant: null,
+                accessToken: null,
+                refreshToken: null,
+                needsOnboarding: false,
+                loading: false,
+              });
+              return;
+            }
+          }
+
+          const data: MeResponse = await response.json();
+
+          set({
+            user: data.user,
+            tenant: data.tenant,
+            needsOnboarding: data.needsOnboarding,
+            loading: false,
+          });
+        } catch {
+          set({ loading: false });
+        }
+      },
+
+      createTenant: async (tenantData) => {
+        const token = get().accessToken;
+
+        if (!token) {
+          throw new Error('Not authenticated');
+        }
+
+        const response = await fetch(`${API_URL}/auth/onboarding/tenant`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(tenantData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Failed to create tenant');
+        }
+
+        await response.json();
+
+        // Refresh user data to get updated tenant_id
+        await get().fetchMe();
+      },
+    }),
+    {
+      name: 'auth-storage',
+      partialize: (state) => ({
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+        user: state.user,
+        tenant: state.tenant,
+        needsOnboarding: state.needsOnboarding,
+      }),
     }
-  },
+  )
+);
 
-  signOut: async () => {
-    await supabase.auth.signOut();
-    set({ user: null, tenant: null, loading: false });
-  },
-
-  updateUser: async (data: Partial<User>) => {
-    const { data: updatedProfile } = await api.patch<User>('/auth/profile', data);
-    set({ user: updatedProfile });
-  },
-}));
-
-// Initialize auth state
-supabase.auth.getSession().then(({ data: { session } }) => {
-  if (session?.user) {
-    Promise.all([api.get<User>('/auth/profile'), api.get<Tenant>('/tenants/current')])
-      .then(([{ data: user }, { data: tenant }]) => {
-        useAuthStore.setState({ user, tenant, loading: false });
-      })
-      .catch(() => {
-        useAuthStore.setState({ user: null, tenant: null, loading: false });
-      });
-  } else {
-    useAuthStore.setState({ loading: false });
-  }
-});
-
-// Listen for auth changes
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN' && session?.user) {
-    const { data: user } = await api.get<User>('/auth/profile');
-    const { data: tenant } = await api.get<Tenant>('/tenants/current');
-    useAuthStore.setState({ user, tenant, loading: false });
-  } else if (event === 'SIGNED_OUT') {
-    useAuthStore.setState({ user: null, tenant: null, loading: false });
-  }
-});
+// Initialize auth state on app load
+useAuthStore.getState().fetchMe();

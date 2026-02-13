@@ -31,7 +31,7 @@ export interface Tenant {
     secondary?: string;
     accent?: string;
   };
-  settings?: Record<string, any>;
+  settings?: Record<string, unknown>;
   created_at: string;
 }
 
@@ -137,13 +137,12 @@ export interface Sale {
   created_at: string;
 }
 
-// Auth state
+// Auth state (for backward compatibility - actual interface is in authStore.ts)
 export interface AuthState {
   user: User | null;
   tenant: Tenant | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string, name: string) => Promise<void>;
+  signUp: (email: string, password: string, name: string, phone?: string) => Promise<void>;
   signOut: () => Promise<void>;
-  updateUser: (data: Partial<User>) => Promise<void>;
 }

@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { supabase } from './supabase';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -10,14 +9,22 @@ export const api = axios.create({
   },
 });
 
+// We'll import this dynamically to avoid circular dependency
+let getAuthToken: (() => string | null) | undefined;
+let refreshToken: (() => Promise<string>) | undefined;
+
+export const setAuthHelpers = (getToken: () => string | null, refresh: () => Promise<string>) => {
+  getAuthToken = getToken;
+  refreshToken = refresh;
+};
+
 // Add auth token to requests
 api.interceptors.request.use(async (config) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
-
-  if (session?.access_token) {
-    config.headers.Authorization = `Bearer ${session.access_token}`;
+  if (getAuthToken) {
+    const token = getAuthToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
   }
 
   return config;
@@ -27,22 +34,18 @@ api.interceptors.request.use(async (config) => {
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
+    if (error.response?.status === 401 && refreshToken && !error.config._retry) {
       // Token expired, try to refresh
-      const {
-        data: { session },
-        error: refreshError,
-      } = await supabase.auth.refreshSession();
-
-      if (refreshError || !session) {
-        // Redirect to login
+      try {
+        error.config._retry = true;
+        const newToken = await refreshToken();
+        error.config.headers.Authorization = `Bearer ${newToken}`;
+        return api.request(error.config);
+      } catch {
+        // Refresh failed, redirect to login
         window.location.href = '/login';
         return Promise.reject(error);
       }
-
-      // Retry original request
-      error.config.headers.Authorization = `Bearer ${session.access_token}`;
-      return api.request(error.config);
     }
 
     return Promise.reject(error);

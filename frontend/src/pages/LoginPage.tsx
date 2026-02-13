@@ -16,7 +16,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  const { user, signIn } = useAuthStore();
+  const { user, needsOnboarding, signIn } = useAuthStore();
   const [error, setError] = useState<string>('');
 
   const {
@@ -27,7 +27,11 @@ export const LoginPage: React.FC = () => {
     resolver: zodResolver(loginSchema),
   });
 
-  if (user) {
+  if (user && needsOnboarding) {
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  if (user && !needsOnboarding) {
     return <Navigate to="/dashboard" replace />;
   }
 
@@ -35,9 +39,16 @@ export const LoginPage: React.FC = () => {
     try {
       setError('');
       await signIn(data.email, data.password);
-      navigate('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Erro ao fazer login');
+
+      // After signing in, check if onboarding is needed
+      const state = useAuthStore.getState();
+      if (state.needsOnboarding) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
     }
   };
 
