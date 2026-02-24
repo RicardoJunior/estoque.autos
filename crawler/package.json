@@ -1,0 +1,29 @@
+{
+  "name": "@estoque-autos/crawler",
+  "version": "1.0.0",
+  "description": "Web crawler para coletar dados de veículos",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "test": "tsx src/scripts/test-connection.ts",
+    "crawl:brands": "tsx src/crawlers/brands.ts",
+    "crawl:models": "tsx src/crawlers/models.ts",
+    "crawl:versions": "tsx src/crawlers/versions.ts",
+    "crawl:all": "tsx src/crawlers/all.ts",
+    "validate": "tsx src/utils/validate-data.ts",
+    "import:db": "tsx src/scripts/import-to-db.ts",
+    "export:sql": "tsx src/scripts/export-to-sql.ts"
+  },
+  "dependencies": {
+    "axios": "^1.6.5",
+    "cheerio": "^1.0.0-rc.12",
+    "p-limit": "^5.0.0",
+    "puppeteer": "^21.9.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.3"
+  }
+}

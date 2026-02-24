@@ -1,0 +1,20 @@
+# Dependências
+node_modules/
+
+# Dados coletados
+data/*.json
+!data/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# Build
+dist/
+
+# Backups
+*.backup
+
+# Temporários
+*.tmp
+.DS_Store
