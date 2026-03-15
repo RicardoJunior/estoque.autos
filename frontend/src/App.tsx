@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { DashboardLayout } from '@/components/templates/DashboardLayout';
 import { LoginPage } from '@/pages/LoginPage';
 import { SignupPage } from '@/pages/SignupPage';
@@ -27,6 +27,7 @@ import TurnoverReportPage from '@/pages/TurnoverReportPage';
 import SellerDashboardPage from '@/pages/SellerDashboardPage';
 import MarketplaceConfigPage from '@/pages/MarketplaceConfigPage';
 import { StoreTextsPage } from '@/pages/StoreTextsPage';
+import { ProductLandingPage } from '@/pages/ProductLandingPage';
 import { ToastProvider } from '@/components/organisms/ToastContainer';
 import { useRealtimeLeads } from '@/hooks/useRealtimeLeads';
 
@@ -45,8 +46,10 @@ function AppContent() {
       <Route path="/signup" element={<SignupPage />} />
       <Route path="/onboarding" element={<OnboardingPage />} />
 
+      {/* Product Landing Page */}
+      <Route path="/" element={<ProductLandingPage />} />
+
       {/* Admin Routes */}
-      <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route element={<DashboardLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/vehicles" element={<VehicleListPage />} />

@@ -1,0 +1,340 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Estoque.autos - CodePipeline + CodeBuild (menor custo)'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: estoque-autos
+
+  GitHubOwner:
+    Type: String
+    Description: Owner do repositorio GitHub (usuario ou org)
+
+  GitHubRepo:
+    Type: String
+    Description: Nome do repositorio GitHub
+
+  GitHubBranch:
+    Type: String
+    Default: main
+
+  GitHubConnectionArn:
+    Type: String
+    Description: ARN da CodeStar Connection com GitHub (criar em Console > Developer Tools > Connections)
+
+  FrontendBucketName:
+    Type: String
+    Description: Nome do bucket S3 do frontend (output do stack de infra)
+
+  CloudFrontDistributionId:
+    Type: String
+    Description: ID da distribuicao CloudFront (output do stack de infra)
+
+  BackendInstanceId:
+    Type: String
+    Description: ID da instancia EC2 do backend (output do stack de infra)
+
+Resources:
+  # ============================================================
+  # S3 - Pipeline Artifacts
+  # ============================================================
+  PipelineArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-pipeline-artifacts-${AWS::AccountId}'
+      LifecycleConfiguration:
+        Rules:
+          - Id: ExpireArtifacts
+            Status: Enabled
+            ExpirationInDays: 3  # Manter apenas 3 dias para economizar
+
+  # ============================================================
+  # IAM - CodeBuild Role
+  # ============================================================
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-codebuild-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CodeBuildPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/${ProjectName}*'
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                  - 's3:PutObject'
+                Resource:
+                  - !Sub '${PipelineArtifactsBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - 's3:PutObject'
+                  - 's3:DeleteObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${FrontendBucketName}'
+                  - !Sub 'arn:aws:s3:::${FrontendBucketName}/*'
+              - Effect: Allow
+                Action:
+                  - 'cloudfront:CreateInvalidation'
+                Resource: !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistributionId}'
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/*'
+
+  # ============================================================
+  # IAM - CodePipeline Role
+  # ============================================================
+  CodePipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-codepipeline-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codepipeline.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: CodePipelinePolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                  - 's3:PutObject'
+                  - 's3:GetBucketVersioning'
+                Resource:
+                  - !Sub '${PipelineArtifactsBucket.Arn}'
+                  - !Sub '${PipelineArtifactsBucket.Arn}/*'
+              - Effect: Allow
+                Action:
+                  - 'codebuild:BatchGetBuilds'
+                  - 'codebuild:StartBuild'
+                Resource:
+                  - !GetAtt CodeBuildFrontend.Arn
+                  - !GetAtt CodeBuildBackend.Arn
+              - Effect: Allow
+                Action:
+                  - 'codestar-connections:UseConnection'
+                Resource: !Ref GitHubConnectionArn
+              - Effect: Allow
+                Action:
+                  - 'codedeploy:CreateDeployment'
+                  - 'codedeploy:GetDeployment'
+                  - 'codedeploy:GetDeploymentConfig'
+                  - 'codedeploy:GetApplicationRevision'
+                  - 'codedeploy:RegisterApplicationRevision'
+                Resource: '*'
+
+  # ============================================================
+  # IAM - CodeDeploy Role
+  # ============================================================
+  CodeDeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-codedeploy-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codedeploy.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSCodeDeployRole
+
+  # ============================================================
+  # CodeBuild - Frontend
+  # ============================================================
+  CodeBuildFrontend:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub '${ProjectName}-frontend'
+      Description: Build e deploy do frontend React para S3+CloudFront
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      TimeoutInMinutes: 10
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: infra/buildspec-frontend.yml
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: ARM_CONTAINER           # ARM = mais barato
+        ComputeType: BUILD_GENERAL1_SMALL  # 3GB RAM, 2 vCPU - minimo
+        Image: aws/codebuild/amazonlinux-aarch64-standard:3.0
+        EnvironmentVariables:
+          - Name: FRONTEND_BUCKET
+            Value: !Ref FrontendBucketName
+          - Name: CLOUDFRONT_DISTRIBUTION_ID
+            Value: !Ref CloudFrontDistributionId
+          - Name: PROJECT_NAME
+            Value: !Ref ProjectName
+          - Name: BACKEND_IP
+            Value:
+              Fn::ImportValue: !Sub '${ProjectName}-backend-ip'
+      Cache:
+        Type: LOCAL
+        Modes:
+          - LOCAL_SOURCE_CACHE
+          - LOCAL_CUSTOM_CACHE
+
+  # ============================================================
+  # CodeBuild - Backend
+  # ============================================================
+  CodeBuildBackend:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub '${ProjectName}-backend'
+      Description: Build do backend e preparacao para deploy EC2
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      TimeoutInMinutes: 10
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: infra/buildspec-backend.yml
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: ARM_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux-aarch64-standard:3.0
+      Cache:
+        Type: LOCAL
+        Modes:
+          - LOCAL_SOURCE_CACHE
+          - LOCAL_CUSTOM_CACHE
+
+  # ============================================================
+  # CodeDeploy - Backend para EC2
+  # ============================================================
+  CodeDeployApplication:
+    Type: AWS::CodeDeploy::Application
+    Properties:
+      ApplicationName: !Sub '${ProjectName}-backend'
+      ComputePlatform: Server
+
+  CodeDeployDeploymentGroup:
+    Type: AWS::CodeDeploy::DeploymentGroup
+    Properties:
+      ApplicationName: !Ref CodeDeployApplication
+      DeploymentGroupName: !Sub '${ProjectName}-backend-dg'
+      ServiceRoleArn: !GetAtt CodeDeployRole.Arn
+      DeploymentConfigName: CodeDeployDefault.AllAtOnce
+      Ec2TagFilters:
+        - Key: Name
+          Value: !Sub '${ProjectName}-backend'
+          Type: KEY_AND_VALUE
+      AutoRollbackConfiguration:
+        Enabled: true
+        Events:
+          - DEPLOYMENT_FAILURE
+
+  # ============================================================
+  # CodePipeline
+  # ============================================================
+  Pipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub '${ProjectName}-pipeline'
+      RoleArn: !GetAtt CodePipelineRole.Arn
+      ArtifactStore:
+        Type: S3
+        Location: !Ref PipelineArtifactsBucket
+      Stages:
+        # Stage 1: Source
+        - Name: Source
+          Actions:
+            - Name: GitHubSource
+              ActionTypeId:
+                Category: Source
+                Owner: AWS
+                Provider: CodeStarSourceConnection
+                Version: '1'
+              Configuration:
+                ConnectionArn: !Ref GitHubConnectionArn
+                FullRepositoryId: !Sub '${GitHubOwner}/${GitHubRepo}'
+                BranchName: !Ref GitHubBranch
+                OutputArtifactFormat: CODE_ZIP
+                DetectChanges: true
+              OutputArtifacts:
+                - Name: SourceCode
+
+        # Stage 2: Build (frontend e backend em paralelo)
+        - Name: Build
+          Actions:
+            - Name: BuildFrontend
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildFrontend
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: FrontendBuild
+              RunOrder: 1
+            - Name: BuildBackend
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              Configuration:
+                ProjectName: !Ref CodeBuildBackend
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: BackendBuild
+              RunOrder: 1
+
+        # Stage 3: Deploy Backend para EC2
+        - Name: Deploy
+          Actions:
+            - Name: DeployBackend
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Provider: CodeDeploy
+                Version: '1'
+              Configuration:
+                ApplicationName: !Ref CodeDeployApplication
+                DeploymentGroupName: !Ref CodeDeployDeploymentGroup
+              InputArtifacts:
+                - Name: BackendBuild
+              RunOrder: 1
+
+Outputs:
+  PipelineName:
+    Value: !Ref Pipeline
+    Description: Nome do CodePipeline
+
+  PipelineURL:
+    Value: !Sub 'https://${AWS::Region}.console.aws.amazon.com/codesuite/codepipeline/pipelines/${Pipeline}/view'
+    Description: URL do pipeline no console
+
+  CodeBuildFrontendName:
+    Value: !Ref CodeBuildFrontend
+
+  CodeBuildBackendName:
+    Value: !Ref CodeBuildBackend

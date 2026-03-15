@@ -57,7 +57,9 @@ export const getPublicVehicles = async (req: Request, res: Response) => {
     // First, get tenant by slug
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
-      .select('id, name, slug, logo_url, phone, whatsapp, email, address, settings')
+      .select(
+        'id, name, slug, logo_url, phone, whatsapp, email, address, settings, template_id, colors'
+      )
       .eq('slug', slug)
       .single();
 
@@ -156,6 +158,9 @@ export const getPublicVehicles = async (req: Request, res: Response) => {
         whatsapp: tenant.whatsapp,
         email: tenant.email,
         address: tenant.address,
+        template_id: tenant.template_id,
+        colors: tenant.colors,
+        settings: tenant.settings,
       },
       vehicles,
       pagination: {
@@ -189,7 +194,9 @@ export const getPublicVehicleById = async (req: Request, res: Response) => {
     // First, get tenant by slug
     const { data: tenant, error: tenantError } = await supabaseAdmin
       .from('tenants')
-      .select('id, name, slug, logo_url, phone, whatsapp, email, address, settings')
+      .select(
+        'id, name, slug, logo_url, phone, whatsapp, email, address, settings, template_id, colors'
+      )
       .eq('slug', slug)
       .single();
 
@@ -246,6 +253,9 @@ export const getPublicVehicleById = async (req: Request, res: Response) => {
         whatsapp: tenant.whatsapp,
         email: tenant.email,
         address: tenant.address,
+        template_id: tenant.template_id,
+        colors: tenant.colors,
+        settings: tenant.settings,
       },
       vehicle,
     });

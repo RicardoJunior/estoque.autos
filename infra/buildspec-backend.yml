@@ -1,0 +1,40 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "=== Instalando dependencias do backend ==="
+      - cd backend
+      - npm ci --prefer-offline
+
+  build:
+    commands:
+      - echo "=== Building backend ==="
+      - npm run build
+      - echo "=== Reinstalando apenas dependencias de producao ==="
+      - npm ci --prefer-offline --omit=dev
+      - echo "=== Build concluido ==="
+
+  post_build:
+    commands:
+      - echo "=== Preparando artefato para CodeDeploy ==="
+      # Copiar apenas o necessario para deploy
+      - mkdir -p /tmp/deploy-package
+      - cp -r dist/ /tmp/deploy-package/dist/
+      - cp package.json /tmp/deploy-package/
+      - cp package-lock.json /tmp/deploy-package/
+      - cp -r node_modules/ /tmp/deploy-package/node_modules/
+      # Copiar scripts do CodeDeploy
+      - cp -r ../infra/codedeploy/ /tmp/deploy-package/codedeploy/
+      - cp ../infra/appspec.yml /tmp/deploy-package/appspec.yml
+
+artifacts:
+  base-directory: /tmp/deploy-package
+  files:
+    - '**/*'
+
+cache:
+  paths:
+    - 'backend/node_modules/**/*'

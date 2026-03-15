@@ -10,6 +10,7 @@
     "crawl:brands": "tsx src/crawlers/brands.ts",
     "crawl:models": "tsx src/crawlers/models.ts",
     "crawl:versions": "tsx src/crawlers/versions.ts",
+    "crawl:fipe": "tsx src/crawlers/fipe-prices.ts",
     "crawl:all": "tsx src/crawlers/all.ts",
     "validate": "tsx src/utils/validate-data.ts",
     "import:db": "tsx src/scripts/import-to-db.ts",

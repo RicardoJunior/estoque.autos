@@ -2,11 +2,12 @@ import { Logger } from '../utils/logger.js';
 import { crawlBrands } from './brands.js';
 import { crawlModels } from './models.js';
 import { crawlVersions } from './versions.js';
+import { crawlFipePrices } from './fipe-prices.js';
 
 const logger = new Logger('all');
 
 /**
- * Executa o crawl completo: marcas -> modelos -> versões
+ * Executa o crawl completo: marcas -> modelos -> versões -> preços FIPE
  */
 async function crawlAll() {
   logger.info('========================================');
@@ -17,7 +18,7 @@ async function crawlAll() {
 
   try {
     // 1. Crawl de marcas
-    logger.info('ETAPA 1/3: Crawl de marcas');
+    logger.info('ETAPA 1/4: Crawl de marcas');
     logger.info('----------------------------------------');
     const brandsResult = await crawlBrands();
 
@@ -25,10 +26,10 @@ async function crawlAll() {
       throw new Error('Falha no crawl de marcas');
     }
 
-    logger.success(`✓ Marcas: ${brandsResult.totalItems} coletadas\n`);
+    logger.success(`Marcas: ${brandsResult.totalItems} coletadas\n`);
 
     // 2. Crawl de modelos
-    logger.info('ETAPA 2/3: Crawl de modelos');
+    logger.info('ETAPA 2/4: Crawl de modelos');
     logger.info('----------------------------------------');
     const modelsResult = await crawlModels();
 
@@ -36,10 +37,10 @@ async function crawlAll() {
       throw new Error('Falha no crawl de modelos');
     }
 
-    logger.success(`✓ Modelos: ${modelsResult.totalItems} coletados\n`);
+    logger.success(`Modelos: ${modelsResult.totalItems} coletados\n`);
 
-    // 3. Crawl de versões
-    logger.info('ETAPA 3/3: Crawl de versões');
+    // 3. Crawl de versões (anos)
+    logger.info('ETAPA 3/4: Crawl de versões (anos)');
     logger.info('----------------------------------------');
     const versionsResult = await crawlVersions();
 
@@ -47,7 +48,18 @@ async function crawlAll() {
       throw new Error('Falha no crawl de versões');
     }
 
-    logger.success(`✓ Versões: ${versionsResult.totalItems} coletadas\n`);
+    logger.success(`Versões: ${versionsResult.totalItems} coletadas\n`);
+
+    // 4. Crawl de preços FIPE
+    logger.info('ETAPA 4/4: Crawl de preços FIPE');
+    logger.info('----------------------------------------');
+    const fipePricesResult = await crawlFipePrices();
+
+    if (!fipePricesResult.success) {
+      throw new Error('Falha no crawl de preços FIPE');
+    }
+
+    logger.success(`Preços FIPE: ${fipePricesResult.totalItems} coletados\n`);
 
     // Resumo final
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -55,9 +67,10 @@ async function crawlAll() {
     logger.info('========================================');
     logger.info('RESUMO FINAL');
     logger.info('========================================');
-    logger.success(`✓ Marcas:  ${brandsResult.totalItems}`);
-    logger.success(`✓ Modelos: ${modelsResult.totalItems}`);
-    logger.success(`✓ Versões: ${versionsResult.totalItems}`);
+    logger.success(`Marcas:      ${brandsResult.totalItems}`);
+    logger.success(`Modelos:     ${modelsResult.totalItems}`);
+    logger.success(`Versões:     ${versionsResult.totalItems}`);
+    logger.success(`Preços FIPE: ${fipePricesResult.totalItems}`);
     logger.info(`Tempo total: ${duration}s`);
     logger.info('========================================\n');
 
@@ -65,14 +78,15 @@ async function crawlAll() {
     const totalErrors =
       brandsResult.errors.length +
       modelsResult.errors.length +
-      versionsResult.errors.length;
+      versionsResult.errors.length +
+      fipePricesResult.errors.length;
 
     if (totalErrors > 0) {
-      logger.warn(`⚠ ${totalErrors} erros encontrados durante o crawl`);
+      logger.warn(`${totalErrors} erros encontrados durante o crawl`);
       logger.warn('Verifique os arquivos de log para mais detalhes');
     }
 
-    logger.success('✓ Crawl completo finalizado com sucesso!');
+    logger.success('Crawl completo finalizado com sucesso!');
     process.exit(0);
   } catch (error) {
     const duration = ((Date.now() - startTime) / 1000).toFixed(2);

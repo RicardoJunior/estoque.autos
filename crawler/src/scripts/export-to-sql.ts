@@ -12,7 +12,7 @@ import fs from 'fs';
 import path from 'path';
 import { Logger } from '../utils/logger.js';
 import { FileHandler } from '../utils/file-handler.js';
-import type { Brand, Model, Version, CrawlResult } from '../types/vehicle.js';
+import type { Brand, Model, Version, FipePrice, CrawlResult } from '../types/vehicle.js';
 
 const logger = new Logger('export-sql');
 const fileHandler = new FileHandler();
@@ -23,7 +23,7 @@ function escapeString(str: string): string {
 
 function generateBrandInserts(brands: Brand[]): string[] {
   return brands.map(
-    brand =>
+    (brand) =>
       `INSERT INTO brands (id, name, slug) VALUES ('${brand.id}', '${escapeString(
         brand.name
       )}', '${brand.slug}') ON CONFLICT (id) DO NOTHING;`
@@ -32,7 +32,7 @@ function generateBrandInserts(brands: Brand[]): string[] {
 
 function generateModelInserts(models: Model[]): string[] {
   return models.map(
-    model =>
+    (model) =>
       `INSERT INTO models (id, name, slug, brand_id) VALUES ('${model.id}', '${escapeString(
         model.name
       )}', '${model.slug}', '${model.brandId}') ON CONFLICT (id) DO NOTHING;`
@@ -40,16 +40,29 @@ function generateModelInserts(models: Model[]): string[] {
 }
 
 function generateVersionInserts(versions: Version[]): string[] {
-  return versions.map(version => {
-    const year = version.year ? `'${version.year}'` : 'NULL';
-    const fuelType = version.fuelType ? `'${escapeString(version.fuelType)}'` : 'NULL';
-    const transmission = version.transmission
-      ? `'${escapeString(version.transmission)}'`
-      : 'NULL';
+  return versions.map(
+    (version) =>
+      `INSERT INTO versions (id, name, slug, year_code, model_id) VALUES ('${escapeString(
+        version.id
+      )}', '${escapeString(version.name)}', '${version.slug}', '${escapeString(
+        version.yearCode
+      )}', '${version.modelId}') ON CONFLICT (id) DO NOTHING;`
+  );
+}
 
-    return `INSERT INTO versions (id, name, slug, model_id, year, fuel_type, transmission) VALUES ('${
-      version.id
-    }', '${escapeString(version.name)}', '${version.slug}', '${version.modelId}', ${year}, ${fuelType}, ${transmission}) ON CONFLICT (id) DO NOTHING;`;
+function generateFipePriceInserts(prices: FipePrice[]): string[] {
+  return prices.map((price) => {
+    return `INSERT INTO fipe_prices (id, codigo_fipe, preco, marca, modelo, ano_modelo, combustivel, sigla_combustivel, mes_referencia, model_id, year_code) VALUES ('${escapeString(
+      price.id
+    )}', '${escapeString(price.codigoFipe)}', '${escapeString(
+      price.preco
+    )}', '${escapeString(price.marca)}', '${escapeString(
+      price.modelo
+    )}', ${price.anoModelo}, '${escapeString(
+      price.combustivel
+    )}', '${escapeString(price.siglaCombustivel)}', '${escapeString(
+      price.mesReferencia
+    )}', '${price.modelId}', '${escapeString(price.yearCode)}') ON CONFLICT (id) DO NOTHING;`;
   });
 }
 
@@ -61,6 +74,7 @@ async function exportToSQL() {
     const brandsResult = fileHandler.load<CrawlResult<Brand>>('brands.json');
     const modelsResult = fileHandler.load<CrawlResult<Model>>('models.json');
     const versionsResult = fileHandler.load<CrawlResult<Version>>('versions.json');
+    const fipePricesResult = fileHandler.load<CrawlResult<FipePrice>>('fipe-prices.json');
 
     if (!brandsResult || !modelsResult) {
       throw new Error('Dados de marcas ou modelos não encontrados');
@@ -70,7 +84,6 @@ async function exportToSQL() {
       '-- Importação de dados de veículos',
       `-- Gerado em: ${new Date().toISOString()}`,
       '',
-      '-- Desabilitar triggers e checks temporariamente',
       'BEGIN;',
       '',
       '-- Marcas',
@@ -87,10 +100,20 @@ async function exportToSQL() {
 
     if (versionsResult && versionsResult.data.length > 0) {
       sqlStatements.push(
-        '-- Versões',
+        '-- Versões (Anos)',
         `-- Total: ${versionsResult.totalItems} versões`,
         '',
         ...generateVersionInserts(versionsResult.data),
+        ''
+      );
+    }
+
+    if (fipePricesResult && fipePricesResult.data.length > 0) {
+      sqlStatements.push(
+        '-- Preços FIPE',
+        `-- Total: ${fipePricesResult.totalItems} preços`,
+        '',
+        ...generateFipePriceInserts(fipePricesResult.data),
         ''
       );
     }
@@ -105,9 +128,10 @@ async function exportToSQL() {
 
     logger.success(`SQL exportado para: ${outputFile}`);
     logger.info('\nResumo:');
-    logger.info(`  Marcas: ${brandsResult.totalItems}`);
-    logger.info(`  Modelos: ${modelsResult.totalItems}`);
-    logger.info(`  Versões: ${versionsResult?.totalItems || 0}`);
+    logger.info(`  Marcas:      ${brandsResult.totalItems}`);
+    logger.info(`  Modelos:     ${modelsResult.totalItems}`);
+    logger.info(`  Versões:     ${versionsResult?.totalItems || 0}`);
+    logger.info(`  Preços FIPE: ${fipePricesResult?.totalItems || 0}`);
     logger.info('\nPara importar no banco de dados:');
     logger.info(`  psql -d seu_banco -f ${outputFile}`);
   } catch (error) {

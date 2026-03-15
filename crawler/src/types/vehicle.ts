@@ -17,13 +17,28 @@ export interface Version {
   id: string;
   name: string;
   slug: string;
+  yearCode: string;
   modelId: string;
   modelName: string;
   brandId: string;
   brandName: string;
-  year?: string;
-  fuelType?: string;
-  transmission?: string;
+}
+
+export interface FipePrice {
+  id: string;
+  codigoFipe: string;
+  preco: string;
+  marca: string;
+  modelo: string;
+  anoModelo: number;
+  combustivel: string;
+  siglaCombustivel: string;
+  mesReferencia: string;
+  modelId: string;
+  modelName: string;
+  brandId: string;
+  brandName: string;
+  yearCode: string;
 }
 
 export interface CrawlResult<T> {

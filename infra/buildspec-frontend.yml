@@ -1,0 +1,38 @@
+version: 0.2
+
+env:
+  parameter-store:
+    VITE_SUPABASE_URL: "/${PROJECT_NAME}/SUPABASE_URL"
+    VITE_SUPABASE_ANON_KEY: "/${PROJECT_NAME}/SUPABASE_ANON_KEY"
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo "=== Instalando dependencias do frontend ==="
+      - cd frontend
+      - npm ci --prefer-offline
+
+  build:
+    commands:
+      - echo "=== Building frontend ==="
+      - export VITE_API_URL="http://${BACKEND_IP}"
+      - export VITE_ENV=production
+      - npm run build
+      - echo "=== Build concluido ==="
+
+  post_build:
+    commands:
+      - echo "=== Deploying para S3 ==="
+      # Sync arquivos com cache longo para assets hasheados
+      - aws s3 sync dist/ s3://${FRONTEND_BUCKET}/ --delete --cache-control "public, max-age=31536000, immutable" --exclude "index.html" --exclude "*.json"
+      # index.html e manifests sem cache
+      - aws s3 cp dist/index.html s3://${FRONTEND_BUCKET}/index.html --cache-control "public, max-age=0, must-revalidate"
+      # Invalidar CloudFront (apenas index.html para economizar - 1000 invalidacoes/mes gratis)
+      - aws cloudfront create-invalidation --distribution-id ${CLOUDFRONT_DISTRIBUTION_ID} --paths "/index.html" "/manifest.json"
+      - echo "=== Deploy frontend concluido ==="
+
+cache:
+  paths:
+    - 'frontend/node_modules/**/*'

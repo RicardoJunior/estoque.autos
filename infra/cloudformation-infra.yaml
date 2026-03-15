@@ -1,0 +1,381 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Estoque.autos - Infraestrutura de menor custo (S3+CloudFront+EC2 t4g.micro)'
+
+Parameters:
+  ProjectName:
+    Type: String
+    Default: estoque-autos
+    Description: Nome do projeto (usado como prefixo)
+
+  DomainName:
+    Type: String
+    Default: ''
+    Description: Dominio customizado (opcional, deixe vazio para usar dominio CloudFront)
+
+  KeyPairName:
+    Type: String
+    Description: Nome do Key Pair EC2 para acesso SSH
+
+  SSHAllowedIP:
+    Type: String
+    Default: '0.0.0.0/0'
+    Description: IP permitido para SSH (ex 189.10.20.30/32). Use 0.0.0.0/0 com cautela.
+
+  SupabaseUrl:
+    Type: String
+    Description: URL do Supabase
+
+  SupabaseAnonKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase Anon Key
+
+  SupabaseServiceRoleKey:
+    Type: String
+    NoEcho: true
+    Description: Supabase Service Role Key
+
+Conditions:
+  HasCustomDomain: !Not [!Equals [!Ref DomainName, '']]
+
+Resources:
+  # ============================================================
+  # VPC - Usar Default VPC para economizar (sem NAT Gateway)
+  # ============================================================
+
+  # ============================================================
+  # S3 - Frontend Static Hosting
+  # ============================================================
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-frontend-${AWS::AccountId}'
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: CleanupOldVersions
+            Status: Enabled
+            NoncurrentVersionExpiration:
+              NoncurrentDays: 7
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Sid: AllowCloudFrontOAC
+            Effect: Allow
+            Principal:
+              Service: cloudfront.amazonaws.com
+            Action: 's3:GetObject'
+            Resource: !Sub '${FrontendBucket.Arn}/*'
+            Condition:
+              StringEquals:
+                'AWS:SourceArn': !Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/${CloudFrontDistribution}'
+
+  # ============================================================
+  # CloudFront - CDN para o frontend
+  # ============================================================
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub '${ProjectName}-oac'
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        Comment: !Sub '${ProjectName} Frontend'
+        DefaultRootObject: index.html
+        PriceClass: PriceClass_100  # Menor custo: apenas US/Europe/Israel
+        HttpVersion: http2and3
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt FrontendBucket.RegionalDomainName
+            OriginAccessControlId: !Ref CloudFrontOAC
+            S3OriginConfig:
+              OriginAccessIdentity: ''
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6  # CachingOptimized
+          Compress: true
+          AllowedMethods:
+            - GET
+            - HEAD
+          CachedMethods:
+            - GET
+            - HEAD
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: /index.html
+            ErrorCachingMinTTL: 10
+
+  # ============================================================
+  # EC2 - Backend API (t4g.micro = menor custo, ARM, free tier)
+  # ============================================================
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: !Sub '${ProjectName} Backend SG'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHAllowedIP
+          Description: SSH
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+          Description: HTTPS
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-backend-sg'
+
+  BackendInstanceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ProjectName}-ec2-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore  # SSM Session Manager (acesso sem SSH)
+      Policies:
+        - PolicyName: S3DeployAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 's3:GetObject'
+                  - 's3:ListBucket'
+                Resource:
+                  - !Sub 'arn:aws:s3:::${ProjectName}-deploy-artifacts-${AWS::AccountId}'
+                  - !Sub 'arn:aws:s3:::${ProjectName}-deploy-artifacts-${AWS::AccountId}/*'
+        - PolicyName: SSMParameterAccess
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'ssm:GetParameter'
+                  - 'ssm:GetParameters'
+                  - 'ssm:GetParametersByPath'
+                Resource: !Sub 'arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/${ProjectName}/*'
+
+  BackendInstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - !Ref BackendInstanceRole
+
+  BackendInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      InstanceType: t4g.micro  # ARM, 2 vCPU, 1GB RAM - ~$6/mes (free tier 1 ano)
+      ImageId: !Sub '{{resolve:ssm:/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-arm64}}'
+      KeyName: !Ref KeyPairName
+      IamInstanceProfile: !Ref BackendInstanceProfile
+      SecurityGroupIds:
+        - !Ref BackendSecurityGroup
+      BlockDeviceMappings:
+        - DeviceName: /dev/xvda
+          Ebs:
+            VolumeSize: 8  # 8GB gp3 - minimo, suficiente
+            VolumeType: gp3
+            Encrypted: true
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-backend'
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          exec > >(tee /var/log/user-data.log) 2>&1
+
+          # Atualizar sistema
+          dnf update -y
+
+          # Instalar Node.js 20 LTS
+          dnf install -y nodejs20 npm git
+
+          # Instalar PM2 globalmente
+          npm install -g pm2
+
+          # Instalar CodeDeploy agent
+          dnf install -y ruby wget
+          cd /home/ec2-user
+          wget https://aws-codedeploy-${AWS::Region}.s3.${AWS::Region}.amazonaws.com/latest/install
+          chmod +x ./install
+          ./install auto
+          systemctl enable codedeploy-agent
+          systemctl start codedeploy-agent
+
+          # Criar diretorio da aplicacao
+          mkdir -p /home/ec2-user/app/backend
+          chown -R ec2-user:ec2-user /home/ec2-user/app
+
+          # Instalar nginx como reverse proxy
+          dnf install -y nginx
+          cat > /etc/nginx/conf.d/backend.conf << 'NGINX'
+          server {
+              listen 80;
+              server_name _;
+
+              location / {
+                  proxy_pass http://127.0.0.1:3000;
+                  proxy_http_version 1.1;
+                  proxy_set_header Upgrade $http_upgrade;
+                  proxy_set_header Connection 'upgrade';
+                  proxy_set_header Host $host;
+                  proxy_set_header X-Real-IP $remote_addr;
+                  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header X-Forwarded-Proto $scheme;
+                  proxy_cache_bypass $http_upgrade;
+                  proxy_read_timeout 86400;
+              }
+
+              location /api/health {
+                  proxy_pass http://127.0.0.1:3000/api/health;
+              }
+          }
+          NGINX
+          rm -f /etc/nginx/conf.d/default.conf 2>/dev/null
+          systemctl enable nginx
+          systemctl start nginx
+
+          # Salvar env vars do SSM Parameter Store
+          cat > /home/ec2-user/app/load-env.sh << LOADENV
+          #!/bin/bash
+          export NODE_ENV=production
+          export PORT=3000
+          export SUPABASE_URL=\$(aws ssm get-parameter --name "/${ProjectName}/SUPABASE_URL" --query "Parameter.Value" --output text --region ${AWS::Region} 2>/dev/null)
+          export SUPABASE_ANON_KEY=\$(aws ssm get-parameter --name "/${ProjectName}/SUPABASE_ANON_KEY" --with-decryption --query "Parameter.Value" --output text --region ${AWS::Region} 2>/dev/null)
+          export SUPABASE_SERVICE_ROLE_KEY=\$(aws ssm get-parameter --name "/${ProjectName}/SUPABASE_SERVICE_ROLE_KEY" --with-decryption --query "Parameter.Value" --output text --region ${AWS::Region} 2>/dev/null)
+          export ALLOWED_ORIGINS="https://${CloudFrontDistribution.DomainName}"
+          LOADENV
+          chmod +x /home/ec2-user/app/load-env.sh
+          chown ec2-user:ec2-user /home/ec2-user/app/load-env.sh
+
+          # Configurar PM2 para iniciar no boot
+          sudo -u ec2-user bash -c 'pm2 startup systemd -u ec2-user --hp /home/ec2-user | tail -1 | bash'
+
+          echo "=== Setup complete ==="
+
+  # Elastic IP ($3.60/mes - IPv4 publico cobrado desde fev/2024)
+  BackendEIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      InstanceId: !Ref BackendInstance
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-backend-eip'
+
+  # ============================================================
+  # SSM Parameter Store - Secrets (gratis para Standard params)
+  # ============================================================
+  SSMSupabaseUrl:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/SUPABASE_URL'
+      Type: String
+      Value: !Ref SupabaseUrl
+
+  SSMSupabaseAnonKey:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/SUPABASE_ANON_KEY'
+      Type: String  # Use SecureString com KMS para producao real
+      Value: !Ref SupabaseAnonKey
+
+  SSMSupabaseServiceKey:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub '/${ProjectName}/SUPABASE_SERVICE_ROLE_KEY'
+      Type: String  # Use SecureString com KMS para producao real
+      Value: !Ref SupabaseServiceRoleKey
+
+  # ============================================================
+  # S3 - Deploy Artifacts (usado pelo CodePipeline)
+  # ============================================================
+  DeployArtifactsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub '${ProjectName}-deploy-artifacts-${AWS::AccountId}'
+      LifecycleConfiguration:
+        Rules:
+          - Id: CleanupOldArtifacts
+            Status: Enabled
+            ExpirationInDays: 7
+
+Outputs:
+  FrontendBucketName:
+    Value: !Ref FrontendBucket
+    Description: S3 bucket para arquivos do frontend
+    Export:
+      Name: !Sub '${ProjectName}-frontend-bucket'
+
+  CloudFrontDistributionId:
+    Value: !Ref CloudFrontDistribution
+    Description: ID da distribuicao CloudFront
+    Export:
+      Name: !Sub '${ProjectName}-cloudfront-id'
+
+  CloudFrontDomainName:
+    Value: !GetAtt CloudFrontDistribution.DomainName
+    Description: URL do frontend (CloudFront)
+    Export:
+      Name: !Sub '${ProjectName}-cloudfront-domain'
+
+  BackendPublicIP:
+    Value: !Ref BackendEIP
+    Description: IP publico do backend
+    Export:
+      Name: !Sub '${ProjectName}-backend-ip'
+
+  BackendInstanceId:
+    Value: !Ref BackendInstance
+    Description: ID da instancia EC2
+    Export:
+      Name: !Sub '${ProjectName}-backend-instance-id'
+
+  DeployArtifactsBucketName:
+    Value: !Ref DeployArtifactsBucket
+    Description: Bucket para artefatos de deploy
+    Export:
+      Name: !Sub '${ProjectName}-artifacts-bucket'
+
+  FrontendURL:
+    Value: !Sub 'https://${CloudFrontDistribution.DomainName}'
+    Description: URL do frontend
+
+  BackendURL:
+    Value: !Sub 'http://${BackendEIP}'
+    Description: URL do backend API

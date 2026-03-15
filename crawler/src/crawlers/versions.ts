@@ -8,138 +8,126 @@ import type { Model, Version, CrawlResult } from '../types/vehicle.js';
 const logger = new Logger('versions');
 const fileHandler = new FileHandler();
 
+const FIPE_BASE_URL = 'https://parallelum.com.br/fipe/api/v1/carros';
+const SAVE_INTERVAL = 500;
+
 /**
- * Crawl de versões para um modelo específico
+ * Crawl de versões (anos) para um modelo específico usando API FIPE
  */
 async function crawlVersionsForModel(model: Model): Promise<Version[]> {
   const versions: Version[] = [];
 
   try {
-    // Aguardar um pouco entre requisições
-    await randomDelay(500, 1500);
+    await randomDelay(200, 500);
 
-    // URL da API do Webmotors para buscar versões
-    // A API pode variar, então vamos tentar diferentes endpoints
-    const urls = [
-      `https://www.webmotors.com.br/api/VehicleVersion?modelId=${model.id}`,
-      `https://www.webmotors.com.br/api/Typeahead/Versoes?marca=${encodeURIComponent(
-        model.brandName
-      )}&modelo=${encodeURIComponent(model.name)}`,
-    ];
+    const url = `${FIPE_BASE_URL}/marcas/${model.brandId}/modelos/${model.id}/anos`;
 
-    for (const url of urls) {
-      try {
-        const response = await axios.get(url, {
-          headers: {
-            'User-Agent':
-              'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36',
-            Accept: 'application/json',
-            Referer: 'https://www.webmotors.com.br/',
-          },
-          timeout: 10000,
-        });
+    const response = await axios.get(url, { timeout: 15000 });
 
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          for (const versionData of response.data) {
-            try {
-              const version: Version = {
-                id: versionData.Id || versionData.id || String(versions.length + 1),
-                name: versionData.Nome || versionData.name || versionData.Versao,
-                slug: (versionData.Nome || versionData.name || versionData.Versao)
-                  .toLowerCase()
-                  .normalize('NFD')
-                  .replace(/[\u0300-\u036f]/g, '')
-                  .replace(/[^a-z0-9]+/g, '-')
-                  .replace(/^-|-$/g, ''),
-                modelId: model.id,
-                modelName: model.name,
-                brandId: model.brandId,
-                brandName: model.brandName,
-                year: versionData.Ano || versionData.year,
-                fuelType: versionData.Combustivel || versionData.fuelType,
-                transmission: versionData.Cambio || versionData.transmission,
-              };
+    if (Array.isArray(response.data) && response.data.length > 0) {
+      for (const yearData of response.data) {
+        try {
+          const yearCode = String(yearData.codigo);
+          const name = String(yearData.nome);
 
-              versions.push(version);
-            } catch (error) {
-              logger.error(`Erro ao processar versão: ${(error as Error).message}`);
-            }
-          }
+          const version: Version = {
+            id: `${model.id}-${yearCode}`,
+            name,
+            slug: name
+              .toLowerCase()
+              .normalize('NFD')
+              .replace(/[\u0300-\u036f]/g, '')
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-|-$/g, ''),
+            yearCode,
+            modelId: model.id,
+            modelName: model.name,
+            brandId: model.brandId,
+            brandName: model.brandName,
+          };
 
-          // Se encontrou versões neste endpoint, não precisa tentar os outros
-          break;
+          versions.push(version);
+        } catch (error) {
+          logger.error(
+            `Erro ao processar ano de ${model.brandName} ${model.name}: ${(error as Error).message}`
+          );
         }
-      } catch (error) {
-        // Continuar para o próximo URL
-        continue;
       }
     }
 
     if (versions.length > 0) {
-      logger.info(`${model.brandName} ${model.name}: ${versions.length} versões`);
+      logger.info(`${model.brandName} ${model.name}: ${versions.length} anos`);
     }
 
     return versions;
   } catch (error) {
+    const err = error as Error;
+    const status = axios.isAxiosError(error) ? ` (HTTP ${error.response?.status})` : '';
     logger.error(
-      `Erro ao buscar versões de ${model.brandName} ${model.name}`,
-      error as Error
+      `Erro ao buscar anos de ${model.brandName} ${model.name}${status}: ${err.message}`
     );
     return [];
   }
 }
 
 /**
- * Crawl de todas as versões
+ * Crawl de todas as versões (anos) usando API FIPE
  */
 export async function crawlVersions(): Promise<CrawlResult<Version>> {
-  logger.info('Iniciando crawl de versões...');
+  logger.info('Iniciando crawl de versões (anos) via API FIPE...');
 
   const versions: Version[] = [];
   const errors: string[] = [];
 
   try {
-    // Carregar modelos
     const modelsResult = fileHandler.load<CrawlResult<Model>>('models.json');
 
     if (!modelsResult || !modelsResult.data) {
-      throw new Error(
-        'Arquivo de modelos não encontrado. Execute crawl:models primeiro.'
-      );
+      throw new Error('Arquivo de modelos não encontrado. Execute crawl:models primeiro.');
     }
 
     const models = modelsResult.data;
     logger.info(`${models.length} modelos carregados`);
 
-    // Limitar paralelismo para não sobrecarregar o servidor
-    const limit = pLimit(2);
-
+    const limit = pLimit(3);
     let processed = 0;
 
-    // Crawl de versões para cada modelo
-    const promises = models.map(model =>
+    const promises = models.map((model) =>
       limit(async () => {
         try {
           const modelVersions = await crawlVersionsForModel(model);
+          versions.push(...modelVersions);
           processed++;
+
           logger.progress(processed, models.length, `${model.brandName} ${model.name}`);
+
+          // Save progressivo para não perder dados
+          if (processed % SAVE_INTERVAL === 0) {
+            const partial: CrawlResult<Version> = {
+              success: true,
+              data: [...versions],
+              errors: [...errors],
+              timestamp: new Date().toISOString(),
+              totalItems: versions.length,
+            };
+            fileHandler.save('versions.json', partial);
+            logger.info(
+              `[Checkpoint] Salvo ${versions.length} versões (${processed}/${models.length} modelos)`
+            );
+          }
+
           return modelVersions;
         } catch (error) {
-          errors.push(
-            `${model.brandName} ${model.name}: ${(error as Error).message}`
-          );
+          const msg = `${model.brandName} ${model.name}: ${(error as Error).message}`;
+          errors.push(msg);
+          logger.error(msg);
           processed++;
           return [];
         }
       })
     );
 
-    const results = await Promise.all(promises);
-
-    // Consolidar todas as versões
-    results.forEach(modelVersions => {
-      versions.push(...modelVersions);
-    });
+    await Promise.all(promises);
 
     // Ordenar versões
     versions.sort((a, b) => {
@@ -154,7 +142,10 @@ export async function crawlVersions(): Promise<CrawlResult<Version>> {
 
     logger.success(`\nTotal de versões coletadas: ${versions.length}`);
 
-    // Salvar resultado
+    if (errors.length > 0) {
+      logger.warn(`${errors.length} erros durante o crawl`);
+    }
+
     const result: CrawlResult<Version> = {
       success: true,
       data: versions,
@@ -185,16 +176,16 @@ export async function crawlVersions(): Promise<CrawlResult<Version>> {
 // Executar se for chamado diretamente
 if (import.meta.url === `file://${process.argv[1]}`) {
   crawlVersions()
-    .then(result => {
+    .then((result) => {
       if (result.success) {
-        logger.success('✓ Crawl de versões concluído com sucesso!');
+        logger.success('Crawl de versões concluído com sucesso!');
         process.exit(0);
       } else {
-        logger.error('✗ Crawl de versões falhou');
+        logger.error('Crawl de versões falhou');
         process.exit(1);
       }
     })
-    .catch(error => {
+    .catch((error) => {
       logger.error('Erro fatal', error);
       process.exit(1);
     });
