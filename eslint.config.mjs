@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Código v1 mantido só como referência (não faz parte do app):
+    "legacy/**",
   ]),
 ]);
 
