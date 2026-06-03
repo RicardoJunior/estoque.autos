@@ -1,58 +1,17 @@
-# Estoque.autos SaaS
+# Estoque.autos
 
-Plataforma completa de gestão para lojas de veículos (carros, motos e utilitários) que unifica gestão de estoque, captação de leads, controle financeiro e presença digital em um único sistema.
+SaaS onde o lojista de carros cria a conta, cadastra o estoque e tem um **site pronto em minutos**: 6 templates, cor principal + destaque, logo, e formulário de lead em cada carro.
 
-## Stack Tecnológica
-
-- **Backend**: Node.js + TypeScript + Express
-- **Banco de Dados**: Supabase (PostgreSQL)
-- **Frontend**: React + DaisyUI (Tailwind)
-- **Testes**: Jest
-
-## Estrutura do Projeto
+> **Reescrita v2 (Next.js + Supabase).** O app vive em [`web/`](./web). Veja o [README do app](./web/README.md) para rodar.
 
 ```
-.
-├── backend/          # API REST com Express + TypeScript
-├── frontend/         # Interface React + DaisyUI
-├── shared/           # Tipos e utilitários compartilhados
-└── docs/             # Documentação adicional
+web/        ← aplicação atual (Next.js 16 + Supabase)
+legacy/     ← versão v1 (Express + React/Vite + crawler + infra AWS), mantida como referência
 ```
 
-## Começando
+A v1 foi reescrita do zero por causa de bugs estruturais no fluxo principal (signup
+quebrado, RLS inoperante, leads de WhatsApp perdidos, edição de veículo inexistente).
+A v2 unifica painel admin + site público das lojas em um único app Next.js com SSR,
+isolamento multi-tenant por RLS endurecido e deploy self-host barato.
 
-### Pré-requisitos
-
-- Node.js >= 20.0.0
-- npm >= 10.0.0
-- Conta Supabase
-
-### Instalação
-
-```bash
-# Instalar dependências
-npm install
-
-# Configurar variáveis de ambiente
-cp backend/.env.example backend/.env
-cp frontend/.env.example frontend/.env
-
-# Iniciar desenvolvimento
-npm run dev
-```
-
-### Scripts Disponíveis
-
-- `npm run dev` - Inicia backend e frontend em modo de desenvolvimento
-- `npm run build` - Build de produção
-- `npm run test` - Executa testes
-- `npm run lint` - Verifica qualidade do código
-- `npm run format` - Formata código com Prettier
-
-## Documentação
-
-Para documentação completa do projeto, veja [project.md](./project.md).
-
-## Licença
-
-Proprietary - © 2026 Estoque.autos
+Comece por [`web/README.md`](./web/README.md).

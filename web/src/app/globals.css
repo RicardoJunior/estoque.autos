@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Tema do PAINEL ADMIN (claro, neutro). O site público de cada
+   loja tem o próprio tema, controlado por cor primária/accent.
+   ============================================================ */
+@theme {
+  --color-bg: #f7f8fa;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-ink: #0f172a;
+  --color-ink-soft: #64748b;
+  --color-brand: #1d4ed8;
+  --color-brand-ink: #1e40af;
+  --color-danger: #dc2626;
+  --color-success: #16a34a;
+
+  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  --radius: 0.65rem;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Inputs e botões base reutilizados no admin.
+   Tailwind v4 não permite @apply de uma classe de componente dentro de
+   outra, então cada classe é autocontida (a base do botão é repetida). */
+@layer components {
+  .field {
+    @apply w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-[0.95rem] text-[var(--color-ink)] outline-none transition placeholder:text-slate-400;
+  }
+  .field:focus {
+    @apply border-[var(--color-brand)] ring-2;
+    --tw-ring-color: color-mix(in srgb, var(--color-brand) 18%, transparent);
+  }
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-[var(--color-ink)];
+  }
+  .btn,
+  .btn-primary,
+  .btn-ghost,
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius)] px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
+  }
+  .btn-primary {
+    @apply bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-ink)];
+  }
+  .btn-ghost {
+    @apply border border-[var(--color-border)] bg-white text-[var(--color-ink)] hover:bg-slate-50;
+  }
+  .btn-danger {
+    @apply bg-[var(--color-danger)] text-white hover:brightness-95;
+  }
+  .card {
+    @apply rounded-[calc(var(--radius)+0.25rem)] border border-[var(--color-border)] bg-[var(--color-surface)];
+  }
+}
