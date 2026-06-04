@@ -13,6 +13,29 @@ export const TEMPLATE_IDS = [
 ] as const;
 export type TemplateId = (typeof TEMPLATE_IDS)[number];
 
+export const PLAN_IDS = ["basico", "pro"] as const;
+export type PlanId = (typeof PLAN_IDS)[number];
+
+/** Status do Stripe que liberam acesso ao produto. */
+export const ACTIVE_SUBSCRIPTION_STATUSES = ["active", "trialing"] as const;
+
+export interface Subscription {
+  id: string;
+  user_id: string;
+  tenant_id: string | null;
+  stripe_customer_id: string;
+  stripe_subscription_id: string;
+  plan: PlanId;
+  /** status cru do Stripe (active, trialing, past_due, canceled…) */
+  status: string;
+  /** intervalo de cobrança do Stripe (month = mensal, year = anual) */
+  billing_interval: "month" | "year" | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface TenantColors {
   /** Cor principal da loja (header, links, destaques) */
   primary: string;
@@ -30,6 +53,8 @@ export interface TenantSettings {
   about?: string;
   footer_text?: string;
   business_hours?: string;
+  /** id da fonte da vitrine (ver src/lib/fonts.ts) */
+  font?: string;
 }
 
 export interface Tenant {
@@ -44,6 +69,12 @@ export interface Tenant {
   colors: TenantColors;
   logo_url: string | null;
   settings: TenantSettings;
+  /** domínio próprio apontado pelo lojista (normalizado), ou null */
+  custom_domain: string | null;
+  /** 'pending' até o apontamento ser verificado, depois 'active' */
+  custom_domain_status: "pending" | "active";
+  /** cópia de conveniência; fonte da verdade é subscriptions.status */
+  plan: PlanId | null;
   created_at: string;
   updated_at: string;
 }
@@ -120,6 +151,11 @@ export interface Vehicle {
   featured: boolean;
   status: VehicleStatus;
   sold_at: string | null;
+  /** snapshot FIPE (cascata no cadastro); null = cadastro manual */
+  fipe_code: string | null;
+  fipe_year_id: string | null;
+  fipe_price: number | null;
+  fipe_reference: string | null;
   created_at: string;
   updated_at: string;
 }

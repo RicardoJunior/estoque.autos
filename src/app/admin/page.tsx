@@ -2,6 +2,8 @@ import Link from "next/link";
 import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/format";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const metadata = { title: "Início" };
 
@@ -57,17 +59,20 @@ export default async function DashboardPage({
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {welcome && (
-        <div className="card flex items-center justify-between gap-4 border-[var(--color-brand)]/20 bg-[var(--color-brand)]/5 p-5">
+        <Card className="flex flex-row items-center justify-between gap-4 bg-primary/5 p-5 ring-primary/20">
           <div>
             <h2 className="font-semibold">🎉 Seu site está no ar!</h2>
-            <p className="mt-0.5 text-sm text-[var(--color-ink-soft)]">
+            <p className="mt-0.5 text-sm text-muted-foreground">
               Agora cadastre seus carros para começar a receber contatos.
             </p>
           </div>
-          <Link href="/admin/veiculos/novo" className="btn-primary shrink-0">
+          <Link
+            href="/admin/veiculos/novo"
+            className={buttonVariants({ className: "shrink-0" })}
+          >
             Cadastrar carro
           </Link>
-        </div>
+        </Card>
       )}
 
       <div>
@@ -80,12 +85,12 @@ export default async function DashboardPage({
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {kpis.map((k) => {
           const inner = (
-            <div className="card p-5">
+            <Card className="p-5">
               <div className="text-2xl font-bold">{k.value}</div>
-              <div className="mt-1 text-sm text-[var(--color-ink-soft)]">
+              <div className="mt-1 text-sm text-muted-foreground">
                 {k.label}
               </div>
-            </div>
+            </Card>
           );
           return k.href ? (
             <Link key={k.label} href={k.href} className="block transition hover:opacity-80">
@@ -98,17 +103,21 @@ export default async function DashboardPage({
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <Link href="/admin/veiculos" className="card p-5 transition hover:border-slate-300">
-          <div className="font-semibold">Gerenciar estoque →</div>
-          <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
-            Cadastre, edite e publique seus veículos.
-          </p>
+        <Link href="/admin/veiculos">
+          <Card className="p-5 ring-foreground/10 transition hover:ring-foreground/20">
+            <div className="font-semibold">Gerenciar estoque →</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Cadastre, edite e publique seus veículos.
+            </p>
+          </Card>
         </Link>
-        <Link href="/admin/site" className="card p-5 transition hover:border-slate-300">
-          <div className="font-semibold">Personalizar site →</div>
-          <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
-            Troque o template, as cores e o logo da sua loja.
-          </p>
+        <Link href="/admin/site">
+          <Card className="p-5 ring-foreground/10 transition hover:ring-foreground/20">
+            <div className="font-semibold">Personalizar site →</div>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Troque o template, as cores e o logo da sua loja.
+            </p>
+          </Card>
         </Link>
       </div>
     </div>

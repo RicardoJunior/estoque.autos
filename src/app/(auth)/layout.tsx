@@ -13,7 +13,9 @@ export default function AuthLayout({
       >
         estoque<span className="text-[var(--color-brand)]">.autos</span>
       </Link>
-      <div className="card w-full max-w-md p-8 shadow-sm">{children}</div>
+      <div className="w-full max-w-md rounded-xl bg-card p-8 text-card-foreground ring-1 ring-foreground/10">
+        {children}
+      </div>
     </div>
   );
 }

@@ -1,66 +1,146 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
 
 /* ============================================================
-   Tema do PAINEL ADMIN (claro, neutro). O site público de cada
-   loja tem o próprio tema, controlado por cor primária/accent.
+   estoque.autos — tema do PRODUTO (admin/auth/onboarding/landing):
+   escuro + âmbar, alinhado à landing. A vitrine pública de cada
+   loja tem o próprio tema (cores+fonte), via --sf-* — independente.
    ============================================================ */
-@theme {
-  --color-bg: #f7f8fa;
-  --color-surface: #ffffff;
-  --color-border: #e5e7eb;
-  --color-ink: #0f172a;
-  --color-ink-soft: #64748b;
-  --color-brand: #1d4ed8;
-  --color-brand-ink: #1e40af;
-  --color-danger: #dc2626;
-  --color-success: #16a34a;
 
-  --font-sans: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+@theme inline {
+  --font-sans: var(--font-archivo);
+  --font-heading: var(--font-display);
+  --font-display: var(--font-display);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+
+  /* Aliases LEGADOS (ponte): telas ainda usam var(--color-ink) etc.
+     Apontam para os tokens shadcn até a migração da Fase 3. */
+  --color-ink: var(--foreground);
+  --color-ink-soft: var(--muted-foreground);
+  --color-brand: var(--primary);
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+}
+
+:root {
   --radius: 0.65rem;
+  /* fallback claro (o app roda sempre em .dark; mantido por completude) */
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.15 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.15 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.15 0 0);
+  --primary: oklch(0.72 0.18 47);
+  --primary-foreground: oklch(0.17 0.02 47);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.2 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.5 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.2 0 0);
+  --destructive: oklch(0.58 0.22 27);
+  --success: oklch(0.7 0.15 155);
+  --border: oklch(0.92 0 0);
+  --input: oklch(0.92 0 0);
+  --ring: oklch(0.72 0.18 47);
+  --chart-1: oklch(0.72 0.18 47);
+  --chart-2: oklch(0.81 0.13 65);
+  --chart-3: oklch(0.65 0.12 200);
+  --chart-4: oklch(0.6 0.1 160);
+  --chart-5: oklch(0.55 0.08 300);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.15 0 0);
+  --sidebar-primary: oklch(0.72 0.18 47);
+  --sidebar-primary-foreground: oklch(0.17 0.02 47);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.2 0 0);
+  --sidebar-border: oklch(0.92 0 0);
+  --sidebar-ring: oklch(0.72 0.18 47);
 }
 
-html {
-  height: 100%;
+.dark {
+  /* paleta escura/âmbar da landing */
+  --background: oklch(0.135 0.004 265);     /* ~#0a0b0d */
+  --foreground: oklch(0.95 0.008 95);       /* ~#f4f1ea */
+  --card: oklch(0.2 0.006 265);             /* ~#15171c */
+  --card-foreground: oklch(0.95 0.008 95);
+  --popover: oklch(0.21 0.008 265);         /* ~#1b1e25 */
+  --popover-foreground: oklch(0.95 0.008 95);
+  --primary: oklch(0.72 0.18 47);           /* âmbar #ff7a1a */
+  --primary-foreground: oklch(0.17 0.02 47);/* quase preto sobre âmbar */
+  --secondary: oklch(0.24 0.008 265);
+  --secondary-foreground: oklch(0.95 0.008 95);
+  --muted: oklch(0.24 0.008 265);
+  --muted-foreground: oklch(0.69 0.008 110);/* ~#9a9d97 */
+  --accent: oklch(0.28 0.01 265);
+  --accent-foreground: oklch(0.96 0.008 95);
+  --destructive: oklch(0.62 0.21 25);
+  --success: oklch(0.72 0.16 155);
+  --border: oklch(1 0 0 / 9%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.72 0.18 47);
+  --chart-1: oklch(0.72 0.18 47);
+  --chart-2: oklch(0.81 0.13 65);
+  --chart-3: oklch(0.65 0.12 200);
+  --chart-4: oklch(0.6 0.1 160);
+  --chart-5: oklch(0.55 0.08 300);
+  --sidebar: oklch(0.17 0.005 265);
+  --sidebar-foreground: oklch(0.95 0.008 95);
+  --sidebar-primary: oklch(0.72 0.18 47);
+  --sidebar-primary-foreground: oklch(0.17 0.02 47);
+  --sidebar-accent: oklch(0.24 0.008 265);
+  --sidebar-accent-foreground: oklch(0.96 0.008 95);
+  --sidebar-border: oklch(1 0 0 / 9%);
+  --sidebar-ring: oklch(0.72 0.18 47);
 }
 
-body {
-  min-height: 100%;
-  background: var(--color-bg);
-  color: var(--color-ink);
-  font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
-}
-
-/* Inputs e botões base reutilizados no admin.
-   Tailwind v4 não permite @apply de uma classe de componente dentro de
-   outra, então cada classe é autocontida (a base do botão é repetida). */
-@layer components {
-  .field {
-    @apply w-full rounded-[var(--radius)] border border-[var(--color-border)] bg-white px-3.5 py-2.5 text-[0.95rem] text-[var(--color-ink)] outline-none transition placeholder:text-slate-400;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
   }
-  .field:focus {
-    @apply border-[var(--color-brand)] ring-2;
-    --tw-ring-color: color-mix(in srgb, var(--color-brand) 18%, transparent);
-  }
-  .label {
-    @apply mb-1.5 block text-sm font-medium text-[var(--color-ink)];
-  }
-  .btn,
-  .btn-primary,
-  .btn-ghost,
-  .btn-danger {
-    @apply inline-flex items-center justify-center gap-2 rounded-[var(--radius)] px-4 py-2.5 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-60;
-  }
-  .btn-primary {
-    @apply bg-[var(--color-brand)] text-white hover:bg-[var(--color-brand-ink)];
-  }
-  .btn-ghost {
-    @apply border border-[var(--color-border)] bg-white text-[var(--color-ink)] hover:bg-slate-50;
-  }
-  .btn-danger {
-    @apply bg-[var(--color-danger)] text-white hover:brightness-95;
-  }
-  .card {
-    @apply rounded-[calc(var(--radius)+0.25rem)] border border-[var(--color-border)] bg-[var(--color-surface)];
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
 }

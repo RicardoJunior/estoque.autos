@@ -1,5 +1,8 @@
 import { requireTenant } from "@/lib/auth";
+import { appHost } from "@/lib/domain";
+import { isCloudflareSaasEnabled } from "@/lib/cloudflare-saas";
 import { ContactForm } from "./ContactForm";
+import { DomainForm } from "./DomainForm";
 
 export const metadata = { title: "Configurações" };
 
@@ -14,6 +17,11 @@ export default async function SettingsPage() {
         </p>
       </div>
       <ContactForm tenant={tenant} />
+      <DomainForm
+        tenant={tenant}
+        appHost={appHost()}
+        cfEnabled={isCloudflareSaasEnabled()}
+      />
     </div>
   );
 }

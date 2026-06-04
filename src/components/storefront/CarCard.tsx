@@ -20,7 +20,8 @@ interface Props {
  * tema da loja (var(--sf-primary)); o restante adapta a tom claro/escuro.
  */
 export function CarCard({ vehicle, slug, tone = "light", rounded = "rounded-xl" }: Props) {
-  const cover = vehicle.photos?.[0];
+  const photos = vehicle.photos ?? [];
+  const cover = photos[0];
   const dark = tone === "dark";
   const reserved = vehicle.status === "reserved";
 
@@ -52,15 +53,18 @@ export function CarCard({ vehicle, slug, tone = "light", rounded = "rounded-xl" 
             Reservado
           </span>
         )}
-        {vehicle.photos?.length > 1 && (
+        {photos.length > 1 && (
           <span className="absolute bottom-3 right-3 rounded-md bg-black/60 px-1.5 py-0.5 text-[11px] font-medium text-white">
-            {vehicle.photos.length} fotos
+            {photos.length} fotos
           </span>
         )}
       </div>
 
       <div className="p-4">
-        <h3 className={`truncate font-semibold ${dark ? "text-white" : "text-slate-900"}`}>
+        <h3
+          className={`truncate font-semibold ${dark ? "text-white" : "text-slate-900"}`}
+          style={{ fontFamily: "var(--sf-font-head)" }}
+        >
           {vehicleTitle(vehicle)}
         </h3>
         <div className={`mt-1 flex flex-wrap gap-x-2 gap-y-0.5 text-xs ${dark ? "text-slate-300" : "text-slate-500"}`}>
@@ -73,7 +77,9 @@ export function CarCard({ vehicle, slug, tone = "light", rounded = "rounded-xl" 
         </div>
         <div
           className="mt-2.5 text-lg font-bold"
-          style={{ color: "var(--sf-primary)" }}
+          // em card escuro a primária da loja pode ser escura (ex.: navy)
+          // e sumir — texto claro garante leitura; no claro, vale a marca
+          style={{ color: dark ? "#f8fafc" : "var(--sf-primary)" }}
         >
           {formatPrice(vehicle.price)}
         </div>

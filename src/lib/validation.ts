@@ -17,6 +17,7 @@ import {
   VEHICLE_CATEGORIES,
   VEHICLE_STATUSES,
 } from "./types";
+import { STORE_FONT_IDS } from "./fonts";
 
 // ============================================================
 // Schemas Zod — fonte única de validação, usada por Server
@@ -66,6 +67,7 @@ export const tenantCustomizationSchema = z.object({
       about: z.string().max(2000).optional(),
       footer_text: z.string().max(300).optional(),
       business_hours: z.string().max(200).optional(),
+      font: z.enum(STORE_FONT_IDS).optional(),
     })
     .optional(),
 });
@@ -88,6 +90,16 @@ export const tenantContactSchema = z.object({
     .nullable()
     .optional(),
 });
+
+/** Hostname (domínio próprio) já normalizado: minúsculo, sem protocolo. */
+export const customDomainSchema = z
+  .string()
+  .min(4, "Domínio muito curto")
+  .max(253, "Domínio muito longo")
+  .regex(
+    /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/,
+    "Domínio inválido (ex.: www.minhaloja.com.br)",
+  );
 
 const currentYear = new Date().getFullYear();
 
@@ -120,6 +132,11 @@ export const vehicleSchema = z.object({
   description: z.string().max(5000).nullable().optional(),
   optionals: z.array(z.string().max(60)).max(50).default([]),
   featured: z.boolean().default(false),
+  // snapshot FIPE (preenchido pela cascata; cadastro manual = null)
+  fipe_code: z.string().max(20).nullable().optional(),
+  fipe_year_id: z.string().max(20).nullable().optional(),
+  fipe_price: z.coerce.number().min(0).nullable().optional(),
+  fipe_reference: z.string().max(40).nullable().optional(),
 });
 
 export const vehicleStatusSchema = z.object({

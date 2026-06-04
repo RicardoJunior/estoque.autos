@@ -1,10 +1,10 @@
 import { LEAD_STATUS_LABELS, type LeadStatus } from "@/lib/types";
 
 const STYLES: Record<LeadStatus, string> = {
-  new: "bg-blue-100 text-blue-700",
-  in_progress: "bg-amber-100 text-amber-700",
-  won: "bg-green-100 text-green-700",
-  lost: "bg-slate-200 text-slate-500",
+  new: "bg-blue-500/15 text-blue-400",
+  in_progress: "bg-amber-500/15 text-amber-400",
+  won: "bg-emerald-500/15 text-emerald-400",
+  lost: "bg-muted text-muted-foreground",
 };
 
 export function LeadStatusPill({ status }: { status: LeadStatus }) {

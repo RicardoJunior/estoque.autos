@@ -10,6 +10,8 @@ import {
   whatsappLink,
 } from "@/lib/format";
 import { LeadDetailControls } from "./LeadDetailControls";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export const metadata = { title: "Lead" };
 
@@ -58,23 +60,21 @@ export default async function LeadDetailPage({
         </h1>
       </div>
 
-      <div className="card space-y-4 p-5">
+      <Card className="space-y-4 p-5">
         <div className="grid grid-cols-2 gap-x-4 gap-y-3">
           {info
             .filter(([, v]) => v)
             .map(([k, v]) => (
               <div key={k}>
-                <div className="text-xs text-[var(--color-ink-soft)]">{k}</div>
+                <div className="text-xs text-muted-foreground">{k}</div>
                 <div className="text-sm font-medium">{v}</div>
               </div>
             ))}
         </div>
 
         {lead.message && (
-          <div className="rounded-[var(--radius)] bg-slate-50 p-3 text-sm">
-            <div className="mb-1 text-xs text-[var(--color-ink-soft)]">
-              Mensagem
-            </div>
+          <div className="rounded-lg bg-muted p-3 text-sm">
+            <div className="mb-1 text-xs text-muted-foreground">Mensagem</div>
             {lead.message}
           </div>
         )}
@@ -82,13 +82,13 @@ export default async function LeadDetailPage({
         {lead.vehicle && (
           <Link
             href={`/admin/veiculos/${lead.vehicle.id}`}
-            className="flex items-center justify-between rounded-[var(--radius)] border border-[var(--color-border)] p-3 text-sm hover:bg-slate-50"
+            className="flex items-center justify-between rounded-lg border border-border p-3 text-sm hover:bg-muted"
           >
             <span>
               Interesse em{" "}
               <span className="font-semibold">{vehicleTitle(lead.vehicle)}</span>
             </span>
-            <span className="font-semibold text-[var(--color-brand)]">
+            <span className="font-semibold text-primary">
               {formatPrice(lead.vehicle.price)}
             </span>
           </Link>
@@ -105,16 +105,22 @@ export default async function LeadDetailPage({
               )}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn-primary"
+              className={buttonVariants()}
             >
               Responder no WhatsApp
             </a>
-            <a href={`tel:${lead.phone.replace(/\D/g, "")}`} className="btn-ghost">
+            <a
+              href={`tel:${lead.phone.replace(/\D/g, "")}`}
+              className={buttonVariants({
+                variant: "ghost",
+                className: "border border-border",
+              })}
+            >
               Ligar
             </a>
           </div>
         )}
-      </div>
+      </Card>
 
       <LeadDetailControls
         leadId={lead.id}

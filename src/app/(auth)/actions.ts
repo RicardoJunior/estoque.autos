@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { isBillingInterval, isPlanId } from "@/lib/billing";
 import {
   fieldErrorsFromZod,
   loginSchema,
@@ -26,6 +27,14 @@ export async function signupAction(
     return { fieldErrors: fieldErrorsFromZod(parsed.error) };
   }
 
+  // plano-primeiro: plano + intervalo escolhidos na landing acompanham
+  // o fluxo inteiro (signup → confirmação → checkout)
+  const planoRaw = String(formData.get("plano") || "");
+  const plano = isPlanId(planoRaw) ? planoRaw : "basico";
+  const intervaloRaw = String(formData.get("intervalo") || "");
+  const intervalo = isBillingInterval(intervaloRaw) ? intervaloRaw : "mensal";
+  const checkoutPath = `/cadastro/assinatura?plano=${plano}&intervalo=${intervalo}`;
+
   const supabase = await createClient();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const { data, error } = await supabase.auth.signUp({
@@ -33,7 +42,7 @@ export async function signupAction(
     password: parsed.data.password,
     options: {
       data: { name: parsed.data.name },
-      emailRedirectTo: `${appUrl}/auth/callback?next=/onboarding`,
+      emailRedirectTo: `${appUrl}/auth/callback?next=${encodeURIComponent(checkoutPath)}`,
     },
   });
 
@@ -48,7 +57,7 @@ export async function signupAction(
   // Com confirmação de e-mail desligada (dev), a sessão já vem ativa.
   // Com confirmação ligada (prod), session é null → checar o e-mail.
   if (data.session) {
-    redirect("/onboarding");
+    redirect(checkoutPath);
   }
   redirect("/cadastro/confirme?email=" + encodeURIComponent(parsed.data.email));
 }

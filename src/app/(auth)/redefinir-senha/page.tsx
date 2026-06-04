@@ -1,9 +1,26 @@
 "use client";
 
 import { useActionState } from "react";
+import { useFormStatus } from "react-dom";
 import { updatePasswordAction, type AuthFormState } from "../actions";
-import { Field } from "@/components/ui/Field";
-import { SubmitButton } from "@/components/ui/SubmitButton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+function SubmitButton({
+  children,
+  pendingLabel,
+}: {
+  children: React.ReactNode;
+  pendingLabel: string;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? pendingLabel : children}
+    </Button>
+  );
+}
 
 export default function ResetPasswordPage() {
   const [state, action] = useActionState<AuthFormState, FormData>(
@@ -20,19 +37,29 @@ export default function ResetPasswordPage() {
 
       <form action={action} className="mt-6 space-y-4">
         {state.error && (
-          <div className="rounded-[var(--radius)] bg-red-50 px-3.5 py-2.5 text-sm text-[var(--color-danger)]">
+          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
             {state.error}
           </div>
         )}
-        <Field
-          label="Nova senha"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          required
-          hint="Mínimo de 8 caracteres."
-          error={state.fieldErrors?.password}
-        />
+        <div className="grid gap-2">
+          <Label htmlFor="password">Nova senha</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+          />
+          {state.fieldErrors?.password ? (
+            <p className="text-xs text-destructive">
+              {state.fieldErrors.password}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Mínimo de 8 caracteres.
+            </p>
+          )}
+        </div>
         <SubmitButton pendingLabel="Salvando…">Salvar nova senha</SubmitButton>
       </form>
     </>

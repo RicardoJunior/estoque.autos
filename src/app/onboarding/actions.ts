@@ -79,6 +79,9 @@ export async function completeOnboardingAction(
       primary: formData.get("primary") || DEFAULT_COLORS.primary,
       accent: formData.get("accent") || DEFAULT_COLORS.accent,
     },
+    settings: {
+      font: formData.get("font") || undefined,
+    },
   });
 
   const supabase = await createClient();
@@ -118,12 +121,13 @@ export async function completeOnboardingAction(
     }
   }
 
-  // 3) template + cores + logo
+  // 3) template + cores + fonte + logo
   const update: Record<string, unknown> = {};
   if (customization.success) {
     if (customization.data.template_id)
       update.template_id = customization.data.template_id as TemplateId;
     if (customization.data.colors) update.colors = customization.data.colors;
+    if (customization.data.settings) update.settings = customization.data.settings;
   }
   if (logoUrl) update.logo_url = logoUrl;
 
@@ -131,5 +135,5 @@ export async function completeOnboardingAction(
     await supabase.from("tenants").update(update).eq("id", tenant.id);
   }
 
-  redirect("/admin?welcome=1");
+  redirect(`/onboarding/pronto?slug=${encodeURIComponent(base.data.slug)}`);
 }

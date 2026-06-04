@@ -7,6 +7,9 @@ import {
   VEHICLE_STATUS_LABELS,
   type VehicleStatus,
 } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { deleteVehicleAction, setVehicleStatusAction } from "../actions";
 
 export function VehicleActions({
@@ -29,68 +32,70 @@ export function VehicleActions({
   }
 
   return (
-    <div className="card space-y-4 p-5">
-      <div>
-        <h2 className="text-sm font-semibold">Status do anúncio</h2>
-        <p className="mt-0.5 text-xs text-[var(--color-ink-soft)]">
+    <Card className="gap-4 px-5 py-5">
+      <CardHeader className="gap-0 px-0">
+        <CardTitle className="text-sm font-semibold">Status do anúncio</CardTitle>
+        <p className="mt-0.5 text-xs text-muted-foreground">
           “Disponível” e “Reservado” aparecem no site. “Vendido” e “Arquivado”
           são removidos da vitrine.
         </p>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        {VEHICLE_STATUSES.map((s) => (
-          <button
-            key={s}
-            type="button"
-            disabled={pending}
-            onClick={() => changeStatus(s)}
-            className={`rounded-[var(--radius)] border px-3 py-1.5 text-sm font-medium transition ${
-              s === status
-                ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10 text-[var(--color-brand-ink)]"
-                : "border-[var(--color-border)] hover:bg-slate-50"
-            }`}
-          >
-            {VEHICLE_STATUS_LABELS[s]}
-          </button>
-        ))}
-      </div>
-
-      <hr className="border-[var(--color-border)]" />
-
-      {confirming ? (
-        <div className="flex items-center justify-between gap-3 rounded-[var(--radius)] bg-red-50 p-3">
-          <span className="text-sm text-[var(--color-danger)]">
-            Excluir permanentemente? As fotos serão apagadas.
-          </span>
-          <div className="flex gap-2">
+      </CardHeader>
+      <CardContent className="space-y-4 px-0">
+        <div className="flex flex-wrap gap-2">
+          {VEHICLE_STATUSES.map((s) => (
             <button
+              key={s}
               type="button"
-              className="btn-ghost"
-              onClick={() => setConfirming(false)}
-            >
-              Não
-            </button>
-            <button
-              type="button"
-              className="btn-danger"
               disabled={pending}
-              onClick={() =>
-                startTransition(() => deleteVehicleAction(vehicleId))
-              }
+              onClick={() => changeStatus(s)}
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:pointer-events-none disabled:opacity-50 ${
+                s === status
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border hover:bg-muted"
+              }`}
             >
-              Sim, excluir
+              {VEHICLE_STATUS_LABELS[s]}
             </button>
-          </div>
+          ))}
         </div>
-      ) : (
-        <button
-          type="button"
-          className="text-sm font-medium text-[var(--color-danger)] hover:underline"
-          onClick={() => setConfirming(true)}
-        >
-          Excluir veículo
-        </button>
-      )}
-    </div>
+
+        <Separator />
+
+        {confirming ? (
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3">
+            <span className="text-sm text-destructive">
+              Excluir permanentemente? As fotos serão apagadas.
+            </span>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => setConfirming(false)}
+              >
+                Não
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                disabled={pending}
+                onClick={() =>
+                  startTransition(() => deleteVehicleAction(vehicleId))
+                }
+              >
+                Sim, excluir
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <button
+            type="button"
+            className="text-sm font-medium text-destructive hover:underline"
+            onClick={() => setConfirming(true)}
+          >
+            Excluir veículo
+          </button>
+        )}
+      </CardContent>
+    </Card>
   );
 }

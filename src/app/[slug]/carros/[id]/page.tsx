@@ -82,28 +82,50 @@ export default async function VehicleDetailPage({
     vehicle.price,
   )}) anunciado no site.`;
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Car",
-    name: title,
-    brand: vehicle.brand,
-    model: vehicle.model,
-    vehicleModelDate: vehicle.year_model ?? undefined,
-    mileageFromOdometer: vehicle.mileage
-      ? { "@type": "QuantitativeValue", value: vehicle.mileage, unitCode: "KMT" }
-      : undefined,
-    fuelType: vehicle.fuel ? FUEL_LABELS[vehicle.fuel] : undefined,
-    image: vehicle.photos?.map((p) => p.url),
-    offers: {
-      "@type": "Offer",
-      price: vehicle.price,
-      priceCurrency: "BRL",
-      availability:
-        vehicle.status === "available"
-          ? "https://schema.org/InStock"
-          : "https://schema.org/LimitedAvailability",
-      seller: { "@type": "AutoDealer", name: store.name },
-    },
+    "@graph": [
+      {
+        "@type": "Car",
+        name: title,
+        brand: vehicle.brand,
+        model: vehicle.model,
+        vehicleModelDate: vehicle.year_model ?? undefined,
+        mileageFromOdometer: vehicle.mileage
+          ? { "@type": "QuantitativeValue", value: vehicle.mileage, unitCode: "KMT" }
+          : undefined,
+        fuelType: vehicle.fuel ? FUEL_LABELS[vehicle.fuel] : undefined,
+        image: vehicle.photos?.map((p) => p.url),
+        offers: {
+          "@type": "Offer",
+          price: vehicle.price,
+          priceCurrency: "BRL",
+          availability:
+            vehicle.status === "available"
+              ? "https://schema.org/InStock"
+              : "https://schema.org/LimitedAvailability",
+          seller: { "@type": "AutoDealer", name: store.name },
+        },
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: store.name,
+            item: `${appUrl}/${slug}`,
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: title,
+            item: `${appUrl}/${slug}/carros/${vehicle.id}`,
+          },
+        ],
+      },
+    ],
   };
 
   return (
@@ -171,6 +193,15 @@ export default async function VehicleDetailPage({
                 <span className="mt-2 inline-block rounded-full bg-amber-100 px-2.5 py-1 text-xs font-semibold text-amber-700">
                   Reservado
                 </span>
+              )}
+              {vehicle.fipe_price != null && vehicle.fipe_reference && (
+                <p className="mt-2 text-xs text-slate-500">
+                  Tabela FIPE:{" "}
+                  <span className="font-semibold text-slate-700">
+                    {formatPrice(vehicle.fipe_price)}
+                  </span>{" "}
+                  · ref. {vehicle.fipe_reference}
+                </p>
               )}
 
               <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 border-t border-slate-100 pt-5">

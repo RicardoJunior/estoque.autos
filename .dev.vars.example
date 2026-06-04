@@ -1,0 +1,22 @@
+# Template do .dev.vars — vars locais lidas pelo wrangler durante o
+# `npm run preview` (wrangler dev no Worker já buildado). As vars PÚBLICAS já
+# estão no wrangler.jsonc; use este arquivo só para SEGREDOS de preview local.
+# Copie para .dev.vars (gitignored) e preencha se precisar testar localmente.
+
+# Ex.: chave estável de Server Actions para o preview (openssl rand -base64 32)
+# NEXT_SERVER_ACTIONS_ENCRYPTION_KEY=""
+
+# Service role — usado pelo webhook Stripe (ver lib/supabase/admin.ts)
+# SUPABASE_SECRET_KEY="sb_secret_..."
+
+# Stripe (mesmos valores do .env.local — ver .env.example)
+# STRIPE_SECRET_KEY="sk_test_..."
+# STRIPE_WEBHOOK_SECRET="whsec_..."
+# STRIPE_PRICE_BASICO_MENSAL="price_..."
+# STRIPE_PRICE_BASICO_ANUAL="price_..."
+# STRIPE_PRICE_PRO_MENSAL="price_..."
+# STRIPE_PRICE_PRO_ANUAL="price_..."
+
+# Cloudflare for SaaS — domínio próprio (OPCIONAL; ver .env.example)
+# CLOUDFLARE_API_TOKEN=""
+# CLOUDFLARE_ZONE_ID=""

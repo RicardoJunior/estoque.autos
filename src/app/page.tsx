@@ -1,18 +1,48 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { Anton, Archivo } from "next/font/google";
+import { Logo } from "@/components/Logo";
+import { buttonVariants } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { BILLING_INTERVALS, PLANS as BILLING_PLANS } from "@/lib/billing";
+import { PlanosSection } from "./PlanosSection";
 
-const display = Anton({
-  weight: "400",
-  subsets: ["latin"],
-  variable: "--font-display",
-});
-const sans = Archivo({
-  subsets: ["latin"],
-  variable: "--font-archivo",
-});
+const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
 
-const GRAIN =
-  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+export const metadata: Metadata = {
+  title: "estoque.autos — o site da sua loja de carros, pronto em minutos",
+  description:
+    "Crie a conta, cadastre o estoque e tenha uma vitrine profissional no ar. 6 templates, suas cores e seu logo — cada carro com proposta e WhatsApp que viram leads. Tabela FIPE no cadastro.",
+  keywords: [
+    "site para loja de carros",
+    "site para revenda de veículos",
+    "criar site de carros",
+    "vitrine de veículos online",
+    "sistema para loja de carros",
+    "tabela fipe",
+  ],
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: "estoque.autos",
+    title: "estoque.autos — o site da sua loja de carros, pronto em minutos",
+    description:
+      "Vitrine profissional para sua loja de carros em minutos: 6 templates, suas cores, seu logo, leads por WhatsApp e tabela FIPE no cadastro.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "estoque.autos — o site da sua loja de carros, pronto em minutos",
+    description:
+      "Vitrine profissional para sua loja de carros em minutos. 6 templates, suas cores, leads por WhatsApp e tabela FIPE.",
+  },
+};
 
 const TEMPLATES = [
   { name: "Clássico", vibe: "Tradicional e confiável" },
@@ -24,43 +54,100 @@ const TEMPLATES = [
 ];
 
 const FEATURES = [
-  { k: "Site pronto", d: "6 templates profissionais. Escolha, ajuste a cor e suba o logo." },
+  { k: "Site pronto", d: "6 templates profissionais. Escolha, ajuste a cor, a fonte e suba o logo." },
   { k: "Lead em cada carro", d: "Formulário de proposta e botão de WhatsApp que viram contato no seu painel." },
-  { k: "Estoque fácil", d: "Cadastre fotos, preço e ficha. Publique ou reserve com um clique." },
+  { k: "Tabela FIPE", d: "Cadastre pela base FIPE — marca, modelo, versão e ano — e veja o valor de referência." },
   { k: "WhatsApp direto", d: "O cliente clica e fala com você. Cada clique vira um lead registrado." },
   { k: "Achado no Google", d: "Cada anúncio com SEO, link de compartilhamento e sitemap automáticos." },
-  { k: "Sem programador", d: "Você cuida da loja. O site se cuida sozinho." },
+  { k: "Domínio próprio", d: "Conecte o seu domínio com um passo a passo simples de apontamento." },
 ];
+
+const STEPS = [
+  ["01", "Escolha o plano e crie a conta", "Selecione Básico ou Pro, crie a conta e o pagamento é seguro — leva minutos."],
+  ["02", "Monte a vitrine", "Escolha o template, a cor e a fonte, suba o logo. Cadastre os carros pela FIPE."],
+  ["03", "Receba contatos", "Seu site entra no ar. Cada proposta e clique no WhatsApp vira um lead."],
+];
+
+const FAQ: [string, string][] = [
+  ["Preciso saber programar?", "Não. Você cadastra os carros e escolhe o visual; o site fica pronto sozinho."],
+  ["Quanto tempo leva pra ficar no ar?", "Minutos. Você assina o plano, cria a conta, escolhe o template, sobe o logo e já publica."],
+  ["Posso trocar de template depois?", "Sim, quando quiser, sem perder os carros nem as configurações."],
+  ["Como funciona o domínio próprio?", "No plano Pro você conecta o seu domínio (ex.: sualoja.com.br) com instruções claras de apontamento de DNS."],
+  ["De onde vem o preço FIPE?", "Da tabela FIPE oficial, atualizada mensalmente. Você cadastra o carro por marca/modelo/versão/ano e vê o valor de referência."],
+  ["O que conta como carro ativo?", "Veículos publicados na vitrine. Vendidos e arquivados não contam no limite."],
+];
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      name: "estoque.autos",
+      url: APP_URL,
+      description:
+        "Plataforma SaaS para lojas de veículos criarem um site profissional em minutos.",
+    },
+    {
+      "@type": "SoftwareApplication",
+      name: "estoque.autos",
+      applicationCategory: "BusinessApplication",
+      operatingSystem: "Web",
+      url: APP_URL,
+      description:
+        "Site profissional para lojas de carros: 6 templates, cores e fonte da loja, cadastro pela tabela FIPE e leads por WhatsApp.",
+      offers: Object.values(BILLING_PLANS).flatMap((p) =>
+        BILLING_INTERVALS.map((interval) => ({
+          "@type": "Offer",
+          name: `Plano ${p.name} (${interval})`,
+          price: (p.priceCents[interval] / 100).toFixed(2),
+          priceCurrency: "BRL",
+          url: `${APP_URL}/cadastro?plano=${p.id}&intervalo=${interval}`,
+        })),
+      ),
+    },
+    {
+      "@type": "FAQPage",
+      mainEntity: FAQ.map(([q, a]) => ({
+        "@type": "Question",
+        name: q,
+        acceptedAnswer: { "@type": "Answer", text: a },
+      })),
+    },
+  ],
+};
 
 export default function HomePage() {
   return (
-    <div
-      className={`lp ${display.variable} ${sans.variable}`}
-      style={{ fontFamily: "var(--font-archivo), sans-serif" }}
-    >
+    <div className="lp">
       <style>{css}</style>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* grão cinematográfico */}
       <div className="lp-grain" aria-hidden />
 
       {/* ───────────── NAV ───────────── */}
       <header className="lp-nav">
         <div className="lp-wrap lp-nav-in">
-          <span className="lp-logo">
-            estoque<span className="lp-amber">.autos</span>
-          </span>
+          <Link href="/" aria-label="estoque.autos">
+            <Logo size={22} />
+          </Link>
           <nav className="lp-nav-links">
             <a href="#como">Como funciona</a>
             <a href="#templates">Templates</a>
-            <a href="#precos">Preços</a>
+            <a href="#planos">Planos</a>
           </nav>
           <div className="lp-nav-cta">
-            <Link href="/login" className="lp-link">
+            <Link
+              href="/login"
+              className={buttonVariants({ variant: "ghost", size: "sm" })}
+            >
               Entrar
             </Link>
-            <Link href="/cadastro" className="lp-btn lp-btn-amber">
-              Criar loja grátis
-            </Link>
+            <a href="#planos" className={cn(buttonVariants({ size: "sm" }), "lp-cta")}>
+              Começar
+            </a>
           </div>
         </div>
       </header>
@@ -69,37 +156,36 @@ export default function HomePage() {
       <section className="lp-hero">
         <div className="lp-headlights" aria-hidden />
         <div className="lp-wrap lp-hero-in">
-          <p className="lp-eyebrow lp-rise" style={{ animationDelay: "0ms" }}>
+          <Badge variant="outline" className="lp-eyebrow lp-rise" style={{ animationDelay: "0ms" }}>
             <span className="lp-dot" /> Plataforma para lojas de veículos
-          </p>
+          </Badge>
 
-          <h1 className="lp-h1">
-            <span className="lp-rise" style={{ animationDelay: "60ms" }}>
-              O SITE DA SUA
-            </span>
-            <span className="lp-rise" style={{ animationDelay: "140ms" }}>
-              LOJA DE CARROS,
-            </span>
-            <span
-              className="lp-rise lp-amber lp-glowtext"
-              style={{ animationDelay: "220ms" }}
-            >
+          <h1 className="lp-h1 font-display">
+            <span className="lp-rise" style={{ animationDelay: "60ms" }}>O SITE DA SUA</span>
+            <span className="lp-rise" style={{ animationDelay: "140ms" }}>LOJA DE CARROS,</span>
+            <span className="lp-rise lp-glowtext" style={{ animationDelay: "220ms" }}>
               PRONTO EM MINUTOS.
             </span>
           </h1>
 
           <p className="lp-sub lp-rise" style={{ animationDelay: "320ms" }}>
-            Crie a conta, cadastre o estoque e tenha uma vitrine profissional no
-            ar. Escolha entre 6 templates, suas cores e seu logo — e cada carro
-            já vem com formulário de proposta e botão de WhatsApp.
+            Crie a conta, cadastre o estoque e tenha uma vitrine profissional no ar.
+            Escolha entre 6 templates, suas cores e sua fonte — e cada carro já vem
+            com proposta, botão de WhatsApp e valor de tabela FIPE.
           </p>
 
           <div className="lp-hero-cta lp-rise" style={{ animationDelay: "400ms" }}>
-            <Link href="/cadastro" className="lp-btn lp-btn-amber lp-btn-lg">
-              Começar agora <span className="lp-arrow">→</span>
-            </Link>
-            <a href="#precos" className="lp-btn lp-btn-ghost lp-btn-lg">
-              Ver planos
+            <a
+              href="#planos"
+              className={cn(buttonVariants({ size: "lg" }), "lp-cta lp-cta-lg")}
+            >
+              Ver planos <span className="lp-arrow">→</span>
+            </a>
+            <a
+              href="#como"
+              className={cn(buttonVariants({ variant: "outline", size: "lg" }), "lp-cta-lg")}
+            >
+              Como funciona
             </a>
           </div>
 
@@ -141,12 +227,12 @@ export default function HomePage() {
         <div className="lp-wrap lp-strip-in">
           {[
             ["6", "templates prontos"],
-            ["1 clique", "para publicar"],
+            ["FIPE", "no cadastro"],
             ["WhatsApp", "leads direto"],
             ["0", "linhas de código"],
           ].map(([a, b]) => (
             <div className="lp-stat" key={b}>
-              <span className="lp-stat-a">{a}</span>
+              <span className="lp-stat-a font-display">{a}</span>
               <span className="lp-stat-b">{b}</span>
             </div>
           ))}
@@ -157,15 +243,11 @@ export default function HomePage() {
       <section id="como" className="lp-sec">
         <div className="lp-wrap">
           <p className="lp-kicker">Como funciona</p>
-          <h2 className="lp-h2">Três passos. Nenhum técnico.</h2>
+          <h2 className="lp-h2 font-display">Três passos. Nenhum técnico.</h2>
           <div className="lp-steps">
-            {[
-              ["01", "Crie sua conta", "Nome da loja, endereço do site e pronto — leva menos de um minuto."],
-              ["02", "Monte a vitrine", "Escolha o template, a cor e suba o logo. Cadastre seus carros com fotos."],
-              ["03", "Receba contatos", "Seu site entra no ar. Cada proposta e clique no WhatsApp vira um lead."],
-            ].map(([n, t, d]) => (
+            {STEPS.map(([n, t, d]) => (
               <div className="lp-step" key={n}>
-                <span className="lp-step-n">{n}</span>
+                <span className="lp-step-n font-display">{n}</span>
                 <h3 className="lp-step-t">{t}</h3>
                 <p className="lp-step-d">{d}</p>
               </div>
@@ -178,12 +260,12 @@ export default function HomePage() {
       <section id="templates" className="lp-sec lp-sec-alt">
         <div className="lp-wrap">
           <p className="lp-kicker">Templates</p>
-          <h2 className="lp-h2">
+          <h2 className="lp-h2 font-display">
             Seis estilos. <span className="lp-amber">Uma loja só sua.</span>
           </h2>
           <p className="lp-lead">
-            Troque de template quando quiser — sem perder nada. A cor principal e
-            o logo se aplicam a todos, na hora.
+            Troque de template quando quiser — sem perder nada. Cor, fonte e logo
+            se aplicam a todos, na hora.
           </p>
           <div className="lp-tpl-grid">
             {TEMPLATES.map((t, i) => (
@@ -207,7 +289,7 @@ export default function HomePage() {
       <section className="lp-sec">
         <div className="lp-wrap">
           <p className="lp-kicker">Tudo incluso</p>
-          <h2 className="lp-h2">Feito para vender carro.</h2>
+          <h2 className="lp-h2 font-display">Feito para vender carro.</h2>
           <div className="lp-feat-grid">
             {FEATURES.map((f) => (
               <div className="lp-feat" key={f.k}>
@@ -220,74 +302,17 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* ───────────── PREÇOS ───────────── */}
-      <section id="precos" className="lp-sec lp-sec-alt">
+      {/* ───────────── PLANOS ───────────── */}
+      <section id="planos" className="lp-sec lp-sec-alt">
         <div className="lp-wrap">
           <p className="lp-kicker">Planos</p>
-          <h2 className="lp-h2">Preço de assinatura, não de agência.</h2>
+          <h2 className="lp-h2 font-display">Preço de assinatura, não de agência.</h2>
           <p className="lp-lead">
-            Sem fidelidade, sem taxa de setup. Comece hoje e cancele quando
-            quiser.
+            Sem taxa de setup. Você escolhe o plano, assina e começa hoje — cancele
+            quando quiser. No anual, dois preços redondos: R$ 190 ou R$ 490 por ano.
           </p>
 
-          <div className="lp-plans">
-            {/* Básico */}
-            <div className="lp-plan">
-              <div className="lp-plan-head">
-                <span className="lp-plan-name">Básico</span>
-                <span className="lp-plan-tag">Para começar</span>
-              </div>
-              <div className="lp-price">
-                <span className="lp-price-cur">R$</span>
-                <span className="lp-price-val">19</span>
-                <span className="lp-price-cents">,90</span>
-                <span className="lp-price-per">/mês</span>
-              </div>
-              <ul className="lp-plan-list">
-                <li>Site pronto com os 6 templates</li>
-                <li>Cor principal + logo da loja</li>
-                <li>
-                  <strong>Até 20 carros</strong> ativos
-                </li>
-                <li>Leads por proposta e WhatsApp</li>
-                <li>
-                  Endereço <em>estoque.autos/sua-loja</em>
-                </li>
-              </ul>
-              <Link href="/cadastro" className="lp-btn lp-btn-ghost lp-btn-block">
-                Começar no Básico
-              </Link>
-            </div>
-
-            {/* Pro */}
-            <div className="lp-plan lp-plan-pro">
-              <span className="lp-plan-badge">Mais escolhido</span>
-              <div className="lp-plan-head">
-                <span className="lp-plan-name">Pro</span>
-                <span className="lp-plan-tag">Para crescer</span>
-              </div>
-              <div className="lp-price">
-                <span className="lp-price-cur">R$</span>
-                <span className="lp-price-val">49</span>
-                <span className="lp-price-cents">,90</span>
-                <span className="lp-price-per">/mês</span>
-              </div>
-              <ul className="lp-plan-list">
-                <li>Tudo do Básico, e mais:</li>
-                <li>
-                  <strong>Domínio próprio</strong> (sualoja.com.br)
-                </li>
-                <li>
-                  <strong>Até 60 carros</strong> ativos
-                </li>
-                <li>Destaque nos resultados de busca</li>
-                <li>Suporte prioritário</li>
-              </ul>
-              <Link href="/cadastro" className="lp-btn lp-btn-amber lp-btn-block">
-                Assinar o Pro
-              </Link>
-            </div>
-          </div>
+          <PlanosSection />
         </div>
       </section>
 
@@ -295,26 +320,15 @@ export default function HomePage() {
       <section className="lp-sec">
         <div className="lp-wrap lp-faq-wrap">
           <p className="lp-kicker">Dúvidas</p>
-          <h2 className="lp-h2">Antes de começar.</h2>
-          <div className="lp-faq">
-            {[
-              ["Preciso saber programar?", "Não. Você cadastra os carros e escolhe o visual; o site fica pronto sozinho."],
-              ["Quanto tempo leva pra ficar no ar?", "Minutos. Você cria a conta, escolhe o template, sobe o logo e já publica."],
-              ["Posso trocar de template depois?", "Sim, quando quiser, sem perder os carros nem as configurações."],
-              ["Como funciona o domínio próprio?", "No plano Pro você conecta o seu domínio (ex.: sualoja.com.br) à sua loja."],
-              ["O que conta como carro ativo?", "Veículos publicados na vitrine. Vendidos e arquivados não contam no limite."],
-            ].map(([q, a]) => (
-              <details className="lp-faq-item" key={q}>
-                <summary>
-                  {q}
-                  <span className="lp-faq-plus" aria-hidden>
-                    +
-                  </span>
-                </summary>
-                <p>{a}</p>
-              </details>
+          <h2 className="lp-h2 font-display">Antes de começar.</h2>
+          <Accordion className="lp-faq">
+            {FAQ.map(([q, a], i) => (
+              <AccordionItem value={`faq-${i}`} key={q}>
+                <AccordionTrigger className="lp-faq-trigger">{q}</AccordionTrigger>
+                <AccordionContent className="lp-faq-content">{a}</AccordionContent>
+              </AccordionItem>
             ))}
-          </div>
+          </Accordion>
         </div>
       </section>
 
@@ -322,30 +336,33 @@ export default function HomePage() {
       <section className="lp-final">
         <div className="lp-headlights lp-headlights-2" aria-hidden />
         <div className="lp-wrap lp-final-in">
-          <h2 className="lp-final-h">
-            Sua vitrine pode estar
-            <br />
-            no ar <span className="lp-amber">hoje</span>.
+          <h2 className="lp-final-h font-display">
+            Sua vitrine pode estar no ar <span className="lp-amber">hoje</span>.
           </h2>
-          <Link href="/cadastro" className="lp-btn lp-btn-amber lp-btn-lg">
-            Criar minha loja grátis <span className="lp-arrow">→</span>
-          </Link>
-          <p className="lp-final-note">Sem cartão para começar.</p>
+          <a
+            href="#planos"
+            className={cn(buttonVariants({ size: "lg" }), "lp-cta lp-cta-lg")}
+          >
+            Escolher meu plano <span className="lp-arrow">→</span>
+          </a>
+          <p className="lp-final-note">
+            Planos a partir de R$ 19,90/mês · cancele quando quiser.
+          </p>
         </div>
       </section>
 
       {/* ───────────── FOOTER ───────────── */}
       <footer className="lp-footer">
         <div className="lp-wrap lp-footer-in">
-          <span className="lp-logo">
-            estoque<span className="lp-amber">.autos</span>
-          </span>
+          <Logo size={20} />
           <span className="lp-footer-c">
-            © {new Date().getFullYear()} estoque.autos · feito para lojistas
+            © 2026 estoque.autos · feito para lojistas
           </span>
           <div className="lp-footer-links">
+            <Link href="/blog">Blog</Link>
+            <Link href="/ajuda">Ajuda</Link>
+            <a href="#planos">Planos</a>
             <Link href="/login">Entrar</Link>
-            <Link href="/cadastro">Criar loja</Link>
           </div>
         </div>
       </footer>
@@ -353,19 +370,19 @@ export default function HomePage() {
   );
 }
 
+const GRAIN =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")";
+
 const css = `
 .lp{
-  --ink:#f4f1ea; --dim:#9a9d97; --bg:#0a0b0d; --surf:#15171c; --surf2:#1b1e25;
-  --amber:#ff7a1a; --amber2:#ffb14d; --line:rgba(255,255,255,.09);
-  background:var(--bg); color:var(--ink); min-height:100dvh; overflow-x:hidden;
-  position:relative; letter-spacing:-0.005em;
+  --amber:var(--color-primary); --amber2:#ffb14d;
+  background:var(--color-background); color:var(--color-foreground);
+  min-height:100dvh; overflow-x:hidden; position:relative; letter-spacing:-0.005em;
 }
 .lp-amber{color:var(--amber)}
 .lp ::selection{background:var(--amber);color:#10100c}
 .lp a{color:inherit;text-decoration:none}
 .lp-wrap{max-width:1140px;margin:0 auto;padding:0 24px}
-.lp-h1,.lp-h2,.lp-final-h,.lp-stat-a,.lp-price-val,.lp-step-n{
-  font-family:var(--font-display),sans-serif;font-weight:400}
 
 /* grão */
 .lp-grain{position:fixed;inset:0;background-image:${GRAIN};background-size:160px;
@@ -373,68 +390,61 @@ const css = `
 
 /* nav */
 .lp-nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);
-  background:rgba(10,11,13,.6);border-bottom:1px solid var(--line)}
+  background:color-mix(in srgb, var(--color-background) 70%, transparent);
+  border-bottom:1px solid var(--color-border)}
 .lp-nav-in{display:flex;align-items:center;justify-content:space-between;height:68px}
-.lp-logo{font-weight:800;font-size:18px;letter-spacing:-.03em}
-.lp-nav-links{display:flex;gap:30px;font-size:14px;color:var(--dim)}
-.lp-nav-links a:hover{color:var(--ink)}
-.lp-nav-cta{display:flex;align-items:center;gap:18px}
-.lp-link{font-size:14px;color:var(--dim)}.lp-link:hover{color:var(--ink)}
+.lp-nav-links{display:flex;gap:30px;font-size:14px;color:var(--color-muted-foreground)}
+.lp-nav-links a:hover{color:var(--color-foreground)}
+.lp-nav-cta{display:flex;align-items:center;gap:10px}
 @media(max-width:760px){.lp-nav-links{display:none}}
 
-/* botões */
-.lp-btn{display:inline-flex;align-items:center;gap:9px;font-weight:600;font-size:14px;
-  padding:11px 18px;border-radius:999px;transition:transform .18s,background .18s,box-shadow .18s;
-  border:1px solid transparent;white-space:nowrap}
-.lp-btn:hover{transform:translateY(-2px)}
-.lp-btn-amber{background:var(--amber);color:#140a02;box-shadow:0 8px 30px -8px rgba(255,122,26,.6)}
-.lp-btn-amber:hover{background:var(--amber2);box-shadow:0 12px 40px -8px rgba(255,122,26,.75)}
-.lp-btn-ghost{border-color:var(--line);color:var(--ink);background:rgba(255,255,255,.02)}
-.lp-btn-ghost:hover{background:rgba(255,255,255,.06)}
-.lp-btn-lg{font-size:15px;padding:15px 26px}
-.lp-btn-block{display:flex;justify-content:center;width:100%;margin-top:26px}
-.lp-arrow{transition:transform .2s}.lp-btn:hover .lp-arrow{transform:translateX(4px)}
+/* CTA âmbar com glow */
+.lp-cta{box-shadow:0 8px 30px -8px color-mix(in srgb, var(--amber) 60%, transparent)}
+.lp-cta:hover{box-shadow:0 12px 40px -8px color-mix(in srgb, var(--amber) 75%, transparent)}
+.lp-cta-lg{height:50px;padding-inline:26px;font-size:15px;border-radius:999px}
+.lp-arrow{transition:transform .2s;display:inline-block}
+.lp button:hover .lp-arrow,.lp a:hover .lp-arrow{transform:translateX(4px)}
 
 /* hero */
 .lp-hero{position:relative;padding:90px 0 40px;overflow:hidden}
 .lp-headlights{position:absolute;left:50%;top:18%;width:1100px;height:620px;
   transform:translateX(-50%);pointer-events:none;
   background:
-    radial-gradient(closest-side at 38% 50%, rgba(255,122,26,.34), transparent 70%),
+    radial-gradient(closest-side at 38% 50%, color-mix(in srgb, var(--amber) 34%, transparent), transparent 70%),
     radial-gradient(closest-side at 62% 50%, rgba(255,150,60,.26), transparent 70%);
   filter:blur(8px);animation:lp-pulse 6s ease-in-out infinite}
 .lp-hero-in{position:relative;text-align:center}
-.lp-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;color:var(--dim);
-  border:1px solid var(--line);padding:7px 14px;border-radius:999px;background:rgba(255,255,255,.02)}
+.lp-eyebrow{display:inline-flex;align-items:center;gap:9px;font-size:13px;font-weight:500;
+  color:var(--color-muted-foreground);padding:7px 14px;border-radius:999px}
 .lp-dot{width:7px;height:7px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber)}
-.lp-h1{margin:26px 0 0;line-height:.92;letter-spacing:-.02em;
-  font-size:clamp(44px,8.2vw,108px);text-transform:uppercase}
+.lp-h1{margin:26px 0 0;line-height:.92;letter-spacing:-.02em;font-weight:400;
+  font-size:clamp(44px,8.2vw,108px);text-transform:uppercase;text-wrap:balance}
 .lp-h1 span{display:block}
-.lp-glowtext{text-shadow:0 0 38px rgba(255,122,26,.45)}
+.lp-glowtext{color:var(--amber);text-shadow:0 0 38px color-mix(in srgb, var(--amber) 45%, transparent)}
 .lp-sub{max-width:640px;margin:30px auto 0;font-size:clamp(16px,2vw,19px);
-  line-height:1.55;color:var(--dim)}
+  line-height:1.55;color:var(--color-muted-foreground);text-wrap:pretty}
 .lp-hero-cta{display:flex;gap:14px;justify-content:center;margin-top:36px;flex-wrap:wrap}
 
 /* mockup */
 .lp-mock{position:relative;margin:70px auto 0;max-width:920px}
-.lp-browser{border:1px solid var(--line);border-radius:16px;overflow:hidden;
-  background:var(--surf);box-shadow:0 50px 120px -40px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.03);
-  position:relative;z-index:2}
+.lp-browser{border:1px solid var(--color-border);border-radius:16px;overflow:hidden;
+  background:var(--color-card);box-shadow:0 50px 120px -40px rgba(0,0,0,.9);position:relative;z-index:2}
 .lp-browser-bar{display:flex;align-items:center;gap:8px;padding:13px 16px;
-  background:#0f1116;border-bottom:1px solid var(--line)}
+  background:color-mix(in srgb, var(--color-card) 80%, #000);border-bottom:1px solid var(--color-border)}
 .lp-dotr{width:11px;height:11px;border-radius:50%;background:#2b2f37}
-.lp-url{margin-left:14px;font-size:12px;color:var(--dim);background:rgba(255,255,255,.04);
-  padding:4px 12px;border-radius:6px}
+.lp-url{margin-left:14px;font-size:12px;color:var(--color-muted-foreground);
+  background:rgba(255,255,255,.04);padding:4px 12px;border-radius:6px}
 .lp-store{padding:22px}
 .lp-store-head{display:flex;align-items:center;gap:11px;padding-bottom:18px;margin-bottom:18px;
-  border-bottom:1px solid var(--line)}
+  border-bottom:1px solid var(--color-border)}
 .lp-store-logo{width:30px;height:30px;border-radius:7px;background:var(--amber);color:#140a02;
   display:grid;place-items:center;font-weight:800;font-size:12px}
 .lp-store-name{font-weight:700;font-size:15px}
 .lp-store-cta{margin-left:auto;font-size:11px;font-weight:700;color:#140a02;
   background:var(--amber2);padding:6px 12px;border-radius:999px}
 .lp-store-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.lp-card{border:1px solid var(--line);border-radius:11px;overflow:hidden;background:#0f1116}
+.lp-card{border:1px solid var(--color-border);border-radius:11px;overflow:hidden;
+  background:color-mix(in srgb, var(--color-card) 70%, #000)}
 .lp-card-img{aspect-ratio:4/3}
 .lp-img-0{background:linear-gradient(135deg,#3a3f4a,#1b1e25)}
 .lp-img-1{background:linear-gradient(135deg,#7a3410,#2a1408)}
@@ -443,39 +453,39 @@ const css = `
 .lp-card-line{height:8px;width:70%;border-radius:4px;background:rgba(255,255,255,.16)}
 .lp-card-price{margin-top:9px;font-weight:800;font-size:14px;color:var(--amber2)}
 .lp-mock-floor{position:absolute;left:50%;bottom:-60px;width:80%;height:120px;
-  transform:translateX(-50%);background:radial-gradient(ellipse at center,rgba(255,122,26,.16),transparent 70%);
+  transform:translateX(-50%);background:radial-gradient(ellipse at center,color-mix(in srgb, var(--amber) 16%, transparent),transparent 70%);
   filter:blur(20px);z-index:1}
 @media(max-width:620px){.lp-store-grid{grid-template-columns:1fr 1fr}.lp-card:last-child{display:none}}
 
 /* strip */
-.lp-strip{border-block:1px solid var(--line);background:rgba(255,255,255,.015)}
+.lp-strip{border-block:1px solid var(--color-border);background:rgba(255,255,255,.015)}
 .lp-strip-in{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;padding:34px 24px}
 .lp-stat{text-align:center}
-.lp-stat-a{display:block;font-size:clamp(28px,4vw,40px);line-height:1;color:var(--ink)}
-.lp-stat-b{display:block;margin-top:8px;font-size:13px;color:var(--dim)}
+.lp-stat-a{display:block;font-size:clamp(28px,4vw,40px);line-height:1;font-weight:400}
+.lp-stat-b{display:block;margin-top:8px;font-size:13px;color:var(--color-muted-foreground);text-wrap:pretty}
 @media(max-width:620px){.lp-strip-in{grid-template-columns:1fr 1fr;gap:28px}}
 
 /* seções */
 .lp-sec{padding:96px 0;position:relative}
 .lp-sec-alt{background:linear-gradient(180deg,rgba(255,255,255,.018),transparent)}
 .lp-kicker{font-size:12px;font-weight:700;letter-spacing:.22em;text-transform:uppercase;color:var(--amber)}
-.lp-h2{margin:16px 0 0;font-size:clamp(30px,4.6vw,52px);line-height:1.02;
-  letter-spacing:-.02em;text-transform:uppercase;max-width:16ch}
-.lp-lead{margin:18px 0 0;max-width:560px;color:var(--dim);font-size:17px;line-height:1.55}
+.lp-h2{margin:16px 0 0;font-size:clamp(30px,4.6vw,52px);line-height:1.02;font-weight:400;
+  letter-spacing:-.02em;text-transform:uppercase;max-width:18ch;text-wrap:balance}
+.lp-lead{margin:18px 0 0;max-width:560px;color:var(--color-muted-foreground);font-size:17px;line-height:1.55;text-wrap:pretty}
 
 /* steps */
 .lp-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:28px;margin-top:54px}
-.lp-step{border-top:1px solid var(--line);padding-top:26px}
-.lp-step-n{font-size:46px;color:var(--amber);line-height:1}
-.lp-step-t{margin:18px 0 0;font-size:21px;font-weight:700}
-.lp-step-d{margin:10px 0 0;color:var(--dim);line-height:1.55;font-size:15px}
+.lp-step{border-top:1px solid var(--color-border);padding-top:26px}
+.lp-step-n{font-size:46px;color:var(--amber);line-height:1;font-weight:400}
+.lp-step-t{margin:18px 0 0;font-size:21px;font-weight:700;text-wrap:balance}
+.lp-step-d{margin:10px 0 0;color:var(--color-muted-foreground);line-height:1.55;font-size:15px;text-wrap:pretty}
 @media(max-width:760px){.lp-steps{grid-template-columns:1fr;gap:8px}}
 
 /* templates */
 .lp-tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
-.lp-tpl{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--surf);
+.lp-tpl{border:1px solid var(--color-border);border-radius:14px;overflow:hidden;background:var(--color-card);
   transition:transform .2s,border-color .2s}
-.lp-tpl:hover{transform:translateY(-5px);border-color:rgba(255,122,26,.4)}
+.lp-tpl:hover{transform:translateY(-5px);border-color:color-mix(in srgb, var(--amber) 40%, transparent)}
 .lp-tpl-prev{aspect-ratio:16/10;padding:16px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
 .lp-tpl-bar{height:14px;width:48%;border-radius:4px;background:rgba(255,255,255,.22)}
 .lp-tpl-blk{flex:1;border-radius:8px;background:rgba(255,255,255,.06)}
@@ -491,75 +501,69 @@ const css = `
 .lp-tpl-5{background:linear-gradient(160deg,#222428,#141517)}
 .lp-tpl-5 .lp-tpl-blk:first-of-type{flex:2}
 .lp-tpl-meta{display:flex;align-items:baseline;justify-content:space-between;
-  padding:15px 17px;border-top:1px solid var(--line)}
+  padding:15px 17px;border-top:1px solid var(--color-border)}
 .lp-tpl-name{font-weight:700;font-size:15px}
-.lp-tpl-vibe{font-size:12px;color:var(--dim)}
+.lp-tpl-vibe{font-size:12px;color:var(--color-muted-foreground);text-wrap:pretty}
 @media(max-width:760px){.lp-tpl-grid{grid-template-columns:1fr 1fr;gap:14px}}
 @media(max-width:480px){.lp-tpl-grid{grid-template-columns:1fr}}
 
 /* features */
 .lp-feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;margin-top:48px;
-  background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
-.lp-feat{background:var(--bg);padding:32px 28px;transition:background .2s}
-.lp-feat:hover{background:var(--surf)}
+  background:var(--color-border);border:1px solid var(--color-border);border-radius:16px;overflow:hidden}
+.lp-feat{background:var(--color-background);padding:32px 28px;transition:background .2s}
+.lp-feat:hover{background:var(--color-card)}
 .lp-feat-mark{display:block;width:24px;height:24px;border-radius:6px;
   background:linear-gradient(135deg,var(--amber),var(--amber2));
   box-shadow:0 0 18px -4px var(--amber)}
-.lp-feat-k{margin:18px 0 0;font-size:18px;font-weight:700}
-.lp-feat-d{margin:9px 0 0;color:var(--dim);line-height:1.55;font-size:14px}
+.lp-feat-k{margin:18px 0 0;font-size:18px;font-weight:700;text-wrap:balance}
+.lp-feat-d{margin:9px 0 0;color:var(--color-muted-foreground);line-height:1.55;font-size:14px;text-wrap:pretty}
 @media(max-width:760px){.lp-feat-grid{grid-template-columns:1fr}}
 
-/* preços */
+/* planos */
 .lp-plans{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-top:54px;max-width:840px}
-.lp-plan{position:relative;border:1px solid var(--line);border-radius:20px;padding:32px;
-  background:var(--surf);display:flex;flex-direction:column}
-.lp-plan-pro{border-color:rgba(255,122,26,.55);background:linear-gradient(180deg,rgba(255,122,26,.07),var(--surf));
-  box-shadow:0 30px 80px -40px rgba(255,122,26,.5)}
-.lp-plan-badge{position:absolute;top:-12px;right:26px;background:var(--amber);color:#140a02;
-  font-size:11px;font-weight:800;letter-spacing:.04em;padding:5px 13px;border-radius:999px;text-transform:uppercase}
+.lp-plan{position:relative;border:1px solid var(--color-border);border-radius:20px;padding:32px;
+  background:var(--color-card);display:flex;flex-direction:column}
+.lp-plan-pro{border-color:color-mix(in srgb, var(--amber) 55%, transparent);
+  background:linear-gradient(180deg,color-mix(in srgb, var(--amber) 7%, var(--color-card)),var(--color-card));
+  box-shadow:0 30px 80px -40px color-mix(in srgb, var(--amber) 50%, transparent)}
+.lp-plan-badge{position:absolute;top:-12px;right:26px;text-transform:uppercase;letter-spacing:.04em}
 .lp-plan-head{display:flex;align-items:center;justify-content:space-between}
 .lp-plan-name{font-size:20px;font-weight:800}
-.lp-plan-tag{font-size:12px;color:var(--dim)}
+.lp-plan-tag{font-size:12px;color:var(--color-muted-foreground)}
 .lp-price{display:flex;align-items:baseline;gap:2px;margin:22px 0 4px}
-.lp-price-cur{font-size:20px;color:var(--dim);margin-right:4px}
-.lp-price-val{font-size:62px;line-height:.9}
-.lp-price-cents{font-size:26px;color:var(--ink)}
-.lp-price-per{font-size:14px;color:var(--dim);margin-left:6px}
+.lp-price-cur{font-size:20px;color:var(--color-muted-foreground);margin-right:4px}
+.lp-price-val{font-size:62px;line-height:.9;font-weight:400}
+.lp-price-cents{font-size:26px}
+.lp-price-per{font-size:14px;color:var(--color-muted-foreground);margin-left:6px}
 .lp-plan-list{list-style:none;margin:22px 0 0;padding:0;display:flex;flex-direction:column;gap:13px}
-.lp-plan-list li{position:relative;padding-left:28px;font-size:14.5px;color:#cfd2cc;line-height:1.4}
+.lp-plan-list li{position:relative;padding-left:28px;font-size:14.5px;color:var(--color-foreground);line-height:1.4;text-wrap:pretty}
 .lp-plan-list li::before{content:"";position:absolute;left:0;top:3px;width:16px;height:16px;
-  border-radius:50%;background:rgba(255,122,26,.16);
+  border-radius:50%;background:color-mix(in srgb, var(--amber) 18%, transparent);
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='M4 8.5l2.5 2.5L12 5' stroke='%23ff9d3c' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")}
-.lp-plan-list strong{color:#fff;font-weight:700}
-.lp-plan-list em{color:var(--amber2);font-style:normal}
+.lp-plan-btn{width:100%;margin-top:26px;border-radius:999px}
 @media(max-width:680px){.lp-plans{grid-template-columns:1fr}}
 
-/* faq */
+/* faq (shadcn Accordion) */
 .lp-faq-wrap{max-width:760px}
-.lp-faq{margin-top:44px;border-top:1px solid var(--line)}
-.lp-faq-item{border-bottom:1px solid var(--line)}
-.lp-faq-item summary{cursor:pointer;list-style:none;padding:22px 4px;display:flex;
-  align-items:center;justify-content:space-between;font-size:17px;font-weight:600}
-.lp-faq-item summary::-webkit-details-marker{display:none}
-.lp-faq-plus{color:var(--amber);font-size:24px;transition:transform .2s;font-weight:300}
-.lp-faq-item[open] .lp-faq-plus{transform:rotate(45deg)}
-.lp-faq-item p{margin:0 4px 22px;color:var(--dim);line-height:1.6;max-width:60ch}
+.lp-faq{margin-top:44px}
+.lp-faq-trigger{font-size:17px;font-weight:600;padding-block:22px}
+.lp-faq-content{color:var(--color-muted-foreground);line-height:1.6;max-width:62ch;text-wrap:pretty}
 
 /* cta final */
 .lp-final{position:relative;padding:120px 0;text-align:center;overflow:hidden;
-  border-top:1px solid var(--line)}
+  border-top:1px solid var(--color-border)}
 .lp-headlights-2{top:auto;bottom:-40%;opacity:.8}
-.lp-final-in{position:relative}
-.lp-final-h{font-size:clamp(34px,6vw,72px);line-height:.96;text-transform:uppercase;
-  letter-spacing:-.02em;margin:0 0 36px}
-.lp-final-note{margin-top:18px;font-size:13px;color:var(--dim)}
+.lp-final-in{position:relative;display:flex;flex-direction:column;align-items:center}
+.lp-final-h{font-size:clamp(34px,6vw,72px);line-height:.96;text-transform:uppercase;font-weight:400;
+  letter-spacing:-.02em;margin:0 0 36px;max-width:18ch;text-wrap:balance}
+.lp-final-note{margin-top:18px;font-size:13px;color:var(--color-muted-foreground)}
 
 /* footer */
-.lp-footer{border-top:1px solid var(--line);padding:30px 0}
+.lp-footer{border-top:1px solid var(--color-border);padding:30px 0}
 .lp-footer-in{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
-.lp-footer-c{font-size:13px;color:var(--dim)}
-.lp-footer-links{display:flex;gap:22px;font-size:14px;color:var(--dim)}
-.lp-footer-links a:hover{color:var(--ink)}
+.lp-footer-c{font-size:13px;color:var(--color-muted-foreground)}
+.lp-footer-links{display:flex;gap:22px;font-size:14px;color:var(--color-muted-foreground)}
+.lp-footer-links a:hover{color:var(--color-foreground)}
 
 /* motion */
 .lp-rise{opacity:0;transform:translateY(22px);animation:lp-rise .7s cubic-bezier(.2,.7,.2,1) forwards}

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { buttonVariants } from "@/components/ui/button";
 
 export default async function ConfirmEmailPage({
   searchParams,
@@ -13,7 +14,13 @@ export default async function ConfirmEmailPage({
         Enviamos um link de confirmação{email ? ` para ${email}` : ""}. Clique
         nele para ativar sua conta e continuar a criação da sua loja.
       </p>
-      <Link href="/login" className="btn-ghost mt-6 w-full">
+      <Link
+        href="/login"
+        className={buttonVariants({
+          variant: "ghost",
+          className: "mt-6 w-full border border-border",
+        })}
+      >
         Voltar para o login
       </Link>
     </>

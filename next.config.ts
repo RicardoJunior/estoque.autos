@@ -1,14 +1,18 @@
 import type { NextConfig } from "next";
+import createMDX from "@next/mdx";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+
+// Liga o getCloudflareContext()/env.IMAGES dentro do `next dev`.
+initOpenNextCloudflareForDev();
 
 const nextConfig: NextConfig = {
-  // Self-host barato: `node .next/standalone/server.js` num VPS pequeno.
-  output: "standalone",
-  // Raiz do workspace (há um package-lock.json legado um nível acima).
+  // OpenNext faz o próprio bundling para o Worker; `output: "standalone"` era
+  // do plano antigo de VPS/Docker e não faz sentido no Cloudflare.
   turbopack: { root: __dirname },
   images: {
-    // O Next 16 recusa otimizar imagens em IP privado (anti-SSRF). Com o
-    // Supabase LOCAL (127.0.0.1) isso bloqueia as fotos — então, só nesse
-    // caso, servimos sem otimização. Em produção (*.supabase.co) otimiza normal.
+    // Só pula a otimização quando o Supabase é LOCAL (127.0.0.1, anti-SSRF do
+    // Next 16). Em produção o binding IMAGES da Cloudflare otimiza o
+    // _next/image normalmente (sem sharp).
     unoptimized: (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").includes(
       "127.0.0.1",
     ),
@@ -28,4 +32,14 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// MDX do blog/ajuda é COMPILADO no build (dynamic import + generateStaticParams),
+// nunca lido por fs em runtime — compatível com o Worker do OpenNext. Plugins
+// passados como STRING porque o Turbopack não serializa funções para o Rust.
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: ["remark-gfm"],
+    rehypePlugins: ["rehype-slug"],
+  },
+});
+
+export default withMDX(nextConfig);

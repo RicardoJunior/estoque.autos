@@ -3,6 +3,14 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { VEHICLE_STATUS_LABELS } from "@/lib/types";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const SORTS: Record<string, string> = {
   recent: "Mais recentes",
@@ -34,35 +42,43 @@ export function VehicleFilters() {
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <input
-        className="field max-w-xs flex-1"
+      <Input
+        className="h-8 max-w-xs flex-1"
         placeholder="Buscar por marca ou modelo…"
         value={search}
         onChange={(e) => setSearch(e.target.value)}
       />
-      <select
-        className="field w-auto"
+      <Select
         value={params.get("status") ?? ""}
-        onChange={(e) => setParam("status", e.target.value)}
+        onValueChange={(value) => setParam("status", value ?? "")}
       >
-        <option value="">Todos os status</option>
-        {Object.entries(VEHICLE_STATUS_LABELS).map(([k, v]) => (
-          <option key={k} value={k}>
-            {v}
-          </option>
-        ))}
-      </select>
-      <select
-        className="field w-auto"
+        <SelectTrigger className="h-8 w-auto">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="">Todos os status</SelectItem>
+          {Object.entries(VEHICLE_STATUS_LABELS).map(([k, v]) => (
+            <SelectItem key={k} value={k}>
+              {v}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      <Select
         value={params.get("sort") ?? "recent"}
-        onChange={(e) => setParam("sort", e.target.value)}
+        onValueChange={(value) => setParam("sort", value ?? "recent")}
       >
-        {Object.entries(SORTS).map(([k, v]) => (
-          <option key={k} value={k}>
-            {v}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="h-8 w-auto">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {Object.entries(SORTS).map(([k, v]) => (
+            <SelectItem key={k} value={k}>
+              {v}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
 }

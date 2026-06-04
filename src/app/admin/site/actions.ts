@@ -35,6 +35,7 @@ export async function updateSiteAction(
       about: formData.get("about") || undefined,
       footer_text: formData.get("footer_text") || undefined,
       business_hours: formData.get("business_hours") || undefined,
+      font: formData.get("font") || undefined,
     },
   });
 

@@ -1,14 +1,5 @@
 import type { Storefront } from "@/lib/public";
-
-function formatAddress(addr: Record<string, string> | null): string | null {
-  if (!addr) return null;
-  const parts = [
-    [addr.street, addr.number].filter(Boolean).join(", "),
-    addr.neighborhood,
-    [addr.city, addr.state].filter(Boolean).join(" - "),
-  ].filter(Boolean);
-  return parts.length ? parts.join(" · ") : null;
-}
+import { formatAddressShort } from "./address";
 
 export function StoreFooter({
   store,
@@ -18,7 +9,7 @@ export function StoreFooter({
   tone?: "light" | "dark";
 }) {
   const dark = tone === "dark";
-  const address = formatAddress(store.address);
+  const address = formatAddressShort(store.address);
   const hours = store.settings.business_hours;
 
   return (

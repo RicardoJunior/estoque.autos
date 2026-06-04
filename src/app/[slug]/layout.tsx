@@ -1,10 +1,14 @@
 import { notFound } from "next/navigation";
 import { getStorefront } from "@/lib/public";
-import { themeVars } from "@/components/storefront/theme";
+import { themeVarsFromStore } from "@/components/storefront/theme";
+import { storeFontClassName } from "@/lib/store-fonts-loader";
+import { WhatsAppFloat } from "@/components/storefront/WhatsAppFloat";
 
 /**
- * Aplica o tema da loja (cores) ao container — escopo local, sem vazar
- * para :root (corrige o bug de tema global da v1).
+ * Aplica o tema da loja (cores + fonte) ao container — escopo local,
+ * sem vazar para :root (corrige o bug de tema global da v1).
+ * A className do next/font injeta o @font-face; as vars --sf-font /
+ * --sf-font-head dizem aos templates quais famílias usar.
  */
 export default async function StorefrontLayout({
   children,
@@ -17,5 +21,14 @@ export default async function StorefrontLayout({
   const store = await getStorefront(slug);
   if (!store) notFound();
 
-  return <div style={themeVars(store.colors)}>{children}</div>;
+  return (
+    <div
+      className={storeFontClassName(store.settings.font)}
+      style={{ ...themeVarsFromStore(store), fontFamily: "var(--sf-font)" }}
+    >
+      {children}
+      {/* WhatsApp flutuante global à vitrine (todas as lojas/páginas). */}
+      <WhatsAppFloat whatsapp={store.whatsapp} storeName={store.name} />
+    </div>
+  );
 }

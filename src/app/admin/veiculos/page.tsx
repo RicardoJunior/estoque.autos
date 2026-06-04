@@ -4,6 +4,8 @@ import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { buttonVariants } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { VehicleFilters } from "./VehicleFilters";
 import type { Vehicle, VehicleStatus } from "@/lib/types";
 
@@ -47,12 +49,15 @@ export default async function VehicleListPage({
       <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold">Estoque</h1>
-          <p className="text-sm text-[var(--color-ink-soft)]">
+          <p className="text-sm text-muted-foreground">
             {vehicles.length}{" "}
             {vehicles.length === 1 ? "veículo" : "veículos"}
           </p>
         </div>
-        <Link href="/admin/veiculos/novo" className="btn-primary shrink-0">
+        <Link
+          href="/admin/veiculos/novo"
+          className={buttonVariants({ className: "shrink-0" })}
+        >
           + Cadastrar carro
         </Link>
       </div>
@@ -60,18 +65,21 @@ export default async function VehicleListPage({
       <VehicleFilters />
 
       {vehicles.length === 0 ? (
-        <div className="card flex flex-col items-center justify-center gap-3 p-12 text-center">
-          <p className="text-[var(--color-ink-soft)]">
+        <Card className="flex flex-col items-center justify-center gap-3 p-12 text-center">
+          <p className="text-muted-foreground">
             {sp.q || sp.status
               ? "Nenhum veículo encontrado com esses filtros."
               : "Você ainda não cadastrou nenhum carro."}
           </p>
           {!sp.q && !sp.status && (
-            <Link href="/admin/veiculos/novo" className="btn-primary">
+            <Link
+              href="/admin/veiculos/novo"
+              className={buttonVariants()}
+            >
               Cadastrar meu primeiro carro
             </Link>
           )}
-        </div>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {vehicles.map((v) => (
@@ -89,11 +97,11 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   return (
     <Link
       href={`/admin/veiculos/${vehicle.id}`}
-      className={`card group overflow-hidden transition hover:border-slate-300 ${
+      className={`group overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 transition hover:ring-foreground/20 ${
         muted.includes(vehicle.status) ? "opacity-70" : ""
       }`}
     >
-      <div className="relative aspect-[4/3] bg-slate-100">
+      <div className="relative aspect-[4/3] bg-muted">
         {cover ? (
           <Image
             src={cover.url}
@@ -103,7 +111,7 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             className="object-cover"
           />
         ) : (
-          <div className="flex h-full items-center justify-center text-sm text-slate-400">
+          <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
             sem foto
           </div>
         )}
@@ -111,18 +119,18 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           <StatusBadge status={vehicle.status} />
         </div>
         {vehicle.featured && (
-          <div className="absolute right-2 top-2 rounded-full bg-[var(--color-brand)] px-2 py-0.5 text-xs font-medium text-white">
+          <div className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
             Destaque
           </div>
         )}
       </div>
       <div className="p-3">
         <div className="truncate font-semibold">{vehicleTitle(vehicle)}</div>
-        <div className="mt-0.5 text-xs text-[var(--color-ink-soft)]">
+        <div className="mt-0.5 text-xs text-muted-foreground">
           {formatKm(vehicle.mileage)}
           {vehicle.photos?.length ? ` · ${vehicle.photos.length} fotos` : ""}
         </div>
-        <div className="mt-1.5 font-bold text-[var(--color-brand)]">
+        <div className="mt-1.5 font-bold text-primary">
           {formatPrice(vehicle.price)}
         </div>
       </div>

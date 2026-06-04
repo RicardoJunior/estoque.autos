@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "estoque-autos",
+  "account_id": "72a91b2baaad8894362c2fea41b93a6d",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-05-06",
+  // nodejs_compat: Buffer/process usados por @supabase/ssr e pelo Worker do
+  // OpenNext. global_fetch_strictly_public: recomendado pelo OpenNext.
+  "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".open-next/assets"
+  },
+  // Binding Cloudflare Images: redimensiona/WebP no UPLOAD (substitui o sharp)
+  // E otimiza o next/image. Requer o produto "Images" habilitado na conta.
+  "images": { "binding": "IMAGES" },
+  // Vars PÚBLICAS — a publishable key e a URL já vão para o browser de
+  // qualquer forma; NEXT_PUBLIC_APP_URL é lido só em código server, no runtime
+  // do Worker. (Nada de secret/service_role aqui.)
+  "vars": {
+    "NEXT_PUBLIC_SUPABASE_URL": "https://jjznatvyvrmcjcyxzkif.supabase.co",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_a1FtUddMUeB3aLIXNm_3zA_BEdiZZC6",
+    "NEXT_PUBLIC_APP_URL": "https://app.estoque.autos"
+  },
+  "observability": { "enabled": true }
+  //
+  // ── FASE 1 — subdomínios por loja (*.estoque.autos) ───────────────────────
+  // Workers Custom Domains NÃO suportam wildcard, então use `routes` + um
+  // registro DNS curinga *.estoque.autos PROXIED. Descomente ao ligar o DNS:
+  // ,"routes": [
+  //   { "pattern": "estoque.autos", "custom_domain": true },
+  //   { "pattern": "app.estoque.autos", "custom_domain": true },
+  //   { "pattern": "*.estoque.autos/*", "zone_name": "estoque.autos" }
+  // ]
+}

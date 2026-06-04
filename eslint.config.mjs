@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Artefatos gerados (OpenNext/Cloudflare) — não são código-fonte:
+    ".open-next/**",
+    "cloudflare-env.d.ts",
     // Código v1 mantido só como referência (não faz parte do app):
     "legacy/**",
   ]),

@@ -1,0 +1,106 @@
+export const meta = {
+  title: "Como apontar seu domínio próprio (passo a passo CNAME)",
+  description:
+    "Guia para conectar seu domínio próprio (ex.: sualoja.com.br) à sua vitrine no estoque.autos usando registro CNAME, com exemplos por provedor de DNS.",
+  date: "2026-05-08",
+  category: "Domínio próprio",
+  slug: "apontar-dominio-proprio-cname",
+};
+
+# Como apontar seu domínio próprio (passo a passo CNAME)
+
+No plano **Pro** você pode usar o seu próprio domínio (ex.: `sualoja.com.br`) no
+lugar do endereço `estoque.autos/sua-loja`. Isso reforça a marca e passa mais
+confiança. O processo é simples: você cria **um registro de DNS** apontando para o
+nosso servidor. Veja como.
+
+## Antes de começar
+
+Você vai precisar de:
+
+- Um **domínio registrado** (ex.: comprado no Registro.br, GoDaddy, Hostinger, etc.).
+- Acesso ao **painel de DNS** do seu provedor.
+- O plano **Pro** ativo no estoque.autos.
+
+> Importante: a propagação do DNS pode levar de alguns minutos até 24 horas. Não
+> se preocupe se não funcionar de imediato.
+
+## 1. Adicione o domínio no painel da loja
+
+No painel, vá em **Configurações → Domínio próprio** e informe o domínio que você
+quer usar (ex.: `www.sualoja.com.br`). Anote o **destino** (host) que aparece na
+tela — é para onde o CNAME vai apontar.
+
+## 2. Crie o registro CNAME no seu provedor de DNS
+
+No painel de DNS do seu domínio, crie um novo registro com estes valores:
+
+| Campo | Valor |
+| --- | --- |
+| Tipo | `CNAME` |
+| Nome / Host | `www` |
+| Valor / Aponta para | o destino mostrado no painel (ex.: `app.estoque.autos`) |
+| TTL | automático (ou 3600) |
+
+### E o domínio "raiz" (sem www)?
+
+Muitos provedores **não permitem CNAME na raiz** (`sualoja.com.br` sem o `www`).
+Nesse caso, use uma destas opções:
+
+- **Redirecionar a raiz para o www** (opção "redirect" / "forwarding" do provedor).
+- Usar **ALIAS** ou **ANAME**, se o seu provedor oferecer (funciona como CNAME na raiz).
+
+O recomendado é manter a vitrine no `www.sualoja.com.br` e redirecionar a raiz para
+ele.
+
+## 3. Exemplos por provedor
+
+- **Registro.br:** painel → *Editar Zona DNS* → adicionar registro `CNAME` com host
+  `www`.
+- **GoDaddy:** *DNS → Records* → *Add* → tipo `CNAME`, host `www`.
+- **Hostinger:** *DNS / Nameservers* → *Manage DNS records* → tipo `CNAME`.
+- **Cloudflare:** *DNS → Records* → *Add record* → tipo `CNAME`, nome `www`
+  (mantenha o proxy desativado / "DNS only" na primeira validação).
+
+## 4. Aguarde a propagação e valide
+
+Depois de salvar o registro, volte ao painel da loja e clique em **Verificar
+domínio**. Quando o DNS propagar, o status muda para **Ativo** e o certificado
+HTTPS é emitido automaticamente. A partir daí sua vitrine responde no seu domínio.
+
+## Resolvendo problemas comuns
+
+- **"Domínio não verifica":** confira se o CNAME aponta exatamente para o destino
+  informado, sem espaços ou `http://`.
+- **Demorou demais:** a propagação pode levar até 24h. Aguarde e verifique de novo.
+- **Funciona com www mas não sem www:** configure o redirecionamento da raiz para o
+  `www` no seu provedor.
+- **CNAME conflitando:** não pode existir outro registro (A/AAAA) no mesmo host do
+  CNAME. Remova o conflito.
+
+## Perguntas frequentes
+
+### Preciso do plano Pro para usar domínio próprio?
+
+Sim. O domínio próprio está disponível no plano Pro. Veja
+[Como funciona a cobrança e troca de plano](/ajuda/cobranca-e-troca-de-plano).
+
+### O HTTPS (cadeado) é automático?
+
+Sim. Assim que o domínio é verificado, o certificado SSL é emitido
+automaticamente — você não precisa configurar nada.
+
+### Quanto tempo leva para o domínio funcionar?
+
+Geralmente alguns minutos, mas a propagação de DNS pode levar até 24 horas
+dependendo do provedor.
+
+### Posso usar a raiz (sem www)?
+
+Sim, mas como muitos provedores não permitem CNAME na raiz, o recomendado é apontar
+o `www` por CNAME e redirecionar a raiz para o `www`.
+
+---
+
+Domínio configurado? Garanta que o estoque esteja completo em
+[Cadastrando veículos com a FIPE](/ajuda/cadastrando-veiculos-com-fipe).

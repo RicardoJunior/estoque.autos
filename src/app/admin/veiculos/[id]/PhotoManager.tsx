@@ -4,6 +4,8 @@ import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { VehiclePhoto } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   removePhotoAction,
   reorderPhotosAction,
@@ -78,22 +80,22 @@ export function PhotoManager({
   }
 
   return (
-    <div className="card space-y-4 p-5">
-      <div className="flex items-center justify-between">
+    <Card className="gap-4 px-5 py-5">
+      <CardHeader className="grid-cols-[1fr_auto] items-center gap-0 px-0">
         <div>
-          <h2 className="text-sm font-semibold">Fotos</h2>
-          <p className="text-xs text-[var(--color-ink-soft)]">
+          <CardTitle className="text-sm font-semibold">Fotos</CardTitle>
+          <p className="text-xs text-muted-foreground">
             {photos.length}/{MAX_PHOTOS} · a primeira é a capa do anúncio
           </p>
         </div>
-        <button
+        <Button
           type="button"
-          className="btn-ghost"
+          variant="ghost"
           disabled={pending || photos.length >= MAX_PHOTOS}
           onClick={() => fileRef.current?.click()}
         >
           {pending ? "Enviando…" : "+ Adicionar fotos"}
-        </button>
+        </Button>
         <input
           ref={fileRef}
           type="file"
@@ -102,73 +104,75 @@ export function PhotoManager({
           className="hidden"
           onChange={onPick}
         />
-      </div>
+      </CardHeader>
 
-      {error && (
-        <p className="text-sm text-[var(--color-danger)]">{error}</p>
-      )}
+      <CardContent className="space-y-4 px-0">
+        {error && (
+          <p className="text-sm text-destructive">{error}</p>
+        )}
 
-      {photos.length === 0 ? (
-        <button
-          type="button"
-          onClick={() => fileRef.current?.click()}
-          className="flex w-full flex-col items-center justify-center gap-1 rounded-[var(--radius)] border border-dashed border-slate-300 bg-slate-50 py-10 text-sm text-[var(--color-ink-soft)] hover:bg-slate-100"
-        >
-          <span className="text-2xl">📷</span>
-          Clique para enviar fotos do veículo
-        </button>
-      ) : (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {photos.map((p, i) => (
-            <div
-              key={p.id}
-              className="group relative overflow-hidden rounded-[var(--radius)] border border-[var(--color-border)]"
-            >
-              <div className="relative aspect-[4/3] bg-slate-100">
-                <Image
-                  src={p.url}
-                  alt=""
-                  fill
-                  sizes="(max-width: 640px) 50vw, 200px"
-                  className="object-cover"
-                />
-                {i === 0 && (
-                  <span className="absolute left-1.5 top-1.5 rounded bg-[var(--color-brand)] px-1.5 py-0.5 text-[10px] font-medium text-white">
-                    Capa
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center justify-between gap-1 p-1.5">
-                <div className="flex gap-1">
-                  <IconBtn label="Mover para a esquerda" disabled={i === 0 || pending} onClick={() => move(p.id, -1)}>←</IconBtn>
-                  <IconBtn label="Mover para a direita" disabled={i === photos.length - 1 || pending} onClick={() => move(p.id, 1)}>→</IconBtn>
+        {photos.length === 0 ? (
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            className="flex w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-border bg-muted py-10 text-sm text-muted-foreground transition-colors hover:border-primary hover:bg-muted/70"
+          >
+            <span className="text-2xl">📷</span>
+            Clique para enviar fotos do veículo
+          </button>
+        ) : (
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {photos.map((p, i) => (
+              <div
+                key={p.id}
+                className="group relative overflow-hidden rounded-lg border border-border"
+              >
+                <div className="relative aspect-[4/3] bg-muted">
+                  <Image
+                    src={p.url}
+                    alt=""
+                    fill
+                    sizes="(max-width: 640px) 50vw, 200px"
+                    className="object-cover"
+                  />
+                  {i === 0 && (
+                    <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
+                      Capa
+                    </span>
+                  )}
                 </div>
-                <div className="flex gap-1">
-                  {i !== 0 && (
+                <div className="flex items-center justify-between gap-1 p-1.5">
+                  <div className="flex gap-1">
+                    <IconBtn label="Mover para a esquerda" disabled={i === 0 || pending} onClick={() => move(p.id, -1)}>←</IconBtn>
+                    <IconBtn label="Mover para a direita" disabled={i === photos.length - 1 || pending} onClick={() => move(p.id, 1)}>→</IconBtn>
+                  </div>
+                  <div className="flex gap-1">
+                    {i !== 0 && (
+                      <button
+                        type="button"
+                        disabled={pending}
+                        onClick={() => makeCover(p.id)}
+                        className="rounded px-1.5 py-1 text-[10px] font-medium text-primary hover:bg-primary/10"
+                      >
+                        Capa
+                      </button>
+                    )}
                     <button
                       type="button"
                       disabled={pending}
-                      onClick={() => makeCover(p.id)}
-                      className="rounded px-1.5 py-1 text-[10px] font-medium text-[var(--color-brand)] hover:bg-blue-50"
+                      onClick={() => remove(p.id)}
+                      className="rounded px-1.5 py-1 text-[10px] font-medium text-destructive hover:bg-destructive/10"
                     >
-                      Capa
+                      Remover
                     </button>
-                  )}
-                  <button
-                    type="button"
-                    disabled={pending}
-                    onClick={() => remove(p.id)}
-                    className="rounded px-1.5 py-1 text-[10px] font-medium text-[var(--color-danger)] hover:bg-red-50"
-                  >
-                    Remover
-                  </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -189,7 +193,7 @@ function IconBtn({
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded border border-[var(--color-border)] text-xs text-[var(--color-ink-soft)] hover:bg-slate-50 disabled:opacity-30"
+      className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs text-muted-foreground hover:bg-muted disabled:opacity-30"
     >
       {children}
     </button>

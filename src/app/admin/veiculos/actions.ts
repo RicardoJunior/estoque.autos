@@ -41,6 +41,10 @@ function parseVehicleForm(formData: FormData) {
     description: formData.get("description") || null,
     optionals,
     featured: formData.get("featured") === "on",
+    fipe_code: formData.get("fipe_code") || null,
+    fipe_year_id: formData.get("fipe_year_id") || null,
+    fipe_price: formData.get("fipe_price") || null,
+    fipe_reference: formData.get("fipe_reference") || null,
   });
 }
 

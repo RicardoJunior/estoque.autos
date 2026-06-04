@@ -2,10 +2,27 @@
 
 import { useActionState } from "react";
 import { use } from "react";
+import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { loginAction, type AuthFormState } from "../actions";
-import { Field } from "@/components/ui/Field";
-import { SubmitButton } from "@/components/ui/SubmitButton";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+
+function SubmitButton({
+  children,
+  pendingLabel,
+}: {
+  children: React.ReactNode;
+  pendingLabel: string;
+}) {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" className="w-full" disabled={pending}>
+      {pending ? pendingLabel : children}
+    </Button>
+  );
+}
 
 export default function LoginPage({
   searchParams,
@@ -25,26 +42,38 @@ export default function LoginPage({
       <form action={action} className="mt-6 space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
         {state.error && (
-          <div className="rounded-[var(--radius)] bg-red-50 px-3.5 py-2.5 text-sm text-[var(--color-danger)]">
+          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
             {state.error}
           </div>
         )}
-        <Field
-          label="E-mail"
-          name="email"
-          type="email"
-          autoComplete="email"
-          required
-          error={state.fieldErrors?.email}
-        />
-        <Field
-          label="Senha"
-          name="password"
-          type="password"
-          autoComplete="current-password"
-          required
-          error={state.fieldErrors?.password}
-        />
+        <div className="grid gap-2">
+          <Label htmlFor="email">E-mail</Label>
+          <Input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+          />
+          {state.fieldErrors?.email && (
+            <p className="text-xs text-destructive">{state.fieldErrors.email}</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="password">Senha</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="current-password"
+            required
+          />
+          {state.fieldErrors?.password && (
+            <p className="text-xs text-destructive">
+              {state.fieldErrors.password}
+            </p>
+          )}
+        </div>
         <div className="flex justify-end">
           <Link
             href="/esqueci-senha"
@@ -56,13 +85,13 @@ export default function LoginPage({
         <SubmitButton pendingLabel="Entrando…">Entrar</SubmitButton>
       </form>
 
-      <p className="mt-6 text-center text-sm text-[var(--color-ink-soft)]">
+      <p className="mt-6 text-center text-sm text-muted-foreground">
         Ainda não tem conta?{" "}
         <Link
           href="/cadastro"
-          className="font-semibold text-[var(--color-brand)] hover:underline"
+          className="font-semibold text-primary hover:underline"
         >
-          Criar loja grátis
+          Criar minha loja
         </Link>
       </p>
     </>

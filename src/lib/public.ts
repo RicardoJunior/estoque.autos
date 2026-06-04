@@ -23,8 +23,15 @@ export interface Storefront {
   settings: TenantSettings;
 }
 
-/** Veículo público (view `vehicles_public`, sem placa nem sold_at). */
-export type PublicVehicle = Omit<Vehicle, "plate" | "sold_at" | "updated_at">;
+/**
+ * Veículo público (view `vehicles_public`, sem placa nem sold_at).
+ * A view expõe fipe_price/fipe_reference (referência estilo
+ * Webmotors), mas não o código/ano internos da FIPE.
+ */
+export type PublicVehicle = Omit<
+  Vehicle,
+  "plate" | "sold_at" | "updated_at" | "fipe_code" | "fipe_year_id"
+>;
 
 function normalizeColors(raw: unknown): TenantColors {
   const c = (raw ?? {}) as Partial<TenantColors>;

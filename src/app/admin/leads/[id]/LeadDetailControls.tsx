@@ -12,6 +12,9 @@ import {
   updateLeadNotesAction,
   updateLeadStatusAction,
 } from "../actions";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Textarea } from "@/components/ui/textarea";
 
 export function LeadDetailControls({
   leadId,
@@ -45,7 +48,7 @@ export function LeadDetailControls({
 
   return (
     <div className="space-y-6">
-      <div className="card p-5">
+      <Card className="p-5">
         <h2 className="text-sm font-semibold">Status do atendimento</h2>
         <div className="mt-3 flex flex-wrap gap-2">
           {LEAD_STATUSES.map((s) => (
@@ -54,54 +57,51 @@ export function LeadDetailControls({
               type="button"
               disabled={pending}
               onClick={() => changeStatus(s)}
-              className={`rounded-[var(--radius)] border px-3 py-1.5 text-sm font-medium transition ${
+              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
                 s === status
-                  ? "border-[var(--color-brand)] bg-[var(--color-brand)]/10 text-[var(--color-brand-ink)]"
-                  : "border-[var(--color-border)] hover:bg-slate-50"
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border hover:bg-muted"
               }`}
             >
               {LEAD_STATUS_LABELS[s]}
             </button>
           ))}
         </div>
-      </div>
+      </Card>
 
-      <div className="card p-5">
+      <Card className="p-5">
         <h2 className="text-sm font-semibold">Anotações internas</h2>
-        <textarea
+        <Textarea
           value={noteValue}
           onChange={(e) => setNoteValue(e.target.value)}
           placeholder="Registre o andamento do atendimento…"
-          className="field mt-3 min-h-28"
+          className="mt-3 min-h-28"
         />
         <div className="mt-2 flex items-center justify-end gap-3">
           {savedNote !== noteValue && (
-            <span className="text-xs text-[var(--color-ink-soft)]">
+            <span className="text-xs text-muted-foreground">
               alterações não salvas
             </span>
           )}
-          <button
+          <Button
             type="button"
-            className="btn-primary"
             disabled={pending || savedNote === noteValue}
             onClick={saveNotes}
           >
             {pending ? "Salvando…" : "Salvar anotações"}
-          </button>
+          </Button>
         </div>
-      </div>
+      </Card>
 
       {confirming ? (
-        <div className="flex items-center justify-between gap-3 rounded-[var(--radius)] bg-red-50 p-3">
-          <span className="text-sm text-[var(--color-danger)]">
-            Excluir este lead?
-          </span>
+        <div className="flex items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3">
+          <span className="text-sm text-destructive">Excluir este lead?</span>
           <div className="flex gap-2">
-            <button className="btn-ghost" onClick={() => setConfirming(false)}>
+            <Button variant="ghost" onClick={() => setConfirming(false)}>
               Não
-            </button>
-            <button
-              className="btn-danger"
+            </Button>
+            <Button
+              variant="destructive"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
@@ -111,13 +111,13 @@ export function LeadDetailControls({
               }
             >
               Sim, excluir
-            </button>
+            </Button>
           </div>
         </div>
       ) : (
         <button
           type="button"
-          className="text-sm font-medium text-[var(--color-danger)] hover:underline"
+          className="text-sm font-medium text-destructive hover:underline"
           onClick={() => setConfirming(true)}
         >
           Excluir lead

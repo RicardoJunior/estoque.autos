@@ -67,5 +67,39 @@ export default async function StorefrontPage({
     maxPrice: sp.maxPrice ? Number(sp.maxPrice) : undefined,
   });
 
-  return <StorefrontView store={store} vehicles={vehicles} />;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const a = store.address ?? {};
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "AutoDealer",
+    name: store.name,
+    url: `${appUrl}/${store.slug}`,
+    telephone: store.phone ?? store.whatsapp ?? undefined,
+    email: store.email ?? undefined,
+    image: store.logo_url ?? undefined,
+    description: store.settings.slogan ?? store.settings.about ?? undefined,
+    address: a.city
+      ? {
+          "@type": "PostalAddress",
+          streetAddress: [a.street, a.number].filter(Boolean).join(", ") || undefined,
+          addressLocality: a.city,
+          addressRegion: a.state ?? undefined,
+          postalCode: a.cep ?? undefined,
+          addressCountry: "BR",
+        }
+      : undefined,
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          // escapa < para impedir quebra de </script> via campos da loja
+          __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
+        }}
+      />
+      <StorefrontView store={store} vehicles={vehicles} />
+    </>
+  );
 }

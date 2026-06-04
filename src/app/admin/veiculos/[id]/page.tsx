@@ -7,6 +7,7 @@ import { VehicleForm } from "../VehicleForm";
 import { PhotoManager } from "./PhotoManager";
 import { VehicleActions } from "./VehicleActions";
 import { updateVehicleAction } from "../actions";
+import { Card } from "@/components/ui/card";
 import type { Vehicle } from "@/lib/types";
 
 export async function generateMetadata({
@@ -51,7 +52,7 @@ export default async function EditVehiclePage({
       <div>
         <Link
           href="/admin/veiculos"
-          className="text-sm text-[var(--color-ink-soft)] hover:underline"
+          className="text-sm text-muted-foreground hover:underline"
         >
           ← Estoque
         </Link>
@@ -61,7 +62,7 @@ export default async function EditVehiclePage({
             href={`/${tenant.slug}/carros/${vehicle.id}`}
             target="_blank"
             rel="noreferrer"
-            className="shrink-0 text-sm font-medium text-[var(--color-brand)] hover:underline"
+            className="shrink-0 text-sm font-medium text-primary hover:underline"
           >
             Ver no site ↗
           </a>
@@ -69,9 +70,9 @@ export default async function EditVehiclePage({
       </div>
 
       {novo && (
-        <div className="card border-[var(--color-brand)]/20 bg-[var(--color-brand)]/5 p-4 text-sm">
+        <Card className="bg-primary/5 p-4 text-sm ring-primary/20">
           ✅ Carro cadastrado! Agora adicione as fotos abaixo.
-        </div>
+        </Card>
       )}
 
       <PhotoManager vehicleId={vehicle.id} initial={vehicle.photos ?? []} />

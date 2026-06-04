@@ -1,0 +1,32 @@
+# estoque.autos
+
+> Plataforma SaaS brasileira que cria o site profissional de lojas de veículos
+> em minutos: o lojista assina um plano, escolhe um dos 6 templates, define
+> cores, fonte e logo, cadastra o estoque pela tabela FIPE (marca → modelo →
+> versão → ano, com valor de referência atualizado mensalmente) e recebe leads
+> por formulário de proposta e WhatsApp.
+
+## O que o produto faz
+
+- Site/vitrine própria por loja em estoque.autos/{loja} ou domínio próprio
+  (plano Pro), com apontamento de DNS guiado passo a passo.
+- Cadastro de veículos integrado à tabela FIPE, com valor de referência e
+  atualização mensal automática dos preços.
+- Leads: cada proposta enviada e cada clique em WhatsApp/telefone vira um
+  contato registrado no painel do lojista (tempo real).
+- Personalização: 6 templates (Clássico, Moderno, Premium, Minimal, Esportivo,
+  Vitrine), cores, fonte e logo por loja.
+- Planos: Básico (R$ 19,90/mês, até 20 carros ativos) e Pro (R$ 49,90/mês,
+  até 60 carros ativos, domínio próprio, destaque na busca).
+
+## Páginas principais
+
+- [Início](/): apresentação, templates, planos e FAQ
+- [Planos](/#planos): preços e diferenças entre Básico e Pro
+- [Criar conta](/cadastro): assinatura e criação da loja
+- [Blog](/blog): conteúdo sobre vendas de veículos e gestão de estoque
+- [Central de ajuda](/ajuda): guias de configuração (domínio, FIPE, cobrança)
+
+## Contato
+
+- Site: https://estoque.autos
