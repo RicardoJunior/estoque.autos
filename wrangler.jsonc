@@ -20,16 +20,14 @@
   "vars": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://jjznatvyvrmcjcyxzkif.supabase.co",
     "NEXT_PUBLIC_SUPABASE_ANON_KEY": "sb_publishable_a1FtUddMUeB3aLIXNm_3zA_BEdiZZC6",
-    "NEXT_PUBLIC_APP_URL": "https://app.estoque.autos"
+    "NEXT_PUBLIC_APP_URL": "https://estoque.autos"
   },
-  "observability": { "enabled": true }
-  //
-  // ── FASE 1 — subdomínios por loja (*.estoque.autos) ───────────────────────
-  // Workers Custom Domains NÃO suportam wildcard, então use `routes` + um
-  // registro DNS curinga *.estoque.autos PROXIED. Descomente ao ligar o DNS:
-  // ,"routes": [
-  //   { "pattern": "estoque.autos", "custom_domain": true },
-  //   { "pattern": "app.estoque.autos", "custom_domain": true },
-  //   { "pattern": "*.estoque.autos/*", "zone_name": "estoque.autos" }
-  // ]
+  "observability": { "enabled": true },
+  // Domínio principal (app + vitrines por slug). www redireciona via regra na
+  // zona. Domínios próprios por loja chegam via Cloudflare for SaaS (custom
+  // hostnames) e caem no Worker pelo fallback da zona.
+  "routes": [
+    { "pattern": "estoque.autos", "custom_domain": true },
+    { "pattern": "www.estoque.autos", "custom_domain": true }
+  ]
 }

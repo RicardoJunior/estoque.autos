@@ -54,6 +54,14 @@ export async function middleware(request: NextRequest) {
   // ── Domínio próprio: host ≠ host do app → reescreve para /{slug} ──
   const host = request.headers.get("host")?.split(":")[0]?.toLowerCase() ?? "";
   const self = appHost();
+
+  // www do próprio app → 301 para o apex (canônico/SEO)
+  if (host === `www.${self}`) {
+    const url = request.nextUrl.clone();
+    url.host = self;
+    return NextResponse.redirect(url, 301);
+  }
+
   const isCustomHost =
     !!host &&
     host !== self &&
