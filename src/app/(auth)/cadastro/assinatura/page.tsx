@@ -1,7 +1,11 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
-import { getSession, getSubscription, isSubscriptionActive } from "@/lib/auth";
+import {
+  getSession,
+  getUnlinkedSubscription,
+  isSubscriptionActive,
+} from "@/lib/auth";
 import {
   BILLING_INTERVALS,
   PLANS,
@@ -30,7 +34,6 @@ const PLAN_FEATURES: Record<string, string[]> = {
     "Tudo do Básico, e mais:",
     "Domínio próprio (sualoja.com.br)",
     "Até 60 carros ativos",
-    "Destaque nos resultados de busca",
   ],
 };
 
@@ -47,9 +50,11 @@ export default async function AssinaturaPage({
   const session = await getSession();
   if (!session) redirect("/login?next=/cadastro/assinatura");
 
-  const sub = await getSubscription();
+  // assinatura paga aguardando criação de loja → onboarding.
+  // (quem já tem loja pode assinar OUTRA: multi-loja)
+  const sub = await getUnlinkedSubscription();
   if (isSubscriptionActive(sub)) {
-    redirect(session.tenant ? "/admin" : "/onboarding");
+    redirect("/onboarding");
   }
 
   const { plano, intervalo } = await searchParams;

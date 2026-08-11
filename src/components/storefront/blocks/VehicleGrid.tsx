@@ -37,7 +37,12 @@ export function VehicleGrid({
     return (
       empty ?? (
         <p
-          className={`py-16 text-center ${dark ? "text-slate-500" : "text-slate-400"}`}
+          className="py-16 text-center"
+          style={{
+            color: dark
+              ? "var(--sf-ink-faint, #64748b)"
+              : "var(--sf-ink-faint, #94a3b8)",
+          }}
         >
           {emptyText}
         </p>

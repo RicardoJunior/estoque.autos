@@ -1,0 +1,17 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "estoque-autos-blog",
+  "account_id": "72a91b2baaad8894362c2fea41b93a6d",
+  "main": "worker.js",
+  "compatibility_date": "2025-05-06",
+  // O dist/ do Astro é copiado para .cloudflare/assets/blog/ (o `base: /blog`
+  // não entra nos caminhos do build, mas a URL pública o exige).
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".cloudflare/assets"
+  },
+  "observability": { "enabled": true },
+  // Rota com caminho tem precedência sobre o custom domain do Worker
+  // principal (estoque-autos) na mesma zona — /blog* cai aqui, o resto lá.
+  "routes": [{ "pattern": "estoque.autos/blog*", "zone_name": "estoque.autos" }]
+}

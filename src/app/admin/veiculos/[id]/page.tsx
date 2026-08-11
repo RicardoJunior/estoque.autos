@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireTenant } from "@/lib/auth";
+import { getSession, requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { vehicleTitle } from "@/lib/format";
 import { VehicleForm } from "../VehicleForm";
@@ -16,11 +16,14 @@ export async function generateMetadata({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
+  const session = await getSession();
+  if (!session?.tenant) return { title: "Veículo" };
   const supabase = await createClient();
   const { data } = await supabase
     .from("vehicles")
     .select("brand, model")
     .eq("id", id)
+    .eq("tenant_id", session.tenant.id)
     .single();
   return { title: data ? `${data.brand} ${data.model}` : "Veículo" };
 }
@@ -32,7 +35,7 @@ export default async function EditVehiclePage({
   params: Promise<{ id: string }>;
   searchParams: Promise<{ novo?: string }>;
 }) {
-  const { tenant } = await requireTenant();
+  const { tenant } = await requireStaff();
   const { id } = await params;
   const { novo } = await searchParams;
   const supabase = await createClient();

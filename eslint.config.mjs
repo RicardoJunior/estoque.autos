@@ -17,6 +17,8 @@ const eslintConfig = defineConfig([
     "cloudflare-env.d.ts",
     // Código v1 mantido só como referência (não faz parte do app):
     "legacy/**",
+    // Projeto Astro independente (blog) — tem lint próprio:
+    "blog/**",
   ]),
 ]);
 

@@ -1,4 +1,8 @@
-/** Lista de opcionais comuns oferecidos no cadastro do veículo. */
+/**
+ * Listas do cadastro de veículo (referência: checklist do Webmotors).
+ * ATENÇÃO: os 16 primeiros opcionais preservam a grafia original —
+ * veículos já cadastrados guardam essas strings no jsonb.
+ */
 export const COMMON_OPTIONALS = [
   "Ar-condicionado",
   "Direção hidráulica",
@@ -16,4 +20,51 @@ export const COMMON_OPTIONALS = [
   "Piloto automático",
   "Faróis de LED",
   "Start/Stop",
+  // conjunto estendido (Webmotors)
+  "Alarme",
+  "Ar quente",
+  "Banco com regulagem de altura",
+  "Bancos com aquecimento",
+  "Capota marítima",
+  "Chave presencial",
+  "Computador de bordo",
+  "Controle de estabilidade",
+  "Controle de tração",
+  "Desembaçador traseiro",
+  "Encosto de cabeça traseiro",
+  "Farol de neblina",
+  "GPS",
+  "Limpador traseiro",
+  "Paddle shift",
+  "Partida por botão",
+  "Piloto automático adaptativo (ACC)",
+  "Protetor de caçamba",
+  "Retrovisor fotocrômico",
+  "Retrovisores elétricos",
+  "Sensor de chuva",
+  "Teto panorâmico",
+  "Tração 4x4",
+  "Volante com regulagem de altura",
+  "Volante multifuncional",
+] as const;
+
+/** Cores de veículo (dropdown do cadastro — conjunto do Webmotors). */
+export const VEHICLE_COLORS = [
+  "Branco",
+  "Preto",
+  "Prata",
+  "Cinza",
+  "Vermelho",
+  "Azul",
+  "Verde",
+  "Amarelo",
+  "Laranja",
+  "Marrom",
+  "Bege",
+  "Bronze",
+  "Dourado",
+  "Vinho",
+  "Rosa",
+  "Roxo",
+  "Fantasia",
 ] as const;

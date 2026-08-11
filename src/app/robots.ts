@@ -8,6 +8,10 @@ export default function robots(): MetadataRoute.Robots {
       allow: "/",
       disallow: ["/admin", "/api", "/auth"],
     },
+    // O blog (Astro, servido em /blog) gera o próprio sitemap.
+    sitemap: base
+      ? [`${base}/sitemap.xml`, `${base}/blog/sitemap-index.xml`]
+      : undefined,
     host: base || undefined,
   };
 }

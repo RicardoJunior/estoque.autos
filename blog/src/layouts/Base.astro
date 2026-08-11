@@ -1,0 +1,103 @@
+---
+import Header from "../components/Header.astro";
+import Footer from "../components/Footer.astro";
+import { SITE, url } from "../lib/site";
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description: string;
+  /** Caminho canônico (com base), ex.: /blog/meu-post/. Default: rota atual. */
+  canonicalPath?: string;
+  ogType?: "website" | "article";
+  /** Objetos JSON-LD extras (além de Organization/WebSite). */
+  jsonLd?: object[];
+}
+
+const {
+  title,
+  description,
+  canonicalPath,
+  ogType = "website",
+  jsonLd = [],
+} = Astro.props;
+
+const fullTitle = title.includes("estoque.autos")
+  ? title
+  : `${title} · blog estoque.autos`;
+
+const canonical = new URL(canonicalPath ?? Astro.url.pathname, SITE.url);
+
+const baseJsonLd = [
+  {
+    "@type": "Organization",
+    "@id": `${SITE.url}/#org`,
+    name: SITE.name,
+    url: SITE.url,
+    logo: `${SITE.url}${url("favicon.svg")}`,
+    description:
+      "Plataforma SaaS para lojas de veículos criarem um site profissional em minutos.",
+  },
+  {
+    "@type": "WebSite",
+    "@id": `${SITE.url}${url()}#site`,
+    name: SITE.title,
+    url: `${SITE.url}${url()}`,
+    inLanguage: "pt-BR",
+    publisher: { "@id": `${SITE.url}/#org` },
+  },
+];
+
+const jsonLdGraph = {
+  "@context": "https://schema.org",
+  "@graph": [...baseJsonLd, ...jsonLd],
+};
+---
+
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical.href} />
+    <link rel="icon" type="image/svg+xml" href={url("favicon.svg")} />
+    <link rel="sitemap" href={url("sitemap-index.xml")} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={SITE.title}
+      href={url("rss.xml")}
+    />
+
+    <meta property="og:type" content={ogType} />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical.href} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(jsonLdGraph)}
+    />
+  </head>
+  <body>
+    <div class="bp-grain" aria-hidden="true"></div>
+    <Header />
+    <main>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>

@@ -15,8 +15,9 @@ export function LeadsRealtime({ tenantId }: { tenantId: string }) {
 
   useEffect(() => {
     const supabase = createClient();
+    // canal por tenant: trocar de loja re-assina no canal certo
     const channel = supabase
-      .channel("leads-notify")
+      .channel(`leads-notify-${tenantId}`)
       .on(
         "postgres_changes",
         {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { signupAction, type AuthFormState } from "../actions";
 import { PLANS, formatPlanPrice, type BillingInterval } from "@/lib/billing";
 import type { PlanId } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -28,24 +29,32 @@ function SubmitButton({
 export function SignupForm({
   plano,
   intervalo,
+  next,
 }: {
   plano: PlanId;
   intervalo: BillingInterval;
+  /** destino pós-cadastro (ex.: /convite/{token}) — pula o checkout */
+  next?: string;
 }) {
   const [state, action] = useActionState<AuthFormState, FormData>(
     signupAction,
     {},
   );
   const plan = PLANS[plano];
+  const invited = !!next;
 
   return (
     <>
-      <h1 className="text-xl font-bold">Crie a conta da sua loja</h1>
+      <h1 className="text-xl font-bold">
+        {invited ? "Crie sua conta" : "Crie a conta da sua loja"}
+      </h1>
       <p className="mt-1 text-sm text-muted-foreground">
-        Em poucos minutos seu site estará no ar.
+        {invited
+          ? "Depois de confirmar o e-mail, você volta para aceitar o convite."
+          : "Em poucos minutos seu site estará no ar."}
       </p>
 
-      <div className="mt-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2.5 text-sm">
+      <div className={invited ? "hidden" : "mt-4 flex items-center justify-between rounded-lg border border-primary/30 bg-primary/5 px-3.5 py-2.5 text-sm"}>
         <span>
           Plano <strong>{plan.name}</strong>{" "}
           <span className="text-muted-foreground">
@@ -67,10 +76,16 @@ export function SignupForm({
       <form action={action} className="mt-5 space-y-4">
         <input type="hidden" name="plano" value={plano} />
         <input type="hidden" name="intervalo" value={intervalo} />
+        {next && <input type="hidden" name="next" value={next} />}
         {state.error && (
-          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-            {state.error}
-          </div>
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {state.error}
+            </AlertDescription>
+          </Alert>
         )}
         <div className="grid gap-2">
           <Label htmlFor="name">Seu nome</Label>
@@ -114,6 +129,23 @@ export function SignupForm({
         <SubmitButton pendingLabel="Criando conta…">
           Criar conta e continuar
         </SubmitButton>
+        <p className="text-center text-xs text-muted-foreground">
+          Ao criar a conta, você concorda com os{" "}
+          <Link
+            href="/termos"
+            className="underline underline-offset-2 hover:text-primary"
+          >
+            Termos de Uso
+          </Link>{" "}
+          e a{" "}
+          <Link
+            href="/privacidade"
+            className="underline underline-offset-2 hover:text-primary"
+          >
+            Política de Privacidade
+          </Link>
+          .
+        </p>
       </form>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">

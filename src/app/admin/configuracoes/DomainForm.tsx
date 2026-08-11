@@ -18,6 +18,7 @@ import {
   verifyDomainAction,
   type DomainState,
 } from "./actions";
+import { isApexDomain } from "@/lib/domain";
 import type { Tenant } from "@/lib/types";
 
 export function DomainForm({
@@ -144,10 +145,9 @@ function DnsInstructions({
   appHost: string;
   cfEnabled: boolean;
 }) {
-  // www.minhaloja.com.br → host "www", apex "minhaloja.com.br"
-  const labels = domain.split(".");
-  const isApex = labels.length <= 2;
-  const recordName = isApex ? "@" : labels[0];
+  // www.minhaloja.com.br → host "www"; minhaloja.com.br é apex → "@"
+  const isApex = isApexDomain(domain);
+  const recordName = isApex ? "@" : subdomainHost(domain);
 
   return (
     <div className="space-y-4 rounded-lg border bg-muted/40 p-4">
@@ -189,6 +189,20 @@ function DnsInstructions({
       )}
     </div>
   );
+}
+
+/**
+ * Parte do domínio antes do apex, para o campo "Nome/Host" do
+ * provedor: www.minhaloja.com.br → "www" (e não "minhaloja").
+ */
+function subdomainHost(domain: string): string {
+  const labels = domain.split(".");
+  for (let i = 1; i < labels.length; i++) {
+    if (isApexDomain(labels.slice(i).join("."))) {
+      return labels.slice(0, i).join(".");
+    }
+  }
+  return labels[0];
 }
 
 function CopyField({

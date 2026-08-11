@@ -10,11 +10,13 @@ import {
   TRANSMISSION_LABELS,
   VEHICLE_CATEGORIES,
   CATEGORY_LABELS,
+  VEHICLE_FLAGS,
+  VEHICLE_FLAG_LABELS,
   type Vehicle,
   type VehicleCategory,
 } from "@/lib/types";
 import { FipePicker, type FipeFill } from "./FipePicker";
-import { COMMON_OPTIONALS } from "@/lib/optionals";
+import { COMMON_OPTIONALS, VEHICLE_COLORS } from "@/lib/optionals";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -60,6 +62,7 @@ export function VehicleForm({
   );
   const e = state.fieldErrors ?? {};
   const selectedOptionals = new Set(initial?.optionals ?? []);
+  const selectedFlags = new Set(initial?.condition_flags ?? []);
 
   // controlados: a cascata FIPE preenche e o lojista pode ajustar
   const [category, setCategory] = useState<VehicleCategory>(
@@ -262,7 +265,26 @@ export function VehicleForm({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="color">Cor</Label>
-              <Input id="color" name="color" defaultValue={initial?.color ?? ""} placeholder="Prata" />
+              <Select name="color" defaultValue={initial?.color ?? ""}>
+                <SelectTrigger id="color" className="w-full">
+                  <SelectValue placeholder="—" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">—</SelectItem>
+                  {VEHICLE_COLORS.map((c) => (
+                    <SelectItem key={c} value={c}>{c}</SelectItem>
+                  ))}
+                  {/* cor fora da lista (cadastros antigos) continua válida */}
+                  {initial?.color &&
+                    !VEHICLE_COLORS.includes(
+                      initial.color as (typeof VEHICLE_COLORS)[number],
+                    ) && (
+                      <SelectItem value={initial.color}>
+                        {initial.color}
+                      </SelectItem>
+                    )}
+                </SelectContent>
+              </Select>
               {e.color && <p className="text-xs text-destructive">{e.color}</p>}
             </div>
             <div className="grid gap-2">
@@ -275,6 +297,34 @@ export function VehicleForm({
               )}
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Condição do veículo (marcadores estilo Webmotors) */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Condição do veículo</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {VEHICLE_FLAGS.map((flag) => (
+              <label key={flag} className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  name="condition_flags"
+                  value={flag}
+                  defaultChecked={selectedFlags.has(flag)}
+                  className="h-4 w-4 rounded border-border accent-primary"
+                />
+                {VEHICLE_FLAG_LABELS[flag]}
+              </label>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Os marcadores aparecem como selos no anúncio. “Veículo de
+            leilão” e “Alienado” são divulgação de procedência — aparecem
+            em destaque de aviso.
+          </p>
         </CardContent>
       </Card>
 

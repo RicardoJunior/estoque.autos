@@ -5,9 +5,12 @@ import { use } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { loginAction, type AuthFormState } from "../actions";
-import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 function SubmitButton({
   children,
@@ -24,13 +27,19 @@ function SubmitButton({
   );
 }
 
+const URL_ERRORS: Record<string, string> = {
+  link: "Este link expirou ou já foi usado. Entre com um código por e-mail ou peça um novo link.",
+  auth: "Não foi possível validar o link. Entre com um código por e-mail ou tente de novo.",
+};
+
 export default function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ next?: string }>;
+  searchParams: Promise<{ next?: string; error?: string }>;
 }) {
-  const { next } = use(searchParams);
+  const { next, error } = use(searchParams);
   const [state, action] = useActionState<AuthFormState, FormData>(loginAction, {});
+  const urlError = error ? URL_ERRORS[error] : undefined;
 
   return (
     <>
@@ -41,10 +50,25 @@ export default function LoginPage({
 
       <form action={action} className="mt-6 space-y-4">
         {next && <input type="hidden" name="next" value={next} />}
+        {!state.error && urlError && (
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {urlError}
+            </AlertDescription>
+          </Alert>
+        )}
         {state.error && (
-          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-            {state.error}
-          </div>
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {state.error}
+            </AlertDescription>
+          </Alert>
         )}
         <div className="grid gap-2">
           <Label htmlFor="email">E-mail</Label>
@@ -84,6 +108,22 @@ export default function LoginPage({
         </div>
         <SubmitButton pendingLabel="Entrando…">Entrar</SubmitButton>
       </form>
+
+      <div className="mt-4 flex items-center gap-3">
+        <Separator className="flex-1" />
+        <span className="text-xs text-muted-foreground">ou</span>
+        <Separator className="flex-1" />
+      </div>
+
+      <Link
+        href={next ? `/login/codigo?next=${encodeURIComponent(next)}` : "/login/codigo"}
+        className={cn(
+          buttonVariants({ variant: "outline" }),
+          "mt-4 w-full font-semibold",
+        )}
+      >
+        Entrar com código por e-mail (sem senha)
+      </Link>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         Ainda não tem conta?{" "}

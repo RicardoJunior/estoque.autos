@@ -35,16 +35,32 @@ export const BLOG_SLUGS = [
 
 export const AJUDA_SLUGS = [
   "criando-sua-loja-em-5-minutos",
-  "apontar-dominio-proprio-cname",
+  "primeiros-passos-apos-assinar",
+  "como-entrar-na-sua-conta",
+  "esqueci-minha-senha",
   "cadastrando-veiculos-com-fipe",
+  "editar-vender-e-arquivar-veiculos",
+  "fotos-dos-veiculos",
+  "personalizar-template-cores-e-fontes",
+  "logo-da-loja",
+  "como-funcionam-os-leads",
+  "dados-de-contato-e-whatsapp",
+  "integracoes-de-marketing",
+  "convidar-e-gerenciar-equipe",
+  "apontar-dominio-proprio-cname",
   "cobranca-e-troca-de-plano",
 ] as const;
 
 // Ordem das categorias da Central de Ajuda (define a ordem de exibição no hub).
 export const AJUDA_CATEGORIES = [
   "Começando",
-  "Domínio próprio",
+  "Conta & acesso",
   "Veículos & FIPE",
+  "Sua vitrine",
+  "Leads & vendas",
+  "Configurações da loja",
+  "Equipe",
+  "Domínio próprio",
   "Planos & cobrança",
 ] as const;
 

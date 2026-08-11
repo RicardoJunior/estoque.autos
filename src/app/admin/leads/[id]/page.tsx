@@ -20,7 +20,8 @@ export default async function LeadDetailPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const { tenant } = await requireTenant();
+  const { tenant, role } = await requireTenant();
+  const isStaff = role === "owner" || role === "admin";
   const { id } = await params;
   const supabase = await createClient();
 
@@ -81,7 +82,11 @@ export default async function LeadDetailPage({
 
         {lead.vehicle && (
           <Link
-            href={`/admin/veiculos/${lead.vehicle.id}`}
+            href={
+              isStaff
+                ? `/admin/veiculos/${lead.vehicle.id}`
+                : `/${tenant.slug}/carros/${lead.vehicle.id}`
+            }
             className="flex items-center justify-between rounded-lg border border-border p-3 text-sm hover:bg-muted"
           >
             <span>
@@ -126,6 +131,7 @@ export default async function LeadDetailPage({
         leadId={lead.id}
         status={lead.status}
         notes={lead.notes ?? ""}
+        canDelete={isStaff}
       />
     </div>
   );

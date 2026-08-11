@@ -1,0 +1,179 @@
+---
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import {
+  CATEGORIES,
+  PRODUCT,
+  SITE,
+  categoryUrl,
+  formatDate,
+  postUrl,
+  readingTime,
+  url,
+} from "../lib/site";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts", ({ data }) => !data.draft);
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: { post },
+  }));
+}
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+const { post } = Astro.props;
+const { title, description, answer, pubDate, updatedDate, category, tags, faq } =
+  post.data;
+
+const { Content } = await render(post);
+
+const canonicalPath = postUrl(post.id);
+const absoluteUrl = `${SITE.url}${canonicalPath}`;
+const minutes = readingTime(post.body ?? "");
+const isoPub = pubDate.toISOString();
+const isoMod = (updatedDate ?? pubDate).toISOString();
+
+const related = (
+  await getCollection(
+    "posts",
+    ({ id, data }) => !data.draft && data.category === category && id !== post.id,
+  )
+)
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 3);
+
+const jsonLd: object[] = [
+  {
+    "@type": "BlogPosting",
+    "@id": `${absoluteUrl}#post`,
+    mainEntityOfPage: absoluteUrl,
+    headline: title,
+    description,
+    inLanguage: "pt-BR",
+    datePublished: isoPub,
+    dateModified: isoMod,
+    articleSection: CATEGORIES[category].name,
+    keywords: tags.join(", "),
+    wordCount: (post.body ?? "").split(/\s+/).filter(Boolean).length,
+    author: { "@id": `${SITE.url}/#org` },
+    publisher: { "@id": `${SITE.url}/#org` },
+    isPartOf: { "@id": `${SITE.url}${url()}#blog` },
+  },
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Blog",
+        item: `${SITE.url}${url()}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: CATEGORIES[category].name,
+        item: `${SITE.url}${categoryUrl(category)}`,
+      },
+      { "@type": "ListItem", position: 3, name: title, item: absoluteUrl },
+    ],
+  },
+];
+
+if (faq.length > 0) {
+  jsonLd.push({
+    "@type": "FAQPage",
+    mainEntity: faq.map(({ q, a }) => ({
+      "@type": "Question",
+      name: q,
+      acceptedAnswer: { "@type": "Answer", text: a },
+    })),
+  });
+}
+---
+
+<Base
+  title={title}
+  description={description}
+  canonicalPath={canonicalPath}
+  ogType="article"
+  jsonLd={jsonLd}
+>
+  <article>
+    <header class="bp-article-head">
+      <div class="bp-headlights" aria-hidden="true"></div>
+      <div class="bp-wrap bp-wrap-narrow bp-hero-in">
+        <nav class="bp-breadcrumb" aria-label="Você está em">
+          <a href={url()}>Blog</a>
+          <span class="sep">/</span>
+          <a href={categoryUrl(category)}>{CATEGORIES[category].name}</a>
+        </nav>
+        <h1 class="bp-article-h1">{title}</h1>
+        <div class="bp-article-meta">
+          <span class="bp-pill">{CATEGORIES[category].name}</span>
+          <time datetime={isoPub.slice(0, 10)}>{formatDate(pubDate)}</time>
+          {
+            updatedDate && (
+              <span>· atualizado em {formatDate(updatedDate)}</span>
+            )
+          }
+          <span>· {minutes} min de leitura</span>
+        </div>
+
+        <aside class="bp-answer">
+          <p class="bp-answer-label">Resposta rápida</p>
+          <p>{answer}</p>
+        </aside>
+      </div>
+    </header>
+
+    <div class="bp-wrap bp-wrap-narrow">
+      <div class="prose">
+        <Content />
+      </div>
+
+      {
+        faq.length > 0 && (
+          <section class="bp-faq" aria-label="Perguntas frequentes">
+            <h2 class="bp-faq-h">Perguntas frequentes</h2>
+            {faq.map(({ q, a }) => (
+              <details>
+                <summary>{q}</summary>
+                <p class="bp-faq-a">{a}</p>
+              </details>
+            ))}
+          </section>
+        )
+      }
+
+      <aside class="bp-cta-box">
+        <h2 class="bp-cta-box-h">
+          Sua loja ainda não tem um site <span class="bp-amber">profissional</span>?
+        </h2>
+        <p class="bp-cta-box-p">
+          Com o estoque.autos você cria a vitrine da sua loja em minutos:
+          cadastro pela tabela FIPE, leads por WhatsApp e domínio próprio.
+        </p>
+        <a href={PRODUCT.planos} class="bp-btn bp-btn-lg">
+          Criar meu site <span class="bp-arrow">→</span>
+        </a>
+      </aside>
+
+      {
+        related.length > 0 && (
+          <section class="bp-related" aria-label="Artigos relacionados">
+            <h2 class="bp-related-h">Continue lendo</h2>
+            <div class="bp-grid">
+              {related.map((p) => (
+                <PostCard post={p} />
+              ))}
+            </div>
+          </section>
+        )
+      }
+    </div>
+  </article>
+</Base>

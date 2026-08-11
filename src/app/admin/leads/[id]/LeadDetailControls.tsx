@@ -15,21 +15,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export function LeadDetailControls({
   leadId,
   status,
   notes,
+  canDelete,
 }: {
   leadId: string;
   status: LeadStatus;
   notes: string;
+  /** excluir é ação de staff — a RLS barra vendedor, então nem mostramos */
+  canDelete: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [noteValue, setNoteValue] = useState(notes);
   const [savedNote, setSavedNote] = useState(notes);
-  const [confirming, setConfirming] = useState(false);
 
   function changeStatus(next: LeadStatus) {
     if (next === status) return;
@@ -50,23 +64,28 @@ export function LeadDetailControls({
     <div className="space-y-6">
       <Card className="p-5">
         <h2 className="text-sm font-semibold">Status do atendimento</h2>
-        <div className="mt-3 flex flex-wrap gap-2">
+        <ToggleGroup
+          aria-label="Status do atendimento"
+          className="mt-3 flex-wrap"
+          value={[status]}
+          onValueChange={(values) => {
+            const next = values[0] as LeadStatus | undefined;
+            // clicar na opção ativa desmarca (values vazio): mantém a seleção
+            if (next && next !== status) changeStatus(next);
+          }}
+        >
           {LEAD_STATUSES.map((s) => (
-            <button
+            <ToggleGroupItem
               key={s}
-              type="button"
+              value={s}
+              variant="outline"
               disabled={pending}
-              onClick={() => changeStatus(s)}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:opacity-50 ${
-                s === status
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border hover:bg-muted"
-              }`}
+              className="aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary aria-pressed:hover:bg-primary/10 aria-pressed:hover:text-primary"
             >
               {LEAD_STATUS_LABELS[s]}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
       </Card>
 
       <Card className="p-5">
@@ -93,35 +112,43 @@ export function LeadDetailControls({
         </div>
       </Card>
 
-      {confirming ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3">
-          <span className="text-sm text-destructive">Excluir este lead?</span>
-          <div className="flex gap-2">
-            <Button variant="ghost" onClick={() => setConfirming(false)}>
-              Não
-            </Button>
+      {canDelete && (
+      <AlertDialog>
+        <AlertDialogTrigger
+          render={
             <Button
+              variant="ghost"
+              className="w-fit px-0 text-destructive hover:bg-transparent hover:text-destructive hover:underline"
+            />
+          }
+        >
+          Excluir lead
+        </AlertDialogTrigger>
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Excluir este lead?</AlertDialogTitle>
+            <AlertDialogDescription>
+              O contato e as anotações serão apagados. Essa ação não pode ser
+              desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Não</AlertDialogCancel>
+            <AlertDialogAction
               variant="destructive"
               disabled={pending}
               onClick={() =>
                 startTransition(async () => {
-                  await deleteLeadAction(leadId);
-                  router.push("/admin/leads");
+                  const res = await deleteLeadAction(leadId);
+                  if (!res.error) router.push("/admin/leads");
                 })
               }
             >
               Sim, excluir
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <button
-          type="button"
-          className="text-sm font-medium text-destructive hover:underline"
-          onClick={() => setConfirming(true)}
-        >
-          Excluir lead
-        </button>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       )}
     </div>
   );

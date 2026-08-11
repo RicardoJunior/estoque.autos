@@ -1,0 +1,31 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { CATEGORIES, formatDate, postUrl, readingTime } from "../lib/site";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+  featured?: boolean;
+}
+const { post, featured = false } = Astro.props;
+const { title, description, pubDate, category } = post.data;
+const minutes = readingTime(post.body ?? "");
+---
+
+<a
+  class:list={["bp-post-card", { "bp-featured": featured }]}
+  href={postUrl(post.id)}
+>
+  <div class="bp-post-card-meta">
+    <span class="bp-pill">{CATEGORIES[category].name}</span>
+    <time datetime={pubDate.toISOString().slice(0, 10)}>
+      {formatDate(pubDate)}
+    </time>
+    <span>·</span>
+    <span>{minutes} min</span>
+  </div>
+  <h3 class="bp-post-card-t">{title}</h3>
+  <p class="bp-post-card-d">{description}</p>
+  <span class="bp-post-card-cta">
+    Ler artigo <span class="bp-arrow">→</span>
+  </span>
+</a>

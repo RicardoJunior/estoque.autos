@@ -1,23 +1,28 @@
 import { z } from "zod";
 
-/** Converte um ZodError em { campo: mensagem } (primeira por campo). */
+/**
+ * Converte um ZodError em { campo: mensagem } (primeira por campo).
+ * Usa o ÚLTIMO segmento do path: para objetos aninhados
+ * (settings.slogan, colors.primary) é ele que nomeia o campo do form.
+ */
 export function fieldErrorsFromZod(error: z.ZodError): Record<string, string> {
   const out: Record<string, string> = {};
   for (const issue of error.issues) {
-    const key = String(issue.path[0] ?? "");
+    const key = String(issue.path.at(-1) ?? "");
     if (key && !out[key]) out[key] = issue.message;
   }
   return out;
 }
 import {
   FUELS,
+  HERO_MEDIA_TYPES,
   LEAD_TYPES,
   TEMPLATE_IDS,
   TRANSMISSIONS,
   VEHICLE_CATEGORIES,
+  VEHICLE_FLAGS,
   VEHICLE_STATUSES,
 } from "./types";
-import { STORE_FONT_IDS } from "./fonts";
 
 // ============================================================
 // Schemas Zod — fonte única de validação, usada por Server
@@ -58,16 +63,54 @@ const hexColor = z
   .string()
   .regex(/^#[0-9a-fA-F]{6}$/, "Cor inválida (use #RRGGBB)");
 
+/**
+ * Nome de família do Google Fonts. A forma é validada aqui; a
+ * EXISTÊNCIA no catálogo é conferida na action (findGoogleFont),
+ * para o catálogo não entrar no bundle de quem importa este módulo.
+ */
+const fontFamily = z
+  .string()
+  .trim()
+  .min(1, "Escolha uma fonte")
+  .max(80, "Fonte inválida");
+
+/** URL https de vídeo direto (.mp4/.webm) para o fundo da hero. */
+const heroVideoUrl = z
+  .string()
+  .max(300)
+  .regex(
+    /^https:\/\/\S+\.(mp4|webm)(\?\S*)?$/i,
+    "Use um link https direto para um arquivo .mp4 ou .webm",
+  );
+
 export const tenantCustomizationSchema = z.object({
   template_id: z.enum(TEMPLATE_IDS).optional(),
-  colors: z.object({ primary: hexColor, accent: hexColor }).optional(),
+  colors: z
+    .object({
+      primary: hexColor,
+      accent: hexColor,
+      /** vazio = usar o padrão do template */
+      background: hexColor.optional(),
+    })
+    .optional(),
   settings: z
     .object({
       slogan: z.string().max(120).optional(),
       about: z.string().max(2000).optional(),
       footer_text: z.string().max(300).optional(),
       business_hours: z.string().max(200).optional(),
-      font: z.enum(STORE_FONT_IDS).optional(),
+      /** legado (lista curada antiga) — aceito só para compatibilidade */
+      font: z.string().max(40).optional(),
+      fonts: z.object({ head: fontFamily, body: fontFamily }).optional(),
+      show_name: z.boolean().optional(),
+      hero: z
+        .object({
+          title: z.string().max(90).optional(),
+          subtitle: z.string().max(200).optional(),
+          media: z.enum(HERO_MEDIA_TYPES).optional(),
+          video_url: heroVideoUrl.optional(),
+        })
+        .optional(),
     })
     .optional(),
 });
@@ -131,6 +174,7 @@ export const vehicleSchema = z.object({
   price: z.coerce.number().min(0, "Informe o preço"),
   description: z.string().max(5000).nullable().optional(),
   optionals: z.array(z.string().max(60)).max(50).default([]),
+  condition_flags: z.array(z.enum(VEHICLE_FLAGS)).max(VEHICLE_FLAGS.length).default([]),
   featured: z.boolean().default(false),
   // snapshot FIPE (preenchido pela cascata; cadastro manual = null)
   fipe_code: z.string().max(20).nullable().optional(),
@@ -158,8 +202,12 @@ export const publicLeadSchema = z
     message: z.string().max(2000).optional(),
     proposal_value: z.coerce.number().min(0).optional(),
     trade_vehicle: z.string().max(200).optional(),
-    /** honeypot anti-spam: humanos não preenchem */
-    website: z.string().max(0, "spam").optional(),
+    /**
+     * honeypot anti-spam: humanos não preenchem. Preenchido NÃO é
+     * erro de validação (autofill travaria visitante real sem
+     * feedback) — a action detecta e finge sucesso sem gravar.
+     */
+    website: z.string().optional(),
   })
   .refine(
     (d) => d.type !== "proposal" || (!!d.name?.trim() && !!d.phone?.trim()),
@@ -169,4 +217,48 @@ export const publicLeadSchema = z
 export const leadUpdateSchema = z.object({
   status: z.enum(["new", "in_progress", "won", "lost"]).optional(),
   notes: z.string().max(5000).nullable().optional(),
+});
+
+// ------------------------------------------------------------
+// Marketing da vitrine (settings.tracking + settings.social)
+// ------------------------------------------------------------
+
+/** vazio = remover; formatos estritos porque os IDs são interpolados
+ *  em <script> na vitrine (defesa contra XSS armazenado) */
+const emptyOr = (schema: z.ZodType<string>) =>
+  z.literal("").or(schema).optional();
+
+export const trackingSettingsSchema = z.object({
+  facebook_pixel: emptyOr(
+    z.string().trim().regex(/^\d{5,20}$/, "ID do Meta Pixel é numérico"),
+  ),
+  tiktok_pixel: emptyOr(
+    z
+      .string()
+      .trim()
+      .regex(/^[A-Z0-9]{8,32}$/i, "ID do TikTok Pixel inválido"),
+  ),
+  google_analytics: emptyOr(
+    z
+      .string()
+      .trim()
+      .regex(/^G-[A-Z0-9]{4,16}$/i, "Use o formato G-XXXXXXXXXX"),
+  ),
+});
+
+const socialUrl = z
+  .string()
+  .trim()
+  .max(200)
+  .regex(/^https:\/\/\S+$/i, "Use o link completo, começando com https://");
+
+export const socialSettingsSchema = z.object({
+  instagram: emptyOr(socialUrl),
+  facebook: emptyOr(socialUrl),
+  tiktok: emptyOr(socialUrl),
+  x: emptyOr(socialUrl),
+  youtube: emptyOr(socialUrl),
+  linkedin: emptyOr(socialUrl),
+  threads: emptyOr(socialUrl),
+  kwai: emptyOr(socialUrl),
 });

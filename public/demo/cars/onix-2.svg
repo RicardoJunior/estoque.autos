@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="60 140 560 420" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#082f49"/>
+      <stop offset="1" stop-color="#164e63"/>
+    </linearGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f8fafc"/>
+      <stop offset="1" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#dbeafe" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#334155" stop-opacity="0.85"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <path d="M 0 260 L 800 150 L 800 0 L 0 0 Z" fill="#ffffff" opacity="0.04"/>
+  <rect y="438" width="800" height="162" fill="#000000" opacity="0.18"/>
+  <ellipse cx="400" cy="448" rx="330" ry="26" fill="#000000" opacity="0.28"/>
+  <path d="M 95 380 C 100 340 130 320 190 312 C 240 306 272 300 302 272 C 332 244 382 230 448 230 C 520 230 560 248 590 278 C 610 298 640 308 670 314 C 700 320 706 336 706 356 L 706 380 C 706 392 698 398 686 398 L 646 398 A 52 52 0 0 0 542 398 L 268 398 A 52 52 0 0 0 164 398 L 115 398 C 102 398 95 392 95 380 Z" fill="url(#body)"/>
+  <path d="M 314 276 C 340 250 386 240 448 240 C 510 240 546 254 570 278 C 574 282 572 286 566 286 L 322 286 C 312 286 308 282 314 276 Z" fill="url(#glass)"/>
+  
+  <path d="M 95 380 C 100 340 130 320 190 312 C 240 306 272 300 302 272 C 332 244 382 230 448 230 C 520 230 560 248 590 278 C 610 298 640 308 670 314 C 700 320 706 336 706 356 L 706 380 C 706 392 698 398 686 398 L 646 398 A 52 52 0 0 0 542 398 L 268 398 A 52 52 0 0 0 164 398 L 115 398 C 102 398 95 392 95 380 Z" fill="#ffffff" opacity="0.06" transform="translate(0 -3)"/>
+  <g>
+    <circle cx="216" cy="438" r="52" fill="#0b1120"/>
+    <circle cx="216" cy="438" r="24" fill="#475569"/>
+    <circle cx="216" cy="438" r="9" fill="#94a3b8"/>
+    <circle cx="594" cy="438" r="52" fill="#0b1120"/>
+    <circle cx="594" cy="438" r="24" fill="#475569"/>
+    <circle cx="594" cy="438" r="9" fill="#94a3b8"/>
+  </g>
+  <rect x="96" y="352" width="34" height="12" rx="6" fill="#fde68a" opacity="0.9"/>
+  <rect x="676" y="336" width="28" height="10" rx="5" fill="#fca5a5" opacity="0.9"/>
+</svg>

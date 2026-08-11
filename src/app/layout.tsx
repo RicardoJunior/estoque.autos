@@ -17,6 +17,7 @@ const sans = Archivo({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://estoque.autos"),
   title: {
     default: "estoque.autos — seu site de loja de carros em minutos",
     template: "%s · estoque.autos",

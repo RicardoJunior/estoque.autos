@@ -9,11 +9,21 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { tenant, profile } = await requireTenant();
+  const { tenant, profile, role, memberships } = await requireTenant();
 
   return (
     <div className="flex min-h-dvh">
-      <Sidebar storeName={tenant.name} slug={tenant.slug} />
+      <Sidebar
+        storeName={tenant.name}
+        slug={tenant.slug}
+        role={role}
+        activeStoreId={tenant.id}
+        stores={memberships.map((m) => ({
+          id: m.tenant.id,
+          name: m.tenant.name,
+          role: m.role,
+        }))}
+      />
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6 pl-16 md:pl-6">
           <div />

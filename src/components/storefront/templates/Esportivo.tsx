@@ -6,6 +6,8 @@ import { StoreLogo } from "../StoreLogo";
 import { StoreFooter } from "../StoreFooter";
 import { StoreSearch } from "../StoreSearch";
 import { VehicleGrid } from "../blocks/VehicleGrid";
+import { HeroMedia } from "../HeroMedia";
+import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 import { FUEL_LABELS, TRANSMISSION_LABELS } from "@/lib/types";
@@ -21,8 +23,18 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
   const heroCover = hero?.photos?.[0];
   const featured = vehicles.filter((v) => v.featured).slice(0, 3);
 
+  // config da hero editável ("hero" aqui já é o veículo em destaque)
+  const heroCfg = store.settings.hero;
+  const withMedia = heroMediaActive(heroCfg);
   const headline =
-    store.settings.slogan ?? store.settings.about ?? "POTÊNCIA NA SUA GARAGEM";
+    heroCfg?.title ??
+    store.settings.slogan ??
+    store.settings.about ??
+    "POTÊNCIA NA SUA GARAGEM";
+  const subtitle =
+    heroCfg?.subtitle ??
+    store.settings.about ??
+    "Velocidade, adrenalina e os melhores negócios. Acelere rumo ao carro dos seus sonhos.";
   const waHref = store.whatsapp
     ? `https://wa.me/${store.whatsapp.replace(/\D/g, "")}`
     : null;
@@ -42,11 +54,22 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
 
   return (
     <div
-      className="min-h-dvh bg-slate-950 text-white"
-      style={{ fontFamily: "var(--sf-font)" }}
+      className="min-h-dvh"
+      style={{
+        fontFamily: "var(--sf-font)",
+        background: "var(--sf-bg, #020617)",
+        color: "var(--sf-ink, #ffffff)",
+      }}
     >
       {/* header */}
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/85 backdrop-blur">
+      <header
+        className="sticky top-0 z-30 border-b backdrop-blur"
+        style={{
+          borderColor: "var(--sf-border, rgba(255,255,255,0.1))",
+          background:
+            "color-mix(in srgb, var(--sf-bg, #020617) 85%, transparent)",
+        }}
+      >
         <div
           aria-hidden
           className="h-0.5 w-full"
@@ -58,31 +81,38 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <Link href={`/${store.slug}`} className="flex items-center gap-3">
             <StoreLogo store={store} size={44} />
-            <div>
-              <div
-                className="text-lg font-black uppercase italic leading-none tracking-tight"
-                style={{ fontFamily: "var(--sf-font-head)" }}
-              >
-                {store.name}
-              </div>
-              {store.settings.slogan && (
-                <div className="text-[11px] font-semibold uppercase tracking-[0.2em] text-white/50">
-                  {store.settings.slogan}
+            {showStoreName(store) && (
+              <div>
+                <div
+                  className="text-lg font-black uppercase italic leading-none tracking-tight"
+                  style={{ fontFamily: "var(--sf-font-head)" }}
+                >
+                  {store.name}
                 </div>
-              )}
-            </div>
+                {store.settings.slogan && (
+                  <div
+                    className="text-[11px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: "var(--sf-ink-soft, rgba(255,255,255,0.5))" }}
+                  >
+                    {store.settings.slogan}
+                  </div>
+                )}
+              </div>
+            )}
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4">
             <a
               href="#estoque"
-              className="hidden rounded text-sm font-bold uppercase tracking-wide text-white/70 transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
+              className="hidden rounded text-sm font-bold uppercase tracking-wide opacity-70 transition hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
+              style={{ color: "var(--sf-ink, #ffffff)" }}
             >
               Estoque
             </a>
             {showAbout && (
               <Link
                 href={`/${store.slug}/sobre`}
-                className="hidden rounded text-sm font-bold uppercase tracking-wide text-white/70 transition hover:text-white focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
+                className="hidden rounded text-sm font-bold uppercase tracking-wide opacity-70 transition hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
+                style={{ color: "var(--sf-ink, #ffffff)" }}
               >
                 {aboutLabel}
               </Link>
@@ -105,45 +135,60 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
         </div>
       </header>
 
-      {/* hero */}
-      <section className="relative overflow-hidden">
-        {heroCover ? (
-          <Image
-            src={heroCover.url}
-            alt={hero ? vehicleTitle(hero) : store.name}
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover"
-          />
-        ) : (
-          <div
-            aria-hidden
-            className="absolute inset-0"
-            style={{
-              background:
-                "linear-gradient(120deg, var(--sf-primary), var(--sf-primary-dark))",
-            }}
-          />
+      {/* hero — texto branco explícito: fica sobre marca/foto/mídia, não sobre o fundo do site */}
+      <section className="relative isolate overflow-hidden text-white">
+        {/* mídia de fundo configurável (vídeo/carrossel) + overlay escuro */}
+        {withMedia && (
+          <>
+            <HeroMedia hero={heroCfg} />
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+            />
+          </>
         )}
-        {/* overlay diagonal primary→dark para legibilidade e energia */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(115deg, var(--sf-primary-dark) 0%, color-mix(in srgb, var(--sf-primary) 60%, transparent) 42%, rgba(2,6,23,0.94) 100%)",
-          }}
-        />
-        {/* raias diagonais sutis (motivo de velocidade) */}
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "repeating-linear-gradient(115deg, #fff 0 2px, transparent 2px 26px)",
-          }}
-        />
+        {/* fundo próprio (foto do destaque/gradiente + raias) só quando NÃO há mídia */}
+        {!withMedia && (
+          <>
+            {heroCover ? (
+              <Image
+                src={heroCover.url}
+                alt={hero ? vehicleTitle(hero) : store.name}
+                fill
+                priority
+                sizes="100vw"
+                className="object-cover"
+              />
+            ) : (
+              <div
+                aria-hidden
+                className="absolute inset-0"
+                style={{
+                  background:
+                    "linear-gradient(120deg, var(--sf-primary), var(--sf-primary-dark))",
+                }}
+              />
+            )}
+            {/* overlay diagonal primary→dark para legibilidade e energia */}
+            <div
+              aria-hidden
+              className="absolute inset-0"
+              style={{
+                background:
+                  "linear-gradient(115deg, var(--sf-primary-dark) 0%, color-mix(in srgb, var(--sf-primary) 60%, transparent) 42%, rgba(2,6,23,0.94) 100%)",
+              }}
+            />
+            {/* raias diagonais sutis (motivo de velocidade) */}
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "repeating-linear-gradient(115deg, #fff 0 2px, transparent 2px 26px)",
+              }}
+            />
+          </>
+        )}
         {/* faixa accent na base */}
         <div
           aria-hidden
@@ -170,8 +215,7 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
             {headline}
           </h1>
           <p className="mt-5 max-w-xl text-base font-medium text-white/75 sm:text-lg">
-            {store.settings.about ??
-              "Velocidade, adrenalina e os melhores negócios. Acelere rumo ao carro dos seus sonhos."}
+            {subtitle}
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <a
@@ -243,10 +287,11 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
         </div>
       </section>
 
-      {/* busca */}
+      {/* busca — faixa pintada na primária: texto branco independente do fundo do site */}
       <section
-        className="border-y border-white/10"
+        className="border-y text-white"
         style={{
+          borderColor: "var(--sf-border, rgba(255,255,255,0.1))",
           background:
             "linear-gradient(120deg, var(--sf-primary), var(--sf-primary-dark))",
         }}
@@ -307,7 +352,10 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
             style={{ fontFamily: "var(--sf-font-head)" }}
           >
             Todo o estoque{" "}
-            <span className="text-base font-bold not-italic text-white/40">
+            <span
+              className="text-base font-bold not-italic"
+              style={{ color: "var(--sf-ink-faint, rgba(255,255,255,0.4))" }}
+            >
               ({vehicles.length})
             </span>
           </h2>
@@ -320,14 +368,23 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
           rounded="rounded-none"
           columns="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
           empty={
-            <div className="border border-dashed border-white/15 bg-white/5 py-20 text-center">
+            <div
+              className="border border-dashed py-20 text-center"
+              style={{
+                borderColor: "var(--sf-border, rgba(255,255,255,0.15))",
+                background: "var(--sf-surface, rgba(255,255,255,0.05))",
+              }}
+            >
               <p
                 className="text-lg font-black uppercase italic tracking-tight"
                 style={{ fontFamily: "var(--sf-font-head)" }}
               >
                 Garagem vazia por enquanto.
               </p>
-              <p className="mt-2 text-sm text-white/50">
+              <p
+                className="mt-2 text-sm"
+                style={{ color: "var(--sf-ink-soft, rgba(255,255,255,0.5))" }}
+              >
                 Novos bólidos chegam em breve — fique de olho.
               </p>
             </div>

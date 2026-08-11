@@ -4,6 +4,7 @@ import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 import { StatusBadge } from "@/components/admin/StatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VehicleFilters } from "./VehicleFilters";
@@ -62,7 +63,7 @@ export default async function VehicleListPage({
         </Link>
       </div>
 
-      <VehicleFilters />
+      <VehicleFilters count={vehicles.length} />
 
       {vehicles.length === 0 ? (
         <Card className="flex flex-col items-center justify-center gap-3 p-12 text-center">
@@ -119,9 +120,9 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
           <StatusBadge status={vehicle.status} />
         </div>
         {vehicle.featured && (
-          <div className="absolute right-2 top-2 rounded-full bg-primary px-2 py-0.5 text-xs font-medium text-primary-foreground">
+          <Badge className="absolute right-2 top-2 rounded-full">
             Destaque
-          </div>
+          </Badge>
         )}
       </div>
       <div className="p-3">

@@ -1,0 +1,21 @@
+---
+import Logo from "./Logo.astro";
+import { PRODUCT, url } from "../lib/site";
+---
+
+<header class="bp-nav">
+  <div class="bp-wrap bp-nav-in">
+    <a href={url()} aria-label="Blog estoque.autos">
+      <Logo size={22} blog />
+    </a>
+    <nav class="bp-nav-links" aria-label="Navegação principal">
+      <a href={url()}>Artigos</a>
+      <a href={PRODUCT.home}>Conheça o estoque.autos</a>
+      <a href={PRODUCT.ajuda}>Ajuda</a>
+    </nav>
+    <div class="bp-nav-cta">
+      <a href={PRODUCT.login} class="bp-btn bp-btn-ghost">Entrar</a>
+      <a href={PRODUCT.planos} class="bp-btn">Criar meu site</a>
+    </div>
+  </div>
+</header>

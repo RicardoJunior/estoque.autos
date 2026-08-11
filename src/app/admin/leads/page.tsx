@@ -2,33 +2,25 @@ import Link from "next/link";
 import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import {
-  LEAD_STATUS_LABELS,
   LEAD_TYPE_LABELS,
   type Lead,
   type LeadStatus,
 } from "@/lib/types";
 import { formatDateTime, vehicleTitle } from "@/lib/format";
 import { LeadStatusPill } from "./LeadStatusPill";
+import { LeadFilters } from "./LeadFilters";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 export const metadata = { title: "Leads" };
 
-const STATUS_TABS: { key: string; label: string }[] = [
-  { key: "", label: "Todos" },
-  { key: "new", label: "Novos" },
-  { key: "in_progress", label: "Em atendimento" },
-  { key: "won", label: "Convertidos" },
-  { key: "lost", label: "Perdidos" },
-];
-
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
   const { tenant } = await requireTenant();
-  const { status } = await searchParams;
+  const { status, q } = await searchParams;
   const supabase = await createClient();
 
   let query = supabase
@@ -38,6 +30,10 @@ export default async function LeadsPage({
     .order("created_at", { ascending: false });
 
   if (status) query = query.eq("status", status as LeadStatus);
+  if (q) {
+    const term = q.replace(/[%,()]/g, " ").trim();
+    if (term) query = query.or(`name.ilike.%${term}%,phone.ilike.%${term}%`);
+  }
 
   const { data } = await query;
   const leads = (data ?? []) as Lead[];
@@ -51,29 +47,13 @@ export default async function LeadsPage({
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-1.5">
-        {STATUS_TABS.map((t) => {
-          const active = (status ?? "") === t.key;
-          return (
-            <Link
-              key={t.key}
-              href={t.key ? `/admin/leads?status=${t.key}` : "/admin/leads"}
-              className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                active
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-card text-foreground ring-1 ring-border hover:bg-muted"
-              }`}
-            >
-              {t.label}
-            </Link>
-          );
-        })}
-      </div>
+      <LeadFilters count={leads.length} />
 
       {leads.length === 0 ? (
         <Card className="p-12 text-center text-muted-foreground">
-          Nenhum lead {status ? "com esse status" : "ainda"}. Compartilhe o link
-          da sua loja para começar a receber contatos.
+          {status || q
+            ? "Nenhum lead encontrado com esses filtros."
+            : "Nenhum lead ainda. Compartilhe o link da sua loja para começar a receber contatos."}
         </Card>
       ) : (
         <Card className="divide-y divide-border p-0">
@@ -107,8 +87,4 @@ export default async function LeadsPage({
       )}
     </div>
   );
-}
-
-export function statusLabel(s: LeadStatus) {
-  return LEAD_STATUS_LABELS[s];
 }

@@ -38,7 +38,6 @@ const CARDS = [
       "Tudo do Básico, e mais:",
       "Domínio próprio (sualoja.com.br)",
       "Até 60 carros ativos",
-      "Destaque nos resultados de busca",
       "Suporte prioritário",
     ],
   },

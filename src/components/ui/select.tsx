@@ -6,7 +6,44 @@ import { Select as SelectPrimitive } from "@base-ui/react/select"
 import { cn } from "@/lib/utils"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+function collectItemLabels(
+  children: React.ReactNode,
+  labels: Record<string, React.ReactNode>
+): void {
+  React.Children.forEach(children, (child) => {
+    if (!React.isValidElement(child)) return
+    const props = child.props as {
+      value?: unknown
+      children?: React.ReactNode
+    }
+    if (child.type === SelectItem) {
+      if (typeof props.value === "string") {
+        labels[props.value] = props.children
+      }
+      return
+    }
+    if (props.children != null) {
+      collectItemLabels(props.children, labels)
+    }
+  })
+}
+
+function Select<Value, Multiple extends boolean | undefined = false>({
+  items,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  // Sem `items`, o Base UI renderiza o valor bruto (ex.: "carro") no trigger
+  // em vez do rótulo do item. Deriva o mapa valor→rótulo a partir dos
+  // `SelectItem` filhos para o `SelectValue` exibir o rótulo selecionado.
+  const derivedItems = React.useMemo(() => {
+    if (items != null) return items
+    const labels: Record<string, React.ReactNode> = {}
+    collectItemLabels(props.children, labels)
+    return Object.keys(labels).length > 0 ? labels : undefined
+  }, [items, props.children])
+
+  return <SelectPrimitive.Root items={derivedItems} {...props} />
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (

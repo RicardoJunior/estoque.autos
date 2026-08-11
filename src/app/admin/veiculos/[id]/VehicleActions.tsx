@@ -7,9 +7,22 @@ import {
   VEHICLE_STATUS_LABELS,
   type VehicleStatus,
 } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { deleteVehicleAction, setVehicleStatusAction } from "../actions";
 
 export function VehicleActions({
@@ -21,13 +34,14 @@ export function VehicleActions({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
-  const [confirming, setConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   function changeStatus(next: VehicleStatus) {
     if (next === status) return;
     startTransition(async () => {
-      await setVehicleStatusAction(vehicleId, next);
-      router.refresh();
+      const result = await setVehicleStatusAction(vehicleId, next);
+      setError(result?.error ?? null);
+      if (!result?.error) router.refresh();
     });
   }
 
@@ -41,41 +55,63 @@ export function VehicleActions({
         </p>
       </CardHeader>
       <CardContent className="space-y-4 px-0">
-        <div className="flex flex-wrap gap-2">
+        {error && (
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {error}
+            </AlertDescription>
+          </Alert>
+        )}
+        <ToggleGroup
+          aria-label="Status do anúncio"
+          className="flex-wrap"
+          value={[status]}
+          onValueChange={(values) => {
+            const next = values[0] as VehicleStatus | undefined;
+            // clicar na opção ativa desmarca (values vazio): mantém a seleção
+            if (next && next !== status) changeStatus(next);
+          }}
+        >
           {VEHICLE_STATUSES.map((s) => (
-            <button
+            <ToggleGroupItem
               key={s}
-              type="button"
+              value={s}
+              variant="outline"
               disabled={pending}
-              onClick={() => changeStatus(s)}
-              className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition disabled:pointer-events-none disabled:opacity-50 ${
-                s === status
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border hover:bg-muted"
-              }`}
+              className="aria-pressed:border-primary aria-pressed:bg-primary/10 aria-pressed:text-primary aria-pressed:hover:bg-primary/10 aria-pressed:hover:text-primary"
             >
               {VEHICLE_STATUS_LABELS[s]}
-            </button>
+            </ToggleGroupItem>
           ))}
-        </div>
+        </ToggleGroup>
 
         <Separator />
 
-        {confirming ? (
-          <div className="flex items-center justify-between gap-3 rounded-lg bg-destructive/10 p-3">
-            <span className="text-sm text-destructive">
-              Excluir permanentemente? As fotos serão apagadas.
-            </span>
-            <div className="flex gap-2">
+        <AlertDialog>
+          <AlertDialogTrigger
+            render={
               <Button
-                type="button"
                 variant="ghost"
-                onClick={() => setConfirming(false)}
-              >
-                Não
-              </Button>
-              <Button
-                type="button"
+                className="w-fit px-0 text-destructive hover:bg-transparent hover:text-destructive hover:underline"
+              />
+            }
+          >
+            Excluir veículo
+          </AlertDialogTrigger>
+          <AlertDialogContent size="sm">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Excluir permanentemente?</AlertDialogTitle>
+              <AlertDialogDescription>
+                O anúncio e as fotos serão apagados. Essa ação não pode ser
+                desfeita.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Não</AlertDialogCancel>
+              <AlertDialogAction
                 variant="destructive"
                 disabled={pending}
                 onClick={() =>
@@ -83,18 +119,10 @@ export function VehicleActions({
                 }
               >
                 Sim, excluir
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <button
-            type="button"
-            className="text-sm font-medium text-destructive hover:underline"
-            onClick={() => setConfirming(true)}
-          >
-            Excluir veículo
-          </button>
-        )}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

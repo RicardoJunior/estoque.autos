@@ -1,5 +1,6 @@
 # Sync mensal da FIPE — a tabela muda todo mês; este job renova o
-# preço dos códigos em uso e o snapshot dos veículos.
+# catálogo (marcas + modelos, podando removidos), o preço dos
+# códigos em uso e o snapshot dos veículos.
 # Secrets necessários no repo: SUPABASE_URL, SUPABASE_SECRET_KEY.
 name: fipe-sync
 

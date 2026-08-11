@@ -26,9 +26,11 @@ export function StoreSearch({ tone = "light" }: { tone?: "light" | "dark" }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
+  // cores via tokens do tema (placeholder/focus exigem classe, não style
+  // inline) — fallbacks reproduzem o visual atual de cada tom
   const inputCls = dark
-    ? "w-full rounded-lg border border-white/15 bg-white/10 px-4 py-2.5 text-sm text-white placeholder:text-white/50 outline-none focus:border-white/40"
-    : "w-full rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm outline-none focus:border-slate-900";
+    ? "w-full rounded-lg border border-[color:var(--sf-border,rgba(255,255,255,0.15))] bg-[color:var(--sf-surface,rgba(255,255,255,0.1))] px-4 py-2.5 text-sm text-[color:var(--sf-ink,#ffffff)] placeholder:text-[color:var(--sf-ink-faint,rgba(255,255,255,0.5))] outline-none focus:border-[color:var(--sf-ink-faint,rgba(255,255,255,0.4))]"
+    : "w-full rounded-lg border border-[color:var(--sf-border,#cbd5e1)] bg-[color:var(--sf-surface,#ffffff)] px-4 py-2.5 text-sm outline-none focus:border-[color:var(--sf-ink,#0f172a)]";
 
   return (
     <div className="flex flex-wrap items-center gap-2">

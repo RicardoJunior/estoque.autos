@@ -4,15 +4,48 @@ import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { VehiclePhoto } from "@/lib/types";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   removePhotoAction,
   reorderPhotosAction,
   uploadPhotosAction,
+  type SkippedPhoto,
 } from "../actions";
 
 const MAX_PHOTOS = 30;
+// Espelha MAX_UPLOAD_BYTES de src/lib/images.ts (server-only, não importável aqui).
+const MAX_FILE_BYTES = 12 * 1024 * 1024;
+
+/**
+ * Server Actions têm bodySizeLimit (next.config.ts). Enviar tudo num FormData
+ * só estoura com fotos de celular — então mandamos em lotes de até 12MB.
+ */
+function batchBySize(files: File[]): File[][] {
+  const batches: File[][] = [];
+  let batch: File[] = [];
+  let bytes = 0;
+  for (const f of files) {
+    if (batch.length > 0 && bytes + f.size > MAX_FILE_BYTES) {
+      batches.push(batch);
+      batch = [];
+      bytes = 0;
+    }
+    batch.push(f);
+    bytes += f.size;
+  }
+  if (batch.length > 0) batches.push(batch);
+  return batches;
+}
+
+function skippedMessage(skipped: SkippedPhoto[]): string {
+  const list = skipped.map((s) => `${s.name} (${s.reason})`).join(", ");
+  return skipped.length === 1
+    ? `1 foto não foi enviada: ${list}`
+    : `${skipped.length} fotos não foram enviadas: ${list}`;
+}
 
 export function PhotoManager({
   vehicleId,
@@ -28,27 +61,50 @@ export function PhotoManager({
   const fileRef = useRef<HTMLInputElement>(null);
 
   function onPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    if (files.length === 0) return;
     setError(null);
-    const fd = new FormData();
-    Array.from(files).forEach((f) => fd.append("photos", f));
     if (fileRef.current) fileRef.current.value = "";
 
+    // acima de 12MB a action nem chega a rodar — barra aqui, com motivo
+    const skipped: SkippedPhoto[] = files
+      .filter((f) => f.size > MAX_FILE_BYTES)
+      .map((f) => ({ name: f.name, reason: "maior que 12MB" }));
+    const batches = batchBySize(files.filter((f) => f.size <= MAX_FILE_BYTES));
+
     startTransition(async () => {
-      const res = await uploadPhotosAction(vehicleId, fd);
-      if (res.error) setError(res.error);
-      else router.refresh();
+      let failure: string | null = null;
+      for (const group of batches) {
+        const fd = new FormData();
+        group.forEach((f) => fd.append("photos", f));
+        const res = await uploadPhotosAction(vehicleId, fd);
+        // a action devolve a lista final — router.refresh() não repõe o
+        // useState deste client component
+        if (res.photos) setPhotos(res.photos);
+        if (res.skipped) skipped.push(...res.skipped);
+        if (res.error) {
+          failure = res.error;
+          break;
+        }
+      }
+
+      const parts: string[] = [];
+      if (failure) parts.push(failure);
+      if (skipped.length > 0) parts.push(skippedMessage(skipped));
+      setError(parts.length > 0 ? parts.join(" ") : null);
+      router.refresh();
     });
   }
 
   function persistOrder(next: VehiclePhoto[]) {
     setPhotos(next);
     startTransition(async () => {
-      await reorderPhotosAction(
+      const res = await reorderPhotosAction(
         vehicleId,
         next.map((p) => p.id),
       );
+      setPhotos(res.photos);
+      setError(res.error ?? null);
     });
   }
 
@@ -74,7 +130,9 @@ export function PhotoManager({
     const next = photos.filter((p) => p.id !== id);
     setPhotos(next);
     startTransition(async () => {
-      await removePhotoAction(vehicleId, id);
+      const res = await removePhotoAction(vehicleId, id);
+      setPhotos(res.photos);
+      setError(res.error ?? null);
       router.refresh();
     });
   }
@@ -108,7 +166,14 @@ export function PhotoManager({
 
       <CardContent className="space-y-4 px-0">
         {error && (
-          <p className="text-sm text-destructive">{error}</p>
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {error}
+            </AlertDescription>
+          </Alert>
         )}
 
         {photos.length === 0 ? (
@@ -136,9 +201,7 @@ export function PhotoManager({
                     className="object-cover"
                   />
                   {i === 0 && (
-                    <span className="absolute left-1.5 top-1.5 rounded bg-primary px-1.5 py-0.5 text-[10px] font-medium text-primary-foreground">
-                      Capa
-                    </span>
+                    <Badge className="absolute left-1.5 top-1.5">Capa</Badge>
                   )}
                 </div>
                 <div className="flex items-center justify-between gap-1 p-1.5">
@@ -148,23 +211,27 @@ export function PhotoManager({
                   </div>
                   <div className="flex gap-1">
                     {i !== 0 && (
-                      <button
+                      <Button
                         type="button"
+                        variant="ghost"
+                        size="xs"
                         disabled={pending}
                         onClick={() => makeCover(p.id)}
-                        className="rounded px-1.5 py-1 text-[10px] font-medium text-primary hover:bg-primary/10"
+                        className="text-primary hover:bg-primary/10 hover:text-primary"
                       >
                         Capa
-                      </button>
+                      </Button>
                     )}
-                    <button
+                    <Button
                       type="button"
+                      variant="ghost"
+                      size="xs"
                       disabled={pending}
                       onClick={() => remove(p.id)}
-                      className="rounded px-1.5 py-1 text-[10px] font-medium text-destructive hover:bg-destructive/10"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
                       Remover
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -188,14 +255,16 @@ function IconBtn({
   label: string;
 }) {
   return (
-    <button
+    <Button
       type="button"
+      variant="outline"
+      size="icon-xs"
       aria-label={label}
       disabled={disabled}
       onClick={onClick}
-      className="flex h-6 w-6 items-center justify-center rounded border border-border text-xs text-muted-foreground hover:bg-muted disabled:opacity-30"
+      className="text-muted-foreground"
     >
       {children}
-    </button>
+    </Button>
   );
 }

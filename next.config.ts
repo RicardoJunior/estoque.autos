@@ -9,6 +9,13 @@ const nextConfig: NextConfig = {
   // OpenNext faz o próprio bundling para o Worker; `output: "standalone"` era
   // do plano antigo de VPS/Docker e não faz sentido no Cloudflare.
   turbopack: { root: __dirname },
+  experimental: {
+    // Uploads (logo/fotos) trafegam por Server Actions; o padrão do Next 16
+    // é 1MB e mataria a action antes de executar. O PhotoManager envia lotes
+    // de até 12MB (espelho de MAX_UPLOAD_BYTES em lib/images.ts); 24mb cobre
+    // o lote + overhead do multipart. Não reduza abaixo disso.
+    serverActions: { bodySizeLimit: "24mb" },
+  },
   images: {
     // Só pula a otimização quando o Supabase é LOCAL (127.0.0.1, anti-SSRF do
     // Next 16). Em produção o binding IMAGES da Cloudflare otimiza o

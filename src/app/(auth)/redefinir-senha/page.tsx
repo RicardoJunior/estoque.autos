@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { updatePasswordAction, type AuthFormState } from "../actions";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,9 +38,14 @@ export default function ResetPasswordPage() {
 
       <form action={action} className="mt-6 space-y-4">
         {state.error && (
-          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-            {state.error}
-          </div>
+          <Alert
+            variant="destructive"
+            className="border-transparent bg-destructive/10"
+          >
+            <AlertDescription className="text-destructive">
+              {state.error}
+            </AlertDescription>
+          </Alert>
         )}
         <div className="grid gap-2">
           <Label htmlFor="password">Nova senha</Label>

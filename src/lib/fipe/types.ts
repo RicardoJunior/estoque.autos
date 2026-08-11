@@ -36,6 +36,7 @@ export interface FipeYear {
   id: string;
   /** ex.: "2014 Diesel" */
   name: string;
+  fetched_at?: string;
 }
 
 export interface FipePrice {

@@ -1,6 +1,10 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { getSession, getSubscription, isSubscriptionActive } from "@/lib/auth";
+import {
+  getSession,
+  getUnlinkedSubscription,
+  isSubscriptionActive,
+} from "@/lib/auth";
 import { syncFromCheckoutSession } from "@/lib/billing-sync";
 import { buttonVariants } from "@/components/ui/button";
 
@@ -29,9 +33,10 @@ export default async function SucessoPage({
     }
   }
 
-  const sub = await getSubscription();
+  // a assinatura recém-paga ainda não tem loja — o onboarding a consome
+  const sub = await getUnlinkedSubscription();
   if (isSubscriptionActive(sub)) {
-    redirect(session.tenant ? "/admin" : "/onboarding");
+    redirect("/onboarding");
   }
 
   // pagamento ainda processando (atraso de confirmação)

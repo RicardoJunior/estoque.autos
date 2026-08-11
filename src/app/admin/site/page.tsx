@@ -1,6 +1,5 @@
 import { requireTenant } from "@/lib/auth";
 import type { Storefront } from "@/lib/public";
-import { storeFontPreviewMap } from "@/lib/store-fonts-loader";
 import { SiteCustomizer } from "./SiteCustomizer";
 
 export const metadata = { title: "Meu site" };
@@ -31,7 +30,7 @@ export default async function SitePage() {
           Personalize o template, as cores, o logo e os textos da sua loja.
         </p>
       </div>
-      <SiteCustomizer store={store} fontPreviews={storeFontPreviewMap()} />
+      <SiteCustomizer store={store} />
     </div>
   );
 }

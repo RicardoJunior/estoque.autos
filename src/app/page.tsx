@@ -10,8 +10,14 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { BILLING_INTERVALS, PLANS as BILLING_PLANS } from "@/lib/billing";
+import {
+  BILLING_INTERVALS,
+  PLANS as BILLING_PLANS,
+  formatCents,
+  formatPlanPrice,
+} from "@/lib/billing";
 import { PlanosSection } from "./PlanosSection";
+import { TEMPLATES } from "@/lib/templates";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
 
@@ -44,14 +50,6 @@ export const metadata: Metadata = {
   },
 };
 
-const TEMPLATES = [
-  { name: "Clássico", vibe: "Tradicional e confiável" },
-  { name: "Moderno", vibe: "Tecnológico e arrojado" },
-  { name: "Premium", vibe: "Alto padrão" },
-  { name: "Minimal", vibe: "Sofisticado e discreto" },
-  { name: "Esportivo", vibe: "Energia e velocidade" },
-  { name: "Vitrine", vibe: "Visual em primeiro lugar" },
-];
 
 const FEATURES = [
   { k: "Site pronto", d: "6 templates profissionais. Escolha, ajuste a cor, a fonte e suba o logo." },
@@ -264,22 +262,28 @@ export default function HomePage() {
             Seis estilos. <span className="lp-amber">Uma loja só sua.</span>
           </h2>
           <p className="lp-lead">
-            Troque de template quando quiser — sem perder nada. Cor, fonte e logo
-            se aplicam a todos, na hora.
+            Clique em um template e navegue por um site de exemplo completo.
+            Troque quando quiser — cor, fonte e logo se aplicam a todos, na hora.
           </p>
           <div className="lp-tpl-grid">
             {TEMPLATES.map((t, i) => (
-              <div className="lp-tpl" key={t.name}>
+              <Link
+                className="lp-tpl"
+                key={t.id}
+                href={`/demo/${t.id}`}
+                aria-label={`Ver demonstração do template ${t.name}`}
+              >
                 <div className={`lp-tpl-prev lp-tpl-${i}`} aria-hidden>
                   <span className="lp-tpl-bar" />
                   <span className="lp-tpl-blk" />
                   <span className="lp-tpl-blk" />
+                  <span className="lp-tpl-cta">Ver demo →</span>
                 </div>
                 <div className="lp-tpl-meta">
                   <span className="lp-tpl-name">{t.name}</span>
                   <span className="lp-tpl-vibe">{t.vibe}</span>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -309,7 +313,9 @@ export default function HomePage() {
           <h2 className="lp-h2 font-display">Preço de assinatura, não de agência.</h2>
           <p className="lp-lead">
             Sem taxa de setup. Você escolhe o plano, assina e começa hoje — cancele
-            quando quiser. No anual, dois preços redondos: R$ 190 ou R$ 490 por ano.
+            quando quiser. No anual, dois preços redondos:{" "}
+            {formatCents(BILLING_PLANS.basico.priceCents.anual)} ou{" "}
+            {formatCents(BILLING_PLANS.pro.priceCents.anual)} por ano.
           </p>
 
           <PlanosSection />
@@ -346,7 +352,8 @@ export default function HomePage() {
             Escolher meu plano <span className="lp-arrow">→</span>
           </a>
           <p className="lp-final-note">
-            Planos a partir de R$ 19,90/mês · cancele quando quiser.
+            Planos a partir de {formatPlanPrice(BILLING_PLANS.basico, "mensal")} ·
+            cancele quando quiser.
           </p>
         </div>
       </section>
@@ -362,6 +369,8 @@ export default function HomePage() {
             <Link href="/blog">Blog</Link>
             <Link href="/ajuda">Ajuda</Link>
             <a href="#planos">Planos</a>
+            <Link href="/termos">Termos</Link>
+            <Link href="/privacidade">Privacidade</Link>
             <Link href="/login">Entrar</Link>
           </div>
         </div>
@@ -483,8 +492,12 @@ const css = `
 
 /* templates */
 .lp-tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
-.lp-tpl{border:1px solid var(--color-border);border-radius:14px;overflow:hidden;background:var(--color-card);
+.lp-tpl{display:block;color:inherit;border:1px solid var(--color-border);border-radius:14px;overflow:hidden;background:var(--color-card);
   transition:transform .2s,border-color .2s}
+.lp-tpl-cta{position:absolute;right:14px;bottom:12px;font-size:12px;font-weight:700;color:var(--amber);
+  opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s}
+.lp-tpl:hover .lp-tpl-cta,.lp-tpl:focus-visible .lp-tpl-cta{opacity:1;transform:none}
+@media(hover:none){.lp-tpl-cta{opacity:1;transform:none}}
 .lp-tpl:hover{transform:translateY(-5px);border-color:color-mix(in srgb, var(--amber) 40%, transparent)}
 .lp-tpl-prev{aspect-ratio:16/10;padding:16px;display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
 .lp-tpl-bar{height:14px;width:48%;border-radius:4px;background:rgba(255,255,255,.22)}

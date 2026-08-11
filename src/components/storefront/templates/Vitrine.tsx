@@ -6,6 +6,8 @@ import { StoreLogo } from "../StoreLogo";
 import { StoreFooter } from "../StoreFooter";
 import { StoreSearch } from "../StoreSearch";
 import { SectionHeader } from "../blocks/SectionHeader";
+import { HeroMedia } from "../HeroMedia";
+import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 
@@ -13,13 +15,19 @@ import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
  * Template Vitrine — galeria editorial, a foto em primeiro lugar.
  * Hero showcase ~70vh com a capa do destaque + grade densa estilo galeria
  * onde o hover revela as infos (texto mínimo no repouso). Tom claro.
- * Cores/fonte da marca via var(--sf-*); estruturais (branco/slate) em classes.
+ * Cores/fonte da marca via var(--sf-*); neutros do site via tokens
+ * --sf-bg/--sf-ink (fallback = visual claro atual); brancos sobre foto em classes.
  */
 export function Vitrine({ store, vehicles }: TemplateProps) {
-  const hero = vehicles.filter((v) => v.featured)[0] ?? vehicles[0];
-  const heroCover = hero?.photos?.[0];
-  const heroHref = hero ? `/${store.slug}/carros/${hero.id}` : "#";
-  const gallery = hero ? vehicles.filter((v) => v.id !== hero.id) : vehicles;
+  const featured = vehicles.filter((v) => v.featured)[0] ?? vehicles[0];
+  const featuredCover = featured?.photos?.[0];
+  const featuredHref = featured ? `/${store.slug}/carros/${featured.id}` : "#";
+  const gallery = featured
+    ? vehicles.filter((v) => v.id !== featured.id)
+    : vehicles;
+
+  const hero = store.settings.hero;
+  const withMedia = heroMediaActive(hero);
 
   const showAbout = !!store.settings.about || hasAddress(store.address);
   const aboutLabel = store.settings.about ? "Sobre" : "Localização";
@@ -29,8 +37,12 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
 
   return (
     <div
-      className="min-h-dvh bg-white text-slate-900"
-      style={{ fontFamily: "var(--sf-font)" }}
+      className="min-h-dvh"
+      style={{
+        fontFamily: "var(--sf-font)",
+        background: "var(--sf-bg, #ffffff)",
+        color: "var(--sf-ink, #0f172a)",
+      }}
     >
       {/* header flutuante sobre o hero */}
       <header className="absolute inset-x-0 top-0 z-30">
@@ -40,19 +52,21 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
             className="flex items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-white/80"
           >
             <StoreLogo store={store} size={44} />
-            <div className="leading-tight text-white drop-shadow-sm">
-              <div
-                className="text-sm font-semibold tracking-tight sm:text-base"
-                style={{ fontFamily: "var(--sf-font-head)" }}
-              >
-                {store.name}
-              </div>
-              {store.settings.slogan && (
-                <div className="text-xs text-white/75">
-                  {store.settings.slogan}
+            {showStoreName(store) && (
+              <div className="leading-tight text-white drop-shadow-sm">
+                <div
+                  className="text-sm font-semibold tracking-tight sm:text-base"
+                  style={{ fontFamily: "var(--sf-font-head)" }}
+                >
+                  {store.name}
                 </div>
-              )}
-            </div>
+                {store.settings.slogan && (
+                  <div className="text-xs text-white/75">
+                    {store.settings.slogan}
+                  </div>
+                )}
+              </div>
+            )}
           </Link>
 
           <nav className="flex items-center gap-1.5 sm:gap-3">
@@ -83,15 +97,18 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
       </header>
 
       {/* HERO SHOWCASE */}
-      {hero ? (
+      {featured ? (
         <Link
-          href={heroHref}
-          className="group relative block h-[70vh] min-h-[28rem] w-full overflow-hidden bg-slate-900 outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-white/70"
+          href={featuredHref}
+          className="group relative isolate block h-[70vh] min-h-[28rem] w-full overflow-hidden bg-slate-900 outline-none focus-visible:ring-4 focus-visible:ring-inset focus-visible:ring-white/70"
         >
-          {heroCover ? (
+          {/* mídia configurada (vídeo/carrossel) vence a foto do destaque */}
+          {withMedia ? (
+            <HeroMedia hero={hero} />
+          ) : featuredCover ? (
             <Image
-              src={heroCover.url}
-              alt={vehicleTitle(hero)}
+              src={featuredCover.url}
+              alt={vehicleTitle(featured)}
               fill
               priority
               sizes="100vw"
@@ -136,18 +153,25 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
                 className="mt-4 max-w-3xl text-3xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-sm sm:text-6xl"
                 style={{ fontFamily: "var(--sf-font-head)" }}
               >
-                {vehicleTitle(hero)}
+                {hero?.title ?? vehicleTitle(featured)}
               </h1>
+              {hero?.subtitle && (
+                <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
+                  {hero.subtitle}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-wrap items-center gap-x-6 gap-y-3">
                 <span className="text-2xl font-extrabold text-white drop-shadow-sm sm:text-3xl">
-                  {formatPrice(hero.price)}
+                  {formatPrice(featured.price)}
                 </span>
-                {(hero.year_model || hero.mileage != null) && (
+                {(featured.year_model || featured.mileage != null) && (
                   <span className="text-sm font-medium text-white/80">
                     {[
-                      hero.year_model,
-                      hero.mileage != null ? formatKm(hero.mileage) : null,
+                      featured.year_model,
+                      featured.mileage != null
+                        ? formatKm(featured.mileage)
+                        : null,
                     ]
                       .filter(Boolean)
                       .join(" · ")}
@@ -171,20 +195,42 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
         </Link>
       ) : (
         <section
-          className="relative flex h-[60vh] min-h-[24rem] items-center justify-center overflow-hidden text-center"
-          style={{ background: "var(--sf-primary-soft)" }}
+          className="relative isolate flex h-[60vh] min-h-[24rem] items-center justify-center overflow-hidden text-center"
+          style={{
+            background: withMedia ? undefined : "var(--sf-primary-soft)",
+          }}
         >
-          <div className="px-5">
+          {/* mídia de fundo configurável (vídeo/carrossel) + overlay */}
+          {withMedia && (
+            <>
+              <HeroMedia hero={hero} />
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+              />
+            </>
+          )}
+          <div className="relative px-5">
             <StoreLogo store={store} size={64} className="mx-auto" />
             <h1
               className="mt-6 text-3xl font-bold tracking-tight sm:text-5xl"
-              style={{ fontFamily: "var(--sf-font-head)" }}
+              style={{
+                fontFamily: "var(--sf-font-head)",
+                color: withMedia ? "#ffffff" : undefined,
+              }}
             >
-              {store.name}
+              {hero?.title ?? store.name}
             </h1>
-            {store.settings.slogan && (
-              <p className="mt-4 text-lg text-slate-600">
-                {store.settings.slogan}
+            {(hero?.subtitle ?? store.settings.slogan) && (
+              <p
+                className="mt-4 text-lg"
+                style={{
+                  color: withMedia
+                    ? "rgba(255,255,255,0.85)"
+                    : "var(--sf-ink-soft, #64748b)",
+                }}
+              >
+                {hero?.subtitle ?? store.settings.slogan}
               </p>
             )}
           </div>
@@ -204,11 +250,23 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
         />
 
         {gallery.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 py-20 text-center">
-            <p className="font-semibold text-slate-700">
+          <div
+            className="rounded-3xl border border-dashed py-20 text-center"
+            style={{
+              borderColor: "var(--sf-border, #e2e8f0)",
+              background: "var(--sf-surface, #f8fafc)",
+            }}
+          >
+            <p
+              className="font-semibold"
+              style={{ color: "var(--sf-ink, #334155)" }}
+            >
               Nenhum veículo na vitrine ainda.
             </p>
-            <p className="mt-1 text-sm text-slate-400">
+            <p
+              className="mt-1 text-sm"
+              style={{ color: "var(--sf-ink-faint, #94a3b8)" }}
+            >
               Volte em breve — novidades chegam toda semana.
             </p>
           </div>

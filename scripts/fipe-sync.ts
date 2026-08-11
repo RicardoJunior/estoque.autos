@@ -1,8 +1,13 @@
 // ============================================================
-// Sync mensal FIPE: a tabela muda todo mês — este script renova o
-// preço APENAS dos códigos em uso por veículos cadastrados (conjunto
-// pequeno; nada de crawl da tabela inteira) e propaga o novo valor
-// para o snapshot fipe_* dos veículos.
+// Sync mensal FIPE (API oficial): a tabela muda todo mês — este
+// script cabe no cron de 30 min do GitHub Actions:
+//  1. renova o CATÁLOGO (marcas + modelos, com poda dos removidos):
+//     sem isso o catálogo fossiliza e modelos novos nunca aparecem
+//  2. renova o preço dos códigos em uso por veículos cadastrados
+//     e propaga o novo valor para o snapshot fipe_* dos veículos
+//
+// A TABELA DE PREÇOS inteira é refresh à parte (horas, resumable):
+//   npx tsx scripts/seed-fipe.ts --prices
 //
 // Roda fora do Worker (GitHub Actions cron mensal ou manual):
 //   npx tsx scripts/fipe-sync.ts
@@ -11,11 +16,9 @@
 // ============================================================
 
 import { createClient } from "@supabase/supabase-js";
-import {
-  fetchFipePrice,
-  parseFipeValor,
-  randomDelay,
-} from "../src/lib/fipe/client";
+import { parseFipeValor, randomDelay } from "../src/lib/fipe/client";
+import { importFipeStructure } from "../src/lib/fipe/import";
+import { fetchFipeReference, officialFetchPrice } from "../src/lib/fipe/official";
 import type { FipeVehicleType } from "../src/lib/fipe/types";
 
 try {
@@ -35,7 +38,13 @@ const supabase = createClient(url, secret, {
 });
 
 async function main() {
+  // 0. catálogo: re-importa marcas+modelos (força + poda) — mantém
+  //    a estrutura completa mês a mês
+  console.log("── catálogo (marcas + modelos) ──");
+  const structure = await importFipeStructure(supabase, { force: true });
+
   // 1. códigos FIPE em uso por veículos não-arquivados
+  console.log("\n── preços em uso ──");
   const { data: inUse, error } = await supabase
     .from("vehicles")
     .select("fipe_code, fipe_year_id")
@@ -54,6 +63,7 @@ async function main() {
   }
   console.log(`${unique.size} códigos FIPE em uso`);
 
+  const ref = await fetchFipeReference();
   const references = new Map<FipeVehicleType, string>();
   let updated = 0;
 
@@ -73,10 +83,11 @@ async function main() {
       continue;
     }
 
-    await randomDelay(200, 500);
+    await randomDelay(700, 1_100);
     try {
-      const live = await fetchFipePrice(
+      const live = await officialFetchPrice(
         known.vehicle_type as FipeVehicleType,
+        ref,
         known.brand_id,
         known.model_id,
         known.year_id,
@@ -97,6 +108,9 @@ async function main() {
           year_model: live.AnoModelo,
           fuel: live.Combustivel,
           reference: live.MesReferencia,
+          // atualiza a idade mesmo quando o mês de referência repete
+          // (senão o TTL do cache on-demand nunca renova)
+          fetched_at: new Date().toISOString(),
         },
         { onConflict: "vehicle_type,brand_id,model_id,year_id,reference" },
       );
@@ -125,6 +139,12 @@ async function main() {
   }
 
   console.log(`\nSync FIPE concluído: ${updated}/${unique.size} códigos atualizados.`);
+
+  if (structure.problems.length > 0) {
+    console.error(`\nCatálogo com ${structure.problems.length} pendências:`);
+    for (const p of structure.problems) console.error(`  • ${p}`);
+    process.exit(1); // cron acusa a falha; preços já foram sincronizados
+  }
 }
 
 main().catch((err) => {

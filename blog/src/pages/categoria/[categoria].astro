@@ -1,0 +1,105 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../../layouts/Base.astro";
+import PostCard from "../../components/PostCard.astro";
+import {
+  CATEGORIES,
+  SITE,
+  categoryUrl,
+  postUrl,
+  url,
+  type CategoryId,
+} from "../../lib/site";
+
+export async function getStaticPaths() {
+  return Object.keys(CATEGORIES).map((categoria) => ({
+    params: { categoria },
+  }));
+}
+
+const { categoria } = Astro.params;
+const id = categoria as CategoryId;
+const cat = CATEGORIES[id];
+
+const posts = (
+  await getCollection("posts", ({ data }) => !data.draft && data.category === id)
+).sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const canonicalPath = categoryUrl(id);
+
+const jsonLd = [
+  {
+    "@type": "CollectionPage",
+    name: `${cat.name} · blog estoque.autos`,
+    description: cat.description,
+    url: `${SITE.url}${canonicalPath}`,
+    inLanguage: "pt-BR",
+    isPartOf: { "@id": `${SITE.url}${url()}#blog` },
+  },
+  {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Blog",
+        item: `${SITE.url}${url()}`,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: cat.name,
+        item: `${SITE.url}${canonicalPath}`,
+      },
+    ],
+  },
+  {
+    "@type": "ItemList",
+    itemListElement: posts.map((post, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: post.data.title,
+      url: `${SITE.url}${postUrl(post.id)}`,
+    })),
+  },
+];
+---
+
+<Base
+  title={`${cat.name} — artigos para lojas de carros`}
+  description={cat.description}
+  canonicalPath={canonicalPath}
+  jsonLd={jsonLd}
+>
+  <section class="bp-hero">
+    <div class="bp-headlights" aria-hidden="true"></div>
+    <div class="bp-wrap bp-hero-in">
+      <nav class="bp-breadcrumb" aria-label="Você está em">
+        <a href={url()}>Blog</a>
+        <span class="sep">/</span>
+        <span>{cat.name}</span>
+      </nav>
+      <h1 class="bp-h1" style="margin-top:22px">{cat.name}</h1>
+      <p class="bp-lead">{cat.description}</p>
+      <nav class="bp-cats" aria-label="Categorias">
+        {
+          Object.entries(CATEGORIES).map(([cid, c]) => (
+            <a
+              class="bp-cat-link"
+              href={categoryUrl(cid)}
+              aria-current={cid === id ? "page" : undefined}
+            >
+              {c.name}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </section>
+
+  <section class="bp-wrap" style="padding-bottom:32px">
+    <div class="bp-grid">
+      {posts.map((post) => <PostCard post={post} />)}
+    </div>
+  </section>
+</Base>

@@ -54,6 +54,9 @@ export async function syncStripeSubscription(
     return;
   }
 
+  // Multi-loja: cada assinatura Stripe é uma linha própria, chaveada por
+  // stripe_subscription_id (o vínculo com a loja acontece no create_tenant
+  // e é preservado aqui — tenant_id fica FORA do payload de upsert).
   const { error } = await admin.from("subscriptions").upsert(
     {
       user_id: uid,
@@ -67,25 +70,19 @@ export async function syncStripeSubscription(
         : null,
       cancel_at_period_end: sub.cancel_at_period_end,
     },
-    { onConflict: "user_id" },
+    { onConflict: "stripe_subscription_id" },
   );
   if (error) throw new Error(`billing-sync: upsert falhou — ${error.message}`);
 
-  // usuário já tem loja? mantém vínculo + cópia tenants.plan
-  const { data: profile } = await admin
-    .from("profiles")
+  // assinatura já ligada a uma loja? espelha o plano (upgrade/downgrade
+  // via Billing Portal chega por aqui)
+  const { data: row } = await admin
+    .from("subscriptions")
     .select("tenant_id")
-    .eq("id", uid)
+    .eq("stripe_subscription_id", sub.id)
     .maybeSingle();
-  if (profile?.tenant_id) {
-    await admin
-      .from("subscriptions")
-      .update({ tenant_id: profile.tenant_id })
-      .eq("user_id", uid);
-    await admin
-      .from("tenants")
-      .update({ plan })
-      .eq("id", profile.tenant_id);
+  if (row?.tenant_id) {
+    await admin.from("tenants").update({ plan }).eq("id", row.tenant_id);
   }
 }
 

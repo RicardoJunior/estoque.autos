@@ -45,6 +45,13 @@ export async function generateMetadata({
   };
 }
 
+/** Preço vindo da URL: NaN ou negativo viram "sem filtro". */
+function parsePrice(raw?: string): number | undefined {
+  if (!raw) return undefined;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
 export default async function StorefrontPage({
   params,
   searchParams,
@@ -63,8 +70,8 @@ export default async function StorefrontPage({
     category: sp.category,
     fuel: sp.fuel,
     transmission: sp.transmission,
-    minPrice: sp.minPrice ? Number(sp.minPrice) : undefined,
-    maxPrice: sp.maxPrice ? Number(sp.maxPrice) : undefined,
+    minPrice: parsePrice(sp.minPrice),
+    maxPrice: parsePrice(sp.maxPrice),
   });
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";

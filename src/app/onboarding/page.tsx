@@ -1,6 +1,9 @@
 import { redirect } from "next/navigation";
-import { getSession, getSubscription, isSubscriptionActive } from "@/lib/auth";
-import { storeFontPreviewMap } from "@/lib/store-fonts-loader";
+import {
+  getSession,
+  getUnlinkedSubscription,
+  isSubscriptionActive,
+} from "@/lib/auth";
 import { OnboardingWizard } from "./OnboardingWizard";
 
 export const metadata = { title: "Criar minha loja" };
@@ -8,12 +11,13 @@ export const metadata = { title: "Criar minha loja" };
 export default async function OnboardingPage() {
   const session = await getSession();
   if (!session) redirect("/login");
-  if (session.tenant) redirect("/admin");
 
-  // plano-primeiro: a loja só nasce com assinatura ativa (o RPC
-  // create_tenant também barra no banco; aqui é UX)
-  const sub = await getSubscription();
-  if (!isSubscriptionActive(sub)) redirect("/cadastro/assinatura");
+  // plano-primeiro: cada loja nasce de uma assinatura ainda sem loja
+  // (o RPC create_tenant também barra no banco; aqui é UX)
+  const sub = await getUnlinkedSubscription();
+  if (!isSubscriptionActive(sub)) {
+    redirect(session.memberships.length > 0 ? "/admin" : "/cadastro/assinatura");
+  }
 
-  return <OnboardingWizard fontPreviews={storeFontPreviewMap()} />;
+  return <OnboardingWizard />;
 }

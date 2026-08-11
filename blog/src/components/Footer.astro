@@ -1,0 +1,21 @@
+---
+import Logo from "./Logo.astro";
+import { PRODUCT, url } from "../lib/site";
+---
+
+<footer class="bp-footer">
+  <div class="bp-wrap bp-footer-in">
+    <a href={PRODUCT.home} aria-label="estoque.autos">
+      <Logo size={20} />
+    </a>
+    <span class="bp-footer-c">© 2026 estoque.autos · feito para lojistas</span>
+    <div class="bp-footer-links">
+      <a href={url()}>Blog</a>
+      <a href={PRODUCT.ajuda}>Ajuda</a>
+      <a href={PRODUCT.planos}>Planos</a>
+      <a href={PRODUCT.termos}>Termos</a>
+      <a href={PRODUCT.privacidade}>Privacidade</a>
+      <a href={url("rss.xml")}>RSS</a>
+    </div>
+  </div>
+</footer>

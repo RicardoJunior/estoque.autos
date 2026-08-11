@@ -6,6 +6,8 @@ import { StoreSearch } from "../StoreSearch";
 import { Hero } from "../blocks/Hero";
 import { SectionHeader } from "../blocks/SectionHeader";
 import { VehicleGrid } from "../blocks/VehicleGrid";
+import { HeroMedia } from "../HeroMedia";
+import { heroMediaActive, showStoreName } from "../identity";
 import { formatAddressShort, hasAddress } from "../address";
 
 /**
@@ -18,6 +20,15 @@ import { formatAddressShort, hasAddress } from "../address";
 export function Classico({ store, vehicles }: TemplateProps) {
   const featured = vehicles.filter((v) => v.featured).slice(0, 3);
   const { settings, slug } = store;
+
+  const hero = settings.hero;
+  const withMedia = heroMediaActive(hero);
+  const heroTitle =
+    hero?.title ?? (settings.about ? store.name : "O carro certo, com confiança");
+  const heroSubtitle =
+    hero?.subtitle ??
+    settings.about ??
+    "Veículos selecionados e revisados, com atendimento próximo do início ao fim da sua compra.";
 
   const aboutHref = `/${slug}/sobre`;
   const showAbout = !!settings.about || hasAddress(store.address);
@@ -38,8 +49,12 @@ export function Classico({ store, vehicles }: TemplateProps) {
 
   return (
     <div
-      className="min-h-dvh bg-white text-slate-900"
-      style={{ fontFamily: "var(--sf-font)" }}
+      className="min-h-dvh"
+      style={{
+        fontFamily: "var(--sf-font)",
+        background: "var(--sf-bg, #ffffff)",
+        color: "var(--sf-ink, #0f172a)",
+      }}
     >
       {/* barra de utilidades */}
       <div
@@ -67,21 +82,34 @@ export function Classico({ store, vehicles }: TemplateProps) {
       </div>
 
       {/* cabeçalho */}
-      <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
+      <header
+        className="sticky top-0 z-30 border-b backdrop-blur"
+        style={{
+          borderColor: "var(--sf-border, #e2e8f0)",
+          background: "color-mix(in srgb, var(--sf-bg, #ffffff) 88%, transparent)",
+        }}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <Link href={`/${slug}`} className="flex items-center gap-3">
             <StoreLogo store={store} size={46} />
-            <div className="leading-tight">
-              <div
-                className="text-lg font-bold tracking-tight"
-                style={{ fontFamily: "var(--sf-font-head)" }}
-              >
-                {store.name}
+            {showStoreName(store) && (
+              <div className="leading-tight">
+                <div
+                  className="text-lg font-bold tracking-tight"
+                  style={{ fontFamily: "var(--sf-font-head)" }}
+                >
+                  {store.name}
+                </div>
+                {settings.slogan && (
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--sf-ink-soft, #64748b)" }}
+                  >
+                    {settings.slogan}
+                  </div>
+                )}
               </div>
-              {settings.slogan && (
-                <div className="text-xs text-slate-500">{settings.slogan}</div>
-              )}
-            </div>
+            )}
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">
@@ -89,8 +117,11 @@ export function Classico({ store, vehicles }: TemplateProps) {
               <Link
                 key={l.href}
                 href={l.href}
-                className="rounded-sm text-sm font-medium text-slate-600 underline-offset-8 transition hover:text-slate-900 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2"
-                style={{ fontFamily: "var(--sf-font-head)" }}
+                className="rounded-sm text-sm font-medium underline-offset-8 transition hover:underline hover:opacity-70 focus-visible:outline-2 focus-visible:outline-offset-2"
+                style={{
+                  fontFamily: "var(--sf-font-head)",
+                  color: "var(--sf-ink-soft, #64748b)",
+                }}
               >
                 {l.label}
               </Link>
@@ -114,23 +145,38 @@ export function Classico({ store, vehicles }: TemplateProps) {
         </div>
       </header>
 
-      {/* hero claro com traço clássico */}
-      <Hero
-        eyebrow={settings.slogan ?? "Concessionária"}
-        title={settings.about ? store.name : "O carro certo, com confiança"}
-        subtitle={
-          settings.about ??
-          "Veículos selecionados e revisados, com atendimento próximo do início ao fim da sua compra."
-        }
-        cta={{ label: "Ver estoque", href: "#estoque" }}
-        accentRule
-        align="left"
-        tone="light"
-      />
+      {/* hero claro com traço clássico — com mídia configurada vira hero
+          escuro sobre foto/vídeo (overlay garante leitura) */}
+      <section className="relative isolate overflow-hidden">
+        {withMedia && (
+          <>
+            <HeroMedia hero={hero} />
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+            />
+          </>
+        )}
+        <Hero
+          eyebrow={settings.slogan ?? "Concessionária"}
+          title={heroTitle}
+          subtitle={heroSubtitle}
+          cta={{ label: "Ver estoque", href: "#estoque" }}
+          accentRule
+          align="left"
+          tone={withMedia ? "dark" : "light"}
+        />
+      </section>
 
       {/* selos de confiança */}
-      <section className="border-y border-slate-200 bg-slate-50">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y divide-slate-200 px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <section
+        className="border-y"
+        style={{
+          borderColor: "var(--sf-border, #e2e8f0)",
+          background: "var(--sf-surface, #f8fafc)",
+        }}
+      >
+        <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
           <Trust
             value={`${vehicles.length}`}
             label={vehicles.length === 1 ? "veículo no estoque" : "veículos no estoque"}
@@ -180,7 +226,13 @@ export function Classico({ store, vehicles }: TemplateProps) {
 
       {/* convite à página sobre/localização */}
       {showAbout && (
-        <section className="border-t border-slate-200 bg-slate-50">
+        <section
+          className="border-t"
+          style={{
+            borderColor: "var(--sf-border, #e2e8f0)",
+            background: "var(--sf-surface, #f8fafc)",
+          }}
+        >
           <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-5 py-8">
             <div>
               <h2
@@ -190,7 +242,12 @@ export function Classico({ store, vehicles }: TemplateProps) {
                 {settings.about ? `Conheça a ${store.name}` : "Venha nos visitar"}
               </h2>
               {addressShort && (
-                <p className="mt-1 text-sm text-slate-500">{addressShort}</p>
+                <p
+                  className="mt-1 text-sm"
+                  style={{ color: "var(--sf-ink-soft, #64748b)" }}
+                >
+                  {addressShort}
+                </p>
               )}
             </div>
             <Link
@@ -215,14 +272,20 @@ export function Classico({ store, vehicles }: TemplateProps) {
 /** Selo de confiança da faixa abaixo do hero. */
 function Trust({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 px-5 py-6 text-center">
+    // borderColor cobre os divisores criados pelos divide-* do grid pai
+    <div
+      className="flex flex-col items-center gap-0.5 px-5 py-6 text-center"
+      style={{ borderColor: "var(--sf-border, #e2e8f0)" }}
+    >
       <span
         className="text-xl font-bold"
         style={{ fontFamily: "var(--sf-font-head)", color: "var(--sf-primary)" }}
       >
         {value}
       </span>
-      <span className="text-sm text-slate-500">{label}</span>
+      <span className="text-sm" style={{ color: "var(--sf-ink-soft, #64748b)" }}>
+        {label}
+      </span>
     </div>
   );
 }

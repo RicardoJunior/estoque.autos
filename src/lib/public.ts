@@ -2,6 +2,7 @@ import { cache } from "react";
 import { createAnonClient } from "./supabase/server";
 import {
   DEFAULT_COLORS,
+  type PlanId,
   type TemplateId,
   type TenantColors,
   type TenantSettings,
@@ -21,6 +22,9 @@ export interface Storefront {
   colors: TenantColors;
   logo_url: string | null;
   settings: TenantSettings;
+  /** plano vigente (view storefronts) — gate de recursos Pro na
+   *  vitrine (pixels); pode vir undefined antes da migration */
+  plan?: PlanId | null;
 }
 
 /**
@@ -38,6 +42,8 @@ function normalizeColors(raw: unknown): TenantColors {
   return {
     primary: c.primary ?? DEFAULT_COLORS.primary,
     accent: c.accent ?? DEFAULT_COLORS.accent,
+    // fundo custom é opcional — não pode ser descartado na normalização
+    background: c.background,
   };
 }
 
@@ -69,6 +75,10 @@ export interface VehicleQuery {
   sort?: "recent" | "price_asc" | "price_desc" | "km_asc";
 }
 
+function isValidPrice(n: number | undefined): n is number {
+  return n != null && Number.isFinite(n) && n >= 0;
+}
+
 const SORTS: Record<string, { col: string; asc: boolean }> = {
   recent: { col: "created_at", asc: false },
   price_asc: { col: "price", asc: true },
@@ -86,21 +96,36 @@ export async function listPublicVehicles(
   let query = supabase
     .from("vehicles_public")
     .select("*")
-    .eq("tenant_id", tenantId)
-    .order("featured", { ascending: false })
-    .order(sort.col, { ascending: sort.asc, nullsFirst: false });
+    .eq("tenant_id", tenantId);
+
+  // destaque só "fura a fila" na ordenação padrão; quando o visitante
+  // pede "menor preço"/"menor km", a lista obedece SÓ o critério pedido
+  // (destaque pinado fazia o sort parecer quebrado)
+  if ((q.sort ?? "recent") === "recent") {
+    query = query.order("featured", { ascending: false });
+  }
+  query = query.order(sort.col, { ascending: sort.asc, nullsFirst: false });
 
   if (q.category) query = query.eq("category", q.category);
   if (q.fuel) query = query.eq("fuel", q.fuel);
   if (q.transmission) query = query.eq("transmission", q.transmission);
-  if (q.minPrice != null) query = query.gte("price", q.minPrice);
-  if (q.maxPrice != null) query = query.lte("price", q.maxPrice);
+  // NaN/negativo no filtro derrubaria a query no PostgREST → ignora
+  if (isValidPrice(q.minPrice)) query = query.gte("price", q.minPrice);
+  if (isValidPrice(q.maxPrice)) query = query.lte("price", q.maxPrice);
   if (q.search) {
-    const term = q.search.replace(/[%,()]/g, " ").trim();
-    if (term)
+    // busca por PALAVRA: "honda civic" exige que cada palavra apareça em
+    // alguma coluna (o ilike do termo inteiro numa coluna só devolvia
+    // zero resultado para consultas de duas palavras — "busca quebrada")
+    const words = q.search
+      .replace(/[%,()]/g, " ")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 5);
+    for (const w of words) {
       query = query.or(
-        `brand.ilike.%${term}%,model.ilike.%${term}%,version.ilike.%${term}%`,
+        `brand.ilike.%${w}%,model.ilike.%${w}%,version.ilike.%${w}%`,
       );
+    }
   }
 
   const { data } = await query;

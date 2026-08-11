@@ -6,6 +6,8 @@ import { StoreFooter } from "../StoreFooter";
 import { StoreSearch } from "../StoreSearch";
 import { SectionHeader } from "../blocks/SectionHeader";
 import { VehicleGrid } from "../blocks/VehicleGrid";
+import { HeroMedia } from "../HeroMedia";
+import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 
 /**
@@ -16,8 +18,12 @@ import { hasAddress } from "../address";
  */
 export function Moderno({ store, vehicles }: TemplateProps) {
   const featured = vehicles.filter((v) => v.featured).slice(0, 3);
-  const headline = store.settings.slogan ?? "Seu próximo carro está aqui";
+  const hero = store.settings.hero;
+  const withMedia = heroMediaActive(hero);
+  const headline =
+    hero?.title ?? store.settings.slogan ?? "Seu próximo carro está aqui";
   const subtitle =
+    hero?.subtitle ??
     store.settings.about ??
     "Estoque selecionado, condições especiais e atendimento direto. Encontre o veículo certo para você.";
 
@@ -37,40 +43,57 @@ export function Moderno({ store, vehicles }: TemplateProps) {
 
   return (
     <div
-      className="min-h-dvh bg-white text-slate-900"
-      style={{ fontFamily: "var(--sf-font)" }}
+      className="min-h-dvh"
+      style={{
+        fontFamily: "var(--sf-font)",
+        background: "var(--sf-bg, #ffffff)",
+        color: "var(--sf-ink, #0f172a)",
+      }}
     >
       {/* ── header ───────────────────────────────────────────── */}
-      <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-md">
+      <header
+        className="sticky top-0 z-30 border-b backdrop-blur-md"
+        style={{
+          borderColor: "var(--sf-border, rgba(226,232,240,0.7))",
+          background: "color-mix(in srgb, var(--sf-bg, #ffffff) 88%, transparent)",
+        }}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
           <Link href={`/${store.slug}`} className="flex items-center gap-3">
             <StoreLogo store={store} size={44} className="rounded-2xl" />
-            <div>
-              <div
-                className="font-extrabold leading-tight tracking-tight"
-                style={{ fontFamily: "var(--sf-font-head)" }}
-              >
-                {store.name}
-              </div>
-              {store.settings.slogan && (
-                <div className="text-xs text-slate-500">
-                  {store.settings.slogan}
+            {showStoreName(store) && (
+              <div>
+                <div
+                  className="font-extrabold leading-tight tracking-tight"
+                  style={{ fontFamily: "var(--sf-font-head)" }}
+                >
+                  {store.name}
                 </div>
-              )}
-            </div>
+                {store.settings.slogan && (
+                  <div
+                    className="text-xs"
+                    style={{ color: "var(--sf-ink-soft, #64748b)" }}
+                  >
+                    {store.settings.slogan}
+                  </div>
+                )}
+              </div>
+            )}
           </Link>
 
           <nav className="flex items-center gap-1.5">
             <Link
               href={`/${store.slug}`}
-              className="hidden rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:block"
+              className="hidden rounded-full px-4 py-2 text-sm font-semibold transition hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 sm:block"
+              style={{ color: "var(--sf-ink-soft, #64748b)" }}
             >
               Estoque
             </Link>
             {hasAbout && (
               <Link
                 href={`/${store.slug}/sobre`}
-                className="hidden rounded-full px-4 py-2 text-sm font-semibold text-slate-600 transition hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 sm:block"
+                className="hidden rounded-full px-4 py-2 text-sm font-semibold transition hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 sm:block"
+                style={{ color: "var(--sf-ink-soft, #64748b)" }}
               >
                 {aboutLabel}
               </Link>
@@ -97,32 +120,46 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       <section
         className="relative isolate overflow-hidden"
         style={{
-          background:
-            "linear-gradient(150deg, var(--sf-primary) 0%, var(--sf-primary-dark) 100%)",
-          color: "var(--sf-on-primary)",
+          background: withMedia
+            ? "#0b1120"
+            : "linear-gradient(150deg, var(--sf-primary) 0%, var(--sf-primary-dark) 100%)",
+          color: withMedia ? "#ffffff" : "var(--sf-on-primary)",
         }}
       >
-        {/* blobs decorativos da cor accent / primary */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full opacity-30 blur-3xl"
-          style={{ background: "var(--sf-accent)" }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute -bottom-48 -left-24 h-[26rem] w-[26rem] rounded-full opacity-20 blur-3xl"
-          style={{ background: "var(--sf-on-primary)" }}
-        />
-        {/* grade sutil */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
-            backgroundSize: "44px 44px",
-          }}
-        />
+        {/* mídia de fundo configurável (vídeo/carrossel) + overlay */}
+        {withMedia && (
+          <>
+            <HeroMedia hero={hero} />
+            <div
+              aria-hidden
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+            />
+          </>
+        )}
+        {/* decoração própria só quando NÃO há mídia */}
+        {!withMedia && (
+          <>
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full opacity-30 blur-3xl"
+              style={{ background: "var(--sf-accent)" }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -bottom-48 -left-24 h-[26rem] w-[26rem] rounded-full opacity-20 blur-3xl"
+              style={{ background: "var(--sf-on-primary)" }}
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 opacity-[0.07]"
+              style={{
+                backgroundImage:
+                  "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
+                backgroundSize: "44px 44px",
+              }}
+            />
+          </>
+        )}
 
         <div className="relative mx-auto max-w-6xl px-5 pb-28 pt-16 sm:pb-32 sm:pt-24">
           <span
@@ -179,8 +216,18 @@ export function Moderno({ store, vehicles }: TemplateProps) {
 
         {/* busca proeminente — cartão flutuante sobre a borda do hero */}
         <div className="relative mx-auto -mb-12 max-w-6xl px-5">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 text-slate-900 shadow-2xl sm:p-6">
-            <label className="mb-3 block text-xs font-bold uppercase tracking-wide text-slate-400">
+          <div
+            className="rounded-3xl border p-5 shadow-2xl sm:p-6"
+            style={{
+              background: "var(--sf-bg, #ffffff)",
+              borderColor: "var(--sf-border, #e2e8f0)",
+              color: "var(--sf-ink, #0f172a)",
+            }}
+          >
+            <label
+              className="mb-3 block text-xs font-bold uppercase tracking-wide"
+              style={{ color: "var(--sf-ink-faint, #94a3b8)" }}
+            >
               Encontre seu carro
             </label>
             <StoreSearch tone="light" />
@@ -189,13 +236,17 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       </section>
 
       {/* faixa de stats sólida abaixo do cartão de busca */}
-      <section className="bg-white pt-20 sm:pt-24">
+      <section className="pt-20 sm:pt-24">
         <div className="mx-auto max-w-6xl px-5">
           <div className="grid grid-cols-3 gap-3 sm:gap-5">
             {stats.map((s, i) => (
               <div
                 key={i}
-                className="rounded-3xl border border-slate-100 bg-slate-50 px-4 py-5 text-center transition hover:-translate-y-0.5 hover:shadow-md sm:px-6 sm:py-6"
+                className="rounded-3xl border px-4 py-5 text-center transition hover:-translate-y-0.5 hover:shadow-md sm:px-6 sm:py-6"
+                style={{
+                  borderColor: "var(--sf-border, #f1f5f9)",
+                  background: "var(--sf-surface, #f8fafc)",
+                }}
               >
                 <div
                   className="text-2xl font-extrabold tracking-tight sm:text-4xl"
@@ -203,7 +254,10 @@ export function Moderno({ store, vehicles }: TemplateProps) {
                 >
                   {s.value}
                 </div>
-                <div className="mt-1 text-[11px] font-medium uppercase tracking-wide text-slate-500 sm:text-xs">
+                <div
+                  className="mt-1 text-[11px] font-medium uppercase tracking-wide sm:text-xs"
+                  style={{ color: "var(--sf-ink-soft, #64748b)" }}
+                >
                   {s.label}
                 </div>
               </div>
@@ -243,11 +297,20 @@ export function Moderno({ store, vehicles }: TemplateProps) {
           slug={store.slug}
           rounded="rounded-3xl"
           empty={
-            <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 py-20 text-center">
-              <p className="font-bold text-slate-700">
+            <div
+              className="rounded-3xl border border-dashed py-20 text-center"
+              style={{
+                borderColor: "var(--sf-border, #e2e8f0)",
+                background: "var(--sf-surface, #f8fafc)",
+              }}
+            >
+              <p className="font-bold" style={{ color: "var(--sf-ink, #334155)" }}>
                 Nenhum veículo por aqui ainda.
               </p>
-              <p className="mt-1 text-sm text-slate-400">
+              <p
+                className="mt-1 text-sm"
+                style={{ color: "var(--sf-ink-faint, #94a3b8)" }}
+              >
                 Volte em breve — novos carros chegam toda semana.
               </p>
             </div>

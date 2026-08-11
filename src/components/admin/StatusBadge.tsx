@@ -1,4 +1,6 @@
 import { VEHICLE_STATUS_LABELS, type VehicleStatus } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 const STYLES: Record<VehicleStatus, string> = {
   available: "bg-emerald-500/15 text-emerald-400",
@@ -9,10 +11,8 @@ const STYLES: Record<VehicleStatus, string> = {
 
 export function StatusBadge({ status }: { status: VehicleStatus }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ${STYLES[status]}`}
-    >
+    <Badge className={cn("rounded-full", STYLES[status])}>
       {VEHICLE_STATUS_LABELS[status]}
-    </span>
+    </Badge>
   );
 }

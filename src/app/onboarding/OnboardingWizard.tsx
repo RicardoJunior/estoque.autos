@@ -7,7 +7,9 @@ import {
   useState,
   useTransition,
 } from "react";
+import { useFormStatus } from "react-dom";
 import Image from "next/image";
+import { Search } from "lucide-react";
 import {
   checkSlugAction,
   completeOnboardingAction,
@@ -15,29 +17,41 @@ import {
   type SlugCheck,
 } from "./actions";
 import { TEMPLATES } from "@/lib/templates";
-import { DEFAULT_COLORS, type TemplateId } from "@/lib/types";
 import {
-  STORE_FONTS,
-  STORE_FONT_IDS,
-  DEFAULT_FONT_ID,
-  type StoreFontId,
-} from "@/lib/fonts";
+  DEFAULT_COLORS,
+  type TemplateId,
+  type TenantFonts,
+} from "@/lib/types";
+import { DEFAULT_STORE_FONTS, FONT_PAIRINGS } from "@/lib/fonts";
+import { getFontCatalog, type GoogleFont } from "@/lib/google-fonts";
+import { injectFontCss } from "@/lib/font-css";
 import { slugify } from "@/lib/format";
-import { StorefrontPreview } from "@/components/StorefrontPreview";
+import { DemoPreview } from "@/components/brand/DemoPreview";
+import { ColorField } from "@/components/brand/ColorField";
+import { FontPairings } from "@/components/brand/FontPairings";
+import { FontPicker } from "@/components/brand/FontPicker";
+import { LogoCropDialog } from "@/components/brand/LogoCropDialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 
-/** Famílias CSS (head/body) por fonte — vêm do next/font (server). */
-export type FontPreviews = Record<StoreFontId, { head: string; body: string }>;
+const STEPS = ["Sua loja", "Contato", "Template", "Marca", "Logo"] as const;
 
-const STEPS = ["Sua loja", "Template", "Cores", "Logo"] as const;
+/** campos do passo 2 — usado para levar o lojista ao passo do erro */
+const CONTACT_FIELDS = [
+  "phone",
+  "email",
+  "cep",
+  "street",
+  "number",
+  "neighborhood",
+  "city",
+  "state",
+  "business_hours",
+];
 
-export function OnboardingWizard({
-  fontPreviews,
-}: {
-  fontPreviews: FontPreviews;
-}) {
+export function OnboardingWizard() {
   const [step, setStep] = useState(0);
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -46,12 +60,41 @@ export function OnboardingWizard({
   const [template, setTemplate] = useState<TemplateId>("classico");
   const [primary, setPrimary] = useState(DEFAULT_COLORS.primary);
   const [accent, setAccent] = useState(DEFAULT_COLORS.accent);
-  const [font, setFont] = useState<StoreFontId>(DEFAULT_FONT_ID);
+  const [fonts, setFonts] = useState<TenantFonts>(DEFAULT_STORE_FONTS);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  /** arquivo final (SVG ou PNG cortado) — fonte da verdade para o submit */
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
+  const previewRef = useRef<string | null>(null);
+
+  // contato & endereço (o site sai do onboarding completo)
+  const [cepLoading, setCepLoading] = useState(false);
+  const [address, setAddress] = useState({
+    cep: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
+    city: "",
+    state: "",
+  });
 
   const [slugCheck, setSlugCheck] = useState<SlugCheck | null>(null);
   const [, startCheck] = useTransition();
   const fileRef = useRef<HTMLInputElement>(null);
+
+  // catálogo do Google Fonts para o card "Outras" (chunk sob demanda)
+  const [catalog, setCatalog] = useState<GoogleFont[] | null>(null);
+  useEffect(() => {
+    let active = true;
+    getFontCatalog().then((c) => {
+      if (active) setCatalog(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [state, formAction] = useActionState<OnboardingState, FormData>(
     completeOnboardingAction,
@@ -62,10 +105,18 @@ export function OnboardingWizard({
   // quando há slug suficiente; o reset é feito nos handlers).
   useEffect(() => {
     if (slug.length < 3) return;
+    let cancelled = false;
     const t = setTimeout(() => {
-      startCheck(async () => setSlugCheck(await checkSlugAction(slug)));
+      startCheck(async () => {
+        const result = await checkSlugAction(slug);
+        // resposta antiga não pode sobrescrever a checagem do slug atual
+        if (!cancelled) setSlugCheck(result);
+      });
     }, 400);
-    return () => clearTimeout(t);
+    return () => {
+      cancelled = true;
+      clearTimeout(t);
+    };
   }, [slug]);
 
   function handleName(value: string) {
@@ -84,13 +135,128 @@ export function OnboardingWizard({
     if (s.length < 3) setSlugCheck(null);
   }
 
+  async function lookupCep(cep: string) {
+    const digits = cep.replace(/\D/g, "");
+    if (digits.length !== 8) return;
+    setCepLoading(true);
+    try {
+      const res = await fetch(`https://viacep.com.br/ws/${digits}/json/`);
+      const data = (await res.json()) as {
+        erro?: boolean;
+        logradouro?: string;
+        bairro?: string;
+        localidade?: string;
+        uf?: string;
+      };
+      if (!data.erro) {
+        setAddress((a) => ({
+          ...a,
+          street: data.logradouro || a.street,
+          neighborhood: data.bairro || a.neighborhood,
+          city: data.localidade || a.city,
+          state: data.uf || a.state,
+        }));
+      }
+    } catch {
+      // CEP é conveniência — o lojista pode preencher na mão
+    } finally {
+      setCepLoading(false);
+    }
+  }
+
+  // as fontes escolhidas carregam para a prévia (peso 400 basta aqui)
+  useEffect(() => {
+    for (const family of [fonts.head, fonts.body]) {
+      injectFontCss(
+        `https://fonts.googleapis.com/css2?family=${family.replaceAll(" ", "+")}&display=swap`,
+      );
+    }
+  }, [fonts]);
+
+  function replaceLogoPreview(url: string | null) {
+    if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    previewRef.current = url;
+    setLogoPreview(url);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (previewRef.current) URL.revokeObjectURL(previewRef.current);
+    };
+  }, []);
+
+  // o React 19 reseta o form (inclusive o input de arquivo) quando a
+  // action retorna erro — devolve o logo escolhido para o input
+  useEffect(() => {
+    const input = fileRef.current;
+    if (!logoFile || !input) return;
+    if (!input.files || input.files.length === 0) {
+      const dt = new DataTransfer();
+      dt.items.add(logoFile);
+      input.files = dt.files;
+    }
+  }, [state, logoFile]);
+
   function onLogoChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setLogoError(null);
     const f = e.target.files?.[0];
-    setLogoPreview(f ? URL.createObjectURL(f) : null);
+    if (!f) {
+      setLogoFile(null);
+      replaceLogoPreview(null);
+      return;
+    }
+    // SVG sobe como vetor, sem corte; rasters passam pelo editor
+    if (f.type === "image/svg+xml" || /\.svg$/i.test(f.name)) {
+      if (f.size > 1024 * 1024) {
+        setLogoError("SVG muito grande (máx. 1MB).");
+        if (fileRef.current) fileRef.current.value = "";
+        return;
+      }
+      setLogoFile(f);
+      replaceLogoPreview(URL.createObjectURL(f));
+      return;
+    }
+    if (!f.type.startsWith("image/")) {
+      setLogoError("Envie SVG, PNG, WebP, AVIF ou JPEG.");
+      if (fileRef.current) fileRef.current.value = "";
+      return;
+    }
+    setCropFile(f);
+  }
+
+  function onCropConfirm(blob: Blob) {
+    setCropFile(null);
+    const file = new File([blob], "logo.png", { type: "image/png" });
+    // o PNG cortado substitui o arquivo original dentro do input do form
+    if (fileRef.current) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileRef.current.files = dt.files;
+    }
+    setLogoFile(file);
+    replaceLogoPreview(URL.createObjectURL(file));
+  }
+
+  function onCropCancel() {
+    setCropFile(null);
+    if (fileRef.current) fileRef.current.value = "";
+    setLogoFile(null);
+    replaceLogoPreview(null);
   }
 
   const step1Valid =
     name.trim().length >= 2 && slug.length >= 3 && slugCheck?.available === true;
+
+  // erro de validação com o usuário em outro passo: leva ao passo do
+  // campo com problema (senão o publish parece não fazer nada)
+  const [lastState, setLastState] = useState(state);
+  if (state !== lastState) {
+    setLastState(state);
+    if (state.fieldErrors) {
+      const keys = Object.keys(state.fieldErrors);
+      setStep(keys.some((k) => CONTACT_FIELDS.includes(k)) ? 1 : 0);
+    }
+  }
 
   const slugMsg = (() => {
     if (slug.length > 0 && slug.length < 3) return "Mínimo de 3 caracteres";
@@ -102,6 +268,11 @@ export function OnboardingWizard({
       taken: "Essa URL já está em uso",
     }[slugCheck.reason ?? "invalid"];
   })();
+
+  const pairingActive = FONT_PAIRINGS.some(
+    (p) => p.head === fonts.head && p.body === fonts.body,
+  );
+  const e = state.fieldErrors ?? {};
 
   return (
     <div className="mx-auto grid min-h-dvh max-w-6xl grid-cols-1 gap-8 px-4 py-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,520px)]">
@@ -125,9 +296,9 @@ export function OnboardingWizard({
                 {i + 1}
               </span>
               <span
-                className={
+                className={`hidden sm:inline ${
                   i === step ? "text-foreground" : "text-muted-foreground"
-                }
+                }`}
               >
                 {label}
               </span>
@@ -136,12 +307,13 @@ export function OnboardingWizard({
         </ol>
 
         <form action={formAction} className="flex flex-1 flex-col">
-          {/* hidden inputs com o estado completo (presentes em todas as etapas) */}
+          {/* hidden inputs com o estado dos widgets (presentes sempre) */}
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="template_id" value={template} />
           <input type="hidden" name="primary" value={primary} />
           <input type="hidden" name="accent" value={accent} />
-          <input type="hidden" name="font" value={font} />
+          <input type="hidden" name="font_head" value={fonts.head} />
+          <input type="hidden" name="font_body" value={fonts.body} />
 
           {state.error && (
             <div className="mb-4 rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
@@ -159,14 +331,10 @@ export function OnboardingWizard({
                 name="name"
                 placeholder="Auto Center Silva"
                 value={name}
-                onChange={(e) => handleName(e.target.value)}
+                onChange={(ev) => handleName(ev.target.value)}
                 required
               />
-              {state.fieldErrors?.name && (
-                <p className="text-xs text-destructive">
-                  {state.fieldErrors.name}
-                </p>
-              )}
+              {e.name && <p className="text-xs text-destructive">{e.name}</p>}
             </div>
 
             <div className="grid gap-2">
@@ -180,7 +348,7 @@ export function OnboardingWizard({
                   className="flex-1 bg-transparent px-2 py-2.5 text-[0.95rem] text-foreground outline-none placeholder:text-muted-foreground"
                   placeholder="auto-center-silva"
                   value={slug}
-                  onChange={(e) => handleSlug(e.target.value)}
+                  onChange={(ev) => handleSlug(ev.target.value)}
                 />
               </div>
               {slugMsg === "ok" ? (
@@ -198,7 +366,7 @@ export function OnboardingWizard({
               <Label htmlFor="whatsapp">
                 WhatsApp{" "}
                 <span className="font-normal text-muted-foreground">
-                  (opcional)
+                  (recomendado — vira botão de contato no site)
                 </span>
               </Label>
               <Input
@@ -206,13 +374,147 @@ export function OnboardingWizard({
                 name="whatsapp"
                 placeholder="(11) 99999-9999"
                 value={whatsapp}
-                onChange={(e) => setWhatsapp(e.target.value)}
+                onChange={(ev) => setWhatsapp(ev.target.value)}
               />
             </div>
           </section>
 
-          {/* ---------- STEP 2: template ---------- */}
+          {/* ---------- STEP 2: contato & endereço ---------- */}
           <section className={step === 1 ? "space-y-4" : "hidden"}>
+            <h1 className="text-xl font-bold">Dados da loja</h1>
+            <p className="text-sm text-muted-foreground">
+              Aparecem no rodapé, na página Sobre e no mapa. Tudo opcional —
+              dá para completar depois no painel.
+            </p>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="ob-phone">Telefone fixo</Label>
+                <Input
+                  id="ob-phone"
+                  name="phone"
+                  placeholder="(11) 3333-4444"
+                />
+                {e.phone && (
+                  <p className="text-xs text-destructive">{e.phone}</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="ob-email">E-mail</Label>
+                <Input
+                  id="ob-email"
+                  name="email"
+                  type="email"
+                  placeholder="contato@sualoja.com.br"
+                />
+                {e.email && (
+                  <p className="text-xs text-destructive">{e.email}</p>
+                )}
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-[8rem_1fr]">
+              <div className="grid gap-2">
+                <Label htmlFor="ob-cep">CEP</Label>
+                <Input
+                  id="ob-cep"
+                  name="cep"
+                  placeholder="01452-001"
+                  value={address.cep}
+                  onChange={(ev) => {
+                    const cep = ev.target.value;
+                    setAddress((a) => ({ ...a, cep }));
+                    lookupCep(cep);
+                  }}
+                />
+                {cepLoading && (
+                  <p className="text-xs text-muted-foreground">Buscando…</p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="ob-street">Rua / Avenida</Label>
+                <Input
+                  id="ob-street"
+                  name="street"
+                  value={address.street}
+                  onChange={(ev) =>
+                    setAddress((a) => ({ ...a, street: ev.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="grid gap-2">
+                <Label htmlFor="ob-number">Número</Label>
+                <Input
+                  id="ob-number"
+                  name="number"
+                  value={address.number}
+                  onChange={(ev) =>
+                    setAddress((a) => ({ ...a, number: ev.target.value }))
+                  }
+                />
+              </div>
+              <div className="grid gap-2 sm:col-span-2">
+                <Label htmlFor="ob-neigh">Bairro</Label>
+                <Input
+                  id="ob-neigh"
+                  name="neighborhood"
+                  value={address.neighborhood}
+                  onChange={(ev) =>
+                    setAddress((a) => ({ ...a, neighborhood: ev.target.value }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-[1fr_6rem]">
+              <div className="grid gap-2">
+                <Label htmlFor="ob-city">Cidade</Label>
+                <Input
+                  id="ob-city"
+                  name="city"
+                  value={address.city}
+                  onChange={(ev) =>
+                    setAddress((a) => ({ ...a, city: ev.target.value }))
+                  }
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="ob-state">UF</Label>
+                <Input
+                  id="ob-state"
+                  name="state"
+                  maxLength={2}
+                  placeholder="SP"
+                  value={address.state}
+                  onChange={(ev) =>
+                    setAddress((a) => ({
+                      ...a,
+                      state: ev.target.value.toUpperCase(),
+                    }))
+                  }
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="ob-hours">Horário de atendimento</Label>
+              <Textarea
+                id="ob-hours"
+                name="business_hours"
+                className="min-h-16"
+                placeholder="Seg a Sex 9h-18h&#10;Sáb 9h-13h"
+              />
+              {e.business_hours && (
+                <p className="text-xs text-destructive">{e.business_hours}</p>
+              )}
+            </div>
+          </section>
+
+          {/* ---------- STEP 3: template ---------- */}
+          <section className={step === 2 ? "space-y-4" : "hidden"}>
             <h1 className="text-xl font-bold">Escolha um template</h1>
             <p className="text-sm text-muted-foreground">
               Veja a prévia ao lado. Você pode trocar quando quiser.
@@ -223,7 +525,7 @@ export function OnboardingWizard({
                   type="button"
                   key={t.id}
                   onClick={() => setTemplate(t.id)}
-                  className={`rounded-lg border p-3 text-left transition ${
+                  className={`cursor-pointer rounded-lg border p-3 text-left transition ${
                     template === t.id
                       ? "border-primary ring-2 ring-primary/15"
                       : "border-border hover:border-primary/40"
@@ -238,64 +540,74 @@ export function OnboardingWizard({
             </div>
           </section>
 
-          {/* ---------- STEP 3: cores ---------- */}
-          <section className={step === 2 ? "space-y-5" : "hidden"}>
-            <h1 className="text-xl font-bold">Suas cores</h1>
-            <ColorPicker
+          {/* ---------- STEP 4: marca (cores + fontes) ---------- */}
+          <section className={step === 3 ? "space-y-5" : "hidden"}>
+            <h1 className="text-xl font-bold">Sua marca</h1>
+            <ColorField
               label="Cor principal"
-              hint="Usada no cabeçalho, links e destaques."
+              hint="Usada no cabeçalho, links e destaques"
               value={primary}
               onChange={setPrimary}
             />
-            <ColorPicker
+            <ColorField
               label="Cor de destaque"
-              hint="Usada nos botões de ação (ex.: contato)."
+              hint="Usada nos botões de ação (ex.: contato)"
               value={accent}
               onChange={setAccent}
             />
 
             <div className="grid gap-2">
               <Label>Fonte</Label>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {STORE_FONT_IDS.map((id) => {
-                  const active = font === id;
-                  const fam = fontPreviews[id];
-                  return (
-                    <button
-                      type="button"
-                      key={id}
-                      onClick={() => setFont(id)}
-                      aria-pressed={active}
-                      className={`rounded-lg border p-3 text-left transition ${
-                        active
-                          ? "border-primary ring-2 ring-primary bg-primary/5"
-                          : "border-border hover:border-primary/40 hover:bg-muted/50"
-                      }`}
-                    >
-                      <div
-                        className="truncate text-lg leading-tight text-foreground"
-                        style={{ fontFamily: fam.head }}
+              <FontPairings
+                head={fonts.head}
+                body={fonts.body}
+                onSelect={(p) => setFonts({ head: p.head, body: p.body })}
+              />
+              {/* card "Outras": busca no catálogo inteiro do Google Fonts */}
+              <FontPicker
+                label="Outras fontes"
+                value={fonts.head}
+                catalog={catalog}
+                onChange={(f) => setFonts({ head: f.f, body: f.f })}
+                renderTrigger={(open) => (
+                  <button
+                    type="button"
+                    onClick={open}
+                    aria-pressed={!pairingActive}
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-lg border p-2.5 text-left transition ${
+                      !pairingActive
+                        ? "border-primary bg-primary/5 ring-2 ring-primary"
+                        : "border-border hover:border-primary/40 hover:bg-muted/50"
+                    }`}
+                  >
+                    <span>
+                      <span
+                        className="block text-[15px] leading-tight text-foreground"
+                        style={
+                          !pairingActive
+                            ? { fontFamily: `"${fonts.head}"` }
+                            : undefined
+                        }
                       >
-                        {STORE_FONTS[id].head}
-                      </div>
-                      <div
-                        className="mt-1 truncate text-xs text-muted-foreground"
-                        style={{ fontFamily: fam.body }}
-                      >
-                        {STORE_FONTS[id].label}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+                        {!pairingActive ? fonts.head : "Outras fontes"}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-muted-foreground">
+                        Busque entre todas as fontes do Google Fonts
+                      </span>
+                    </span>
+                    <Search className="size-4 shrink-0 opacity-50" />
+                  </button>
+                )}
+              />
               <p className="mt-1.5 text-xs text-muted-foreground">
-                A fonte usada nos títulos e textos da sua vitrine.
+                No painel dá para escolher fontes diferentes para títulos e
+                textos.
               </p>
             </div>
           </section>
 
-          {/* ---------- STEP 4: logo ---------- */}
-          <section className={step === 3 ? "space-y-4" : "hidden"}>
+          {/* ---------- STEP 5: logo ---------- */}
+          <section className={step === 4 ? "space-y-4" : "hidden"}>
             <h1 className="text-xl font-bold">Adicione seu logo</h1>
             <p className="text-sm text-muted-foreground">
               Opcional. Sem logo, usamos o nome da loja.
@@ -329,9 +641,10 @@ export function OnboardingWizard({
                 {logoPreview && (
                   <button
                     type="button"
-                    className="block text-xs text-destructive hover:underline"
+                    className="block cursor-pointer text-xs text-destructive hover:underline"
                     onClick={() => {
-                      setLogoPreview(null);
+                      setLogoFile(null);
+                      replaceLogoPreview(null);
                       if (fileRef.current) fileRef.current.value = "";
                     }}
                   >
@@ -340,14 +653,22 @@ export function OnboardingWizard({
                 )}
               </div>
             </div>
+            {logoError && (
+              <p className="text-xs text-destructive">{logoError}</p>
+            )}
             {/* file input sempre montado para entrar no submit */}
             <input
               ref={fileRef}
               type="file"
               name="logo"
-              accept="image/*"
+              accept=".svg,.png,.webp,.avif,.jpg,.jpeg,image/svg+xml,image/png,image/webp,image/avif,image/jpeg"
               className="hidden"
               onChange={onLogoChange}
+            />
+            <LogoCropDialog
+              file={cropFile}
+              onCancel={onCropCancel}
+              onConfirm={onCropConfirm}
             />
           </section>
 
@@ -381,17 +702,19 @@ export function OnboardingWizard({
         </form>
       </div>
 
-      {/* ---- coluna da prévia ---- */}
+      {/* ---- coluna da prévia (template REAL num iframe escalado) ---- */}
       <div className="hidden lg:block">
         <div className="sticky top-10">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Prévia ao vivo
           </p>
-          <StorefrontPreview
+          <DemoPreview
             template={template}
             name={name || "Sua Loja"}
             primary={primary}
             accent={accent}
+            fontHead={fonts.head}
+            fontBody={fonts.body}
             logoUrl={logoPreview}
           />
         </div>
@@ -401,66 +724,10 @@ export function OnboardingWizard({
 }
 
 function PublishButton({ disabled }: { disabled: boolean }) {
-  // useFormStatus precisa estar dentro do form; herdamos o pending
+  const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={disabled}>
-      Publicar meu site →
+    <Button type="submit" disabled={disabled || pending}>
+      {pending ? "Publicando…" : "Publicar meu site →"}
     </Button>
-  );
-}
-
-function ColorPicker({
-  label,
-  hint,
-  value,
-  onChange,
-}: {
-  label: string;
-  hint: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  const PRESETS = [
-    "#1d4ed8",
-    "#0f766e",
-    "#b91c1c",
-    "#7c3aed",
-    "#ea580c",
-    "#0891b2",
-    "#16a34a",
-    "#db2777",
-    "#0f172a",
-  ];
-  return (
-    <div className="grid gap-2">
-      <Label>{label}</Label>
-      <div className="flex items-center gap-3">
-        <input
-          type="color"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-12 cursor-pointer rounded border border-border bg-transparent"
-        />
-        <Input
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          className="font-mono uppercase"
-          maxLength={7}
-        />
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {PRESETS.map((p) => (
-          <button
-            key={p}
-            type="button"
-            onClick={() => onChange(p)}
-            className="h-6 w-6 rounded-full border border-black/10"
-            style={{ background: p }}
-            aria-label={p}
-          />
-        ))}
-      </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">{hint}</p>
-    </div>
   );
 }

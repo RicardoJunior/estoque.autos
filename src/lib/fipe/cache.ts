@@ -2,10 +2,14 @@
 // FIPE — leitura com cache no Supabase.
 //
 // Estrutura (brands/models) vem do seed. Years e preço são
-// on-demand: lê do banco; se não tem (ou preço velho), busca no
-// parallelum e CACHEIA. A escrita do cache usa o admin client —
-// extensão da exceção documentada (dados GLOBAIS de referência,
-// nunca dados de tenant; o caller é sempre rota autenticada).
+// on-demand: lê do banco; se não tem (ou está velho), busca no
+// parallelum e CACHEIA. Se a busca live falhar (rate limit/queda),
+// serve o cache velho em vez de estourar erro — dado FIPE de
+// semanas atrás ainda é melhor que nenhum no meio do cadastro.
+//
+// A escrita do cache usa o admin client — extensão da exceção
+// documentada (dados GLOBAIS de referência, nunca dados de tenant;
+// o caller é sempre rota autenticada).
 // ============================================================
 
 import { createClient } from "../supabase/server";
@@ -23,9 +27,25 @@ import type {
   FipeYear,
 } from "./types";
 
-/** Preço vale por 7 dias — o cron mensal renova os códigos em uso;
- *  isso cobre o intervalo entre viradas de MesReferencia. */
-const PRICE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** A FIPE só muda na virada do mês e a importação em massa
+ *  (seed --prices) + sync mensal renovam o banco; 40 dias cobre a
+ *  folga entre importações sem rajadas de fetch live — e a linha
+ *  carrega o MesReferencia, que a UI sempre exibe. */
+const PRICE_TTL_MS = 40 * 24 * 60 * 60 * 1000;
+
+/** Anos mudam pouco (novo ano-modelo/zero km na virada do mês);
+ *  30 dias garante que a lista não fossiliza. */
+const YEARS_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** rotas on-demand: retry curto — o usuário está esperando */
+const ONDEMAND_RETRY = { retries: 2, baseDelayMs: 500, maxDelayMs: 4_000 };
+
+function isFresh(fetchedAt: string | undefined, ttlMs: number): boolean {
+  // linha sem fetched_at (cache antigo, pré-migration) conta como
+  // fresca — a coluna tem default now() e converge sozinha
+  if (!fetchedAt) return true;
+  return Date.now() - new Date(fetchedAt).getTime() < ttlMs;
+}
 
 export async function getFipeBrands(
   type: FipeVehicleType,
@@ -69,23 +89,43 @@ export async function getFipeYears(
     .eq("model_id", modelId)
     .order("id", { ascending: false });
   if (error) throw new Error(`fipe_years: ${error.message}`);
-  if (data && data.length > 0) return data as FipeYear[];
+  const cached = (data ?? []) as FipeYear[];
 
-  // cache miss → busca live e cacheia
-  const live = await fetchFipeYears(type, brandId, modelId);
-  if (live.length === 0) return [];
+  // fresco se a linha MAIS ANTIGA ainda está no TTL (todas são
+  // gravadas juntas; a mais antiga é o pior caso)
+  const fresh =
+    cached.length > 0 &&
+    cached.every((y) => isFresh(y.fetched_at, YEARS_TTL_MS));
+  if (fresh) return cached;
 
+  // ausente ou velho → busca live e cacheia
+  let live;
+  try {
+    live = await fetchFipeYears(type, brandId, modelId, ONDEMAND_RETRY);
+  } catch (err) {
+    if (cached.length > 0) return cached; // stale > nada
+    throw err;
+  }
+  if (live.length === 0) return cached;
+
+  const now = new Date().toISOString();
   const rows: FipeYear[] = live.map((y) => ({
     vehicle_type: type,
     brand_id: brandId,
     model_id: modelId,
     id: y.codigo,
     name: y.nome,
+    fetched_at: now,
   }));
   const admin = createAdminClient();
-  await admin
+  const { error: writeError } = await admin
     .from("fipe_years")
     .upsert(rows, { onConflict: "vehicle_type,brand_id,model_id,id" });
+  if (writeError) {
+    // resposta segue válida; loga p/ aparecer no wrangler tail — um
+    // cache que nunca grava era invisível e parecia "não importou"
+    console.error(`fipe_years cache write: ${writeError.message}`);
+  }
   return rows.sort((a, b) => b.id.localeCompare(a.id));
 }
 
@@ -107,15 +147,18 @@ export async function getFipePrice(
     .limit(1)
     .maybeSingle();
 
-  if (
-    cached &&
-    Date.now() - new Date(cached.fetched_at as string).getTime() < PRICE_TTL_MS
-  ) {
+  if (cached && isFresh(cached.fetched_at as string, PRICE_TTL_MS)) {
     return cached as FipePrice;
   }
 
   // ausente ou velho → busca live e cacheia
-  const live = await fetchFipePrice(type, brandId, modelId, yearId);
+  let live;
+  try {
+    live = await fetchFipePrice(type, brandId, modelId, yearId, ONDEMAND_RETRY);
+  } catch (err) {
+    if (cached) return cached as FipePrice; // stale > nada
+    throw err;
+  }
   const row: FipePrice = {
     vehicle_type: type,
     brand_id: brandId,
@@ -128,10 +171,16 @@ export async function getFipePrice(
     year_model: live.AnoModelo,
     fuel: live.Combustivel,
     reference: live.MesReferencia,
+    // sem isso, o upsert num mês repetido manteria o fetched_at
+    // antigo e o TTL nunca renovaria → live fetch a cada consulta
+    fetched_at: new Date().toISOString(),
   };
   const admin = createAdminClient();
-  await admin
+  const { error: writeError } = await admin
     .from("fipe_prices")
     .upsert(row, { onConflict: "vehicle_type,brand_id,model_id,year_id,reference" });
+  if (writeError) {
+    console.error(`fipe_prices cache write: ${writeError.message}`);
+  }
   return row;
 }

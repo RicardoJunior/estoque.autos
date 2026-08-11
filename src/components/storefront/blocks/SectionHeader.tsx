@@ -32,10 +32,11 @@ export function SectionHeader({
     >
       <div>
         <h2
-          className={`text-xl font-bold sm:text-2xl ${
-            dark ? "text-white" : "text-slate-900"
-          }`}
-          style={{ fontFamily: "var(--sf-font-head)" }}
+          className="text-xl font-bold sm:text-2xl"
+          style={{
+            fontFamily: "var(--sf-font-head)",
+            color: dark ? "var(--sf-ink, #ffffff)" : "var(--sf-ink, #0f172a)",
+          }}
         >
           {title}
         </h2>
@@ -47,7 +48,12 @@ export function SectionHeader({
         )}
         {subtitle != null && (
           <p
-            className={`mt-2 text-sm ${dark ? "text-slate-400" : "text-slate-500"}`}
+            className="mt-2 text-sm"
+            style={{
+              color: dark
+                ? "var(--sf-ink-soft, #94a3b8)"
+                : "var(--sf-ink-soft, #64748b)",
+            }}
           >
             {subtitle}
           </p>

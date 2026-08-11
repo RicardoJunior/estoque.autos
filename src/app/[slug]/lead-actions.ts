@@ -1,7 +1,11 @@
 "use server";
 
 import { headers } from "next/headers";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { sendLeadNotificationEmail } from "@/lib/email";
+import { vehicleTitle } from "@/lib/format";
 import { publicLeadSchema, fieldErrorsFromZod } from "@/lib/validation";
 
 export interface LeadFormState {
@@ -19,6 +23,62 @@ function clientIp(h: Headers): string | null {
   const xff = h.get("x-forwarded-for");
   if (xff) return xff.split(",")[0].trim();
   return h.get("x-real-ip");
+}
+
+/**
+ * Avisa o lojista por e-mail sobre o lead novo. Destinatário:
+ * e-mail de contato do tenant e, se vazio, o e-mail de login do
+ * dono (profiles → auth). O admin client entra SÓ nessa leitura;
+ * o veículo vem da view pública com o client anônimo. Erro só
+ * loga — a notificação nunca quebra o lead já criado.
+ */
+async function notifyStoreByEmail(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  vehicleId: string,
+  leadId: string,
+  lead: { name: string; phone?: string; email?: string; message?: string },
+): Promise<void> {
+  try {
+    const { data: vehicle } = await supabase
+      .from("vehicles_public")
+      .select("tenant_id, brand, model, version, year_model")
+      .eq("id", vehicleId)
+      .maybeSingle();
+    if (!vehicle) return;
+
+    const admin = createAdminClient();
+    const { data: tenant } = await admin
+      .from("tenants")
+      .select("name, email")
+      .eq("id", vehicle.tenant_id)
+      .maybeSingle();
+    if (!tenant) return;
+
+    let to: string | null = tenant.email?.trim() || null;
+    if (!to) {
+      // dono atual via memberships (transferível — profiles.tenant_id é legado)
+      const { data: owner } = await admin
+        .from("memberships")
+        .select("user_id")
+        .eq("tenant_id", vehicle.tenant_id)
+        .eq("role", "owner")
+        .maybeSingle();
+      if (owner) {
+        const { data } = await admin.auth.admin.getUserById(owner.user_id);
+        to = data.user?.email ?? null;
+      }
+    }
+    if (!to) return;
+
+    await sendLeadNotificationEmail({
+      to,
+      storeName: tenant.name,
+      lead: { ...lead, vehicleTitle: vehicleTitle(vehicle) },
+      leadId,
+    });
+  } catch (err) {
+    console.error("Notificação de lead por e-mail falhou:", err);
+  }
 }
 
 /**
@@ -59,7 +119,7 @@ export async function submitLeadAction(
     if (v) utm[k] = String(v);
   }
 
-  const { error } = await supabase.rpc("create_lead", {
+  const { data: leadId, error } = await supabase.rpc("create_lead", {
     p_vehicle_id: parsed.data.vehicle_id,
     p_type: parsed.data.type,
     p_name: parsed.data.name ?? null,
@@ -78,6 +138,21 @@ export async function submitLeadAction(
       return { error: "Muitas tentativas. Aguarde alguns minutos." };
     }
     return { error: "Não foi possível enviar. Tente novamente." };
+  }
+
+  // notificação por e-mail DEPOIS da resposta (after): o visitante
+  // não espera o Resend; lead sem nome (clique) não gera aviso.
+  const name = parsed.data.name?.trim();
+  if (leadId && name) {
+    const { vehicle_id, phone, email, message } = parsed.data;
+    after(() =>
+      notifyStoreByEmail(supabase, vehicle_id, String(leadId), {
+        name,
+        phone,
+        email: email || undefined,
+        message,
+      }),
+    );
   }
   return { ok: true };
 }

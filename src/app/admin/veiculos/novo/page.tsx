@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireTenant } from "@/lib/auth";
+import { requireStaff } from "@/lib/auth";
 import { VehicleForm } from "../VehicleForm";
 import { createVehicleAction } from "../actions";
 
@@ -10,7 +10,7 @@ export default async function NewVehiclePage({
 }: {
   searchParams: Promise<{ primeiro?: string }>;
 }) {
-  await requireTenant();
+  await requireStaff();
   const { primeiro } = await searchParams;
   return (
     <div className="mx-auto max-w-3xl space-y-5">

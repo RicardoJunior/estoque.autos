@@ -38,6 +38,9 @@ export function Hero({
   accentRule = false,
   className = "",
 }: Props) {
+  // tom escuro aqui = texto sobre foto/mídia com overlay preto — cores
+  // literais claras p/ legibilidade, independem do fundo custom do site;
+  // no tom claro as neutras seguem os tokens var(--sf-*) do tema
   const dark = tone === "dark" || !!image;
   const centered = align === "center";
   const alignCls = centered ? "items-center text-center" : "items-start";
@@ -55,10 +58,11 @@ export function Hero({
         </span>
       )}
       <h1
-        className={`text-3xl font-bold leading-tight sm:text-5xl ${
-          dark ? "text-white" : "text-slate-900"
-        }`}
-        style={{ fontFamily: "var(--sf-font-head)" }}
+        className="text-3xl font-bold leading-tight sm:text-5xl"
+        style={{
+          fontFamily: "var(--sf-font-head)",
+          color: dark ? "#ffffff" : "var(--sf-ink, #0f172a)",
+        }}
       >
         {title}
       </h1>
@@ -70,9 +74,8 @@ export function Hero({
       )}
       {subtitle != null && (
         <p
-          className={`max-w-2xl text-base sm:text-lg ${
-            dark ? "text-slate-300" : "text-slate-600"
-          }`}
+          className="max-w-2xl text-base sm:text-lg"
+          style={{ color: dark ? "#cbd5e1" : "var(--sf-ink-soft, #64748b)" }}
         >
           {subtitle}
         </p>
@@ -85,9 +88,8 @@ export function Hero({
         >
           {price != null && (
             <span
-              className={`text-2xl font-extrabold sm:text-3xl ${
-                dark ? "text-white" : "text-slate-900"
-              }`}
+              className="text-2xl font-extrabold sm:text-3xl"
+              style={{ color: dark ? "#ffffff" : "var(--sf-ink, #0f172a)" }}
             >
               {price}
             </span>
@@ -117,7 +119,7 @@ export function Hero({
             src={image.url}
             alt={image.alt}
             fill
-            priority
+            preload
             sizes="100vw"
             className="object-cover"
           />

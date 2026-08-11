@@ -1,4 +1,6 @@
 import { LEAD_STATUS_LABELS, type LeadStatus } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 const STYLES: Record<LeadStatus, string> = {
   new: "bg-blue-500/15 text-blue-400",
@@ -9,10 +11,9 @@ const STYLES: Record<LeadStatus, string> = {
 
 export function LeadStatusPill({ status }: { status: LeadStatus }) {
   return (
-    <span
-      className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${STYLES[status]}`}
-    >
+    <Badge variant="secondary" className={cn("shrink-0", STYLES[status])}>
+      <span aria-hidden className="size-1.5 rounded-full bg-current opacity-70" />
       {LEAD_STATUS_LABELS[status]}
-    </span>
+    </Badge>
   );
 }

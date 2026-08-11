@@ -29,6 +29,34 @@ export const PLANS: Record<PlanId, PlanInfo> = {
   },
 };
 
+// Limites de uso por plano — os mesmos números vendidos na landing.
+export interface PlanLimits {
+  /** máximo de veículos com status available/reserved */
+  activeVehicles: number;
+}
+
+export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
+  basico: { activeVehicles: 20 },
+  pro: { activeVehicles: 60 },
+};
+
+/** Limite de carros ativos do plano; tenant sem plano sincronizado cai no Básico. */
+export function activeVehicleLimit(plan: PlanId | null | undefined): number {
+  return PLAN_LIMITS[plan ?? "basico"].activeVehicles;
+}
+
+/** Mensagem de bloqueio quando o tenant bate no limite de carros ativos. */
+export function activeVehicleLimitMessage(
+  plan: PlanId | null | undefined,
+): string {
+  const id: PlanId = plan ?? "basico";
+  const acao =
+    id === "basico"
+      ? "Arquive um veículo ou faça upgrade para o Pro em Configurações."
+      : "Arquive ou marque um veículo como vendido para liberar espaço.";
+  return `Seu plano ${PLANS[id].name} permite até ${PLAN_LIMITS[id].activeVehicles} carros ativos. ${acao}`;
+}
+
 export function isPlanId(value: string | null | undefined): value is PlanId {
   return value === "basico" || value === "pro";
 }

@@ -1,0 +1,70 @@
+---
+import { getCollection } from "astro:content";
+import Base from "../layouts/Base.astro";
+import PostCard from "../components/PostCard.astro";
+import { CATEGORIES, SITE, categoryUrl, postUrl, url } from "../lib/site";
+
+const posts = (await getCollection("posts", ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
+);
+const [featured, ...rest] = posts;
+
+const jsonLd = [
+  {
+    "@type": "Blog",
+    "@id": `${SITE.url}${url()}#blog`,
+    name: SITE.title,
+    description: SITE.description,
+    url: `${SITE.url}${url()}`,
+    inLanguage: "pt-BR",
+    publisher: { "@id": `${SITE.url}/#org` },
+  },
+  {
+    "@type": "ItemList",
+    itemListElement: posts.map((post, i) => ({
+      "@type": "ListItem",
+      position: i + 1,
+      name: post.data.title,
+      url: `${SITE.url}${postUrl(post.id)}`,
+    })),
+  },
+];
+---
+
+<Base
+  title={SITE.title}
+  description={SITE.description}
+  canonicalPath={url()}
+  jsonLd={jsonLd}
+>
+  <section class="bp-hero">
+    <div class="bp-headlights" aria-hidden="true"></div>
+    <div class="bp-wrap bp-hero-in">
+      <p class="bp-kicker bp-rise">Blog</p>
+      <h1 class="bp-h1 bp-rise" style="animation-delay:60ms">
+        Para quem vive de<br />
+        <span class="bp-amber">vender carro.</span>
+      </h1>
+      <p class="bp-lead bp-rise" style="animation-delay:140ms">
+        Gestão de estoque, caixa, comissões, consignados e marketing — guias
+        práticos e diretos para a sua loja vender mais e sofrer menos.
+      </p>
+      <nav class="bp-cats bp-rise" style="animation-delay:220ms" aria-label="Categorias">
+        {
+          Object.entries(CATEGORIES).map(([id, cat]) => (
+            <a class="bp-cat-link" href={categoryUrl(id)}>
+              {cat.name}
+            </a>
+          ))
+        }
+      </nav>
+    </div>
+  </section>
+
+  <section class="bp-wrap" style="padding-bottom:32px">
+    <div class="bp-grid">
+      {featured && <PostCard post={featured} featured />}
+      {rest.map((post) => <PostCard post={post} />)}
+    </div>
+  </section>
+</Base>

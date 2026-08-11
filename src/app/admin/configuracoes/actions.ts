@@ -1,13 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireTenant } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import {
+  getLatestSubscription,
+  getSession,
+  getTenantSubscription,
+  requireStaff,
+} from "@/lib/auth";
+import { getStripe } from "@/lib/stripe";
 import { createClient } from "@/lib/supabase/server";
 import {
   tenantContactSchema,
   customDomainSchema,
   fieldErrorsFromZod,
+  socialSettingsSchema,
+  trackingSettingsSchema,
 } from "@/lib/validation";
+import { SOCIAL_NETWORKS } from "@/lib/types";
 import { normalizeDomain, verifyDomainPointing } from "@/lib/domain";
 import {
   createCustomHostname,
@@ -24,7 +34,7 @@ export async function updateContactAction(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
-  const { tenant } = await requireTenant();
+  const { tenant } = await requireStaff();
 
   const parsed = tenantContactSchema.safeParse({
     name: formData.get("name") || undefined,
@@ -66,6 +76,109 @@ export async function updateContactAction(
 }
 
 // ============================================================
+// Marketing (pixels Pro + redes sociais do footer)
+// ============================================================
+
+export interface MarketingState {
+  ok?: boolean;
+  error?: string;
+  fieldErrors?: Record<string, string>;
+}
+
+/** remove chaves vazias; devolve undefined se nada sobrar */
+function compact(
+  obj: Record<string, string | undefined>,
+): Record<string, string> | undefined {
+  const entries = Object.entries(obj).filter(
+    (e): e is [string, string] => !!e[1],
+  );
+  return entries.length > 0 ? Object.fromEntries(entries) : undefined;
+}
+
+export async function updateMarketingAction(
+  _prev: MarketingState,
+  formData: FormData,
+): Promise<MarketingState> {
+  const { tenant } = await requireStaff();
+
+  const parsedTracking = trackingSettingsSchema.safeParse({
+    facebook_pixel: String(formData.get("facebook_pixel") ?? "").trim(),
+    tiktok_pixel: String(formData.get("tiktok_pixel") ?? "").trim(),
+    google_analytics: String(formData.get("google_analytics") ?? "").trim(),
+  });
+  const parsedSocial = socialSettingsSchema.safeParse(
+    Object.fromEntries(
+      SOCIAL_NETWORKS.map((n) => [n, String(formData.get(`social_${n}`) ?? "").trim()]),
+    ),
+  );
+  if (!parsedTracking.success) {
+    return { fieldErrors: fieldErrorsFromZod(parsedTracking.error) };
+  }
+  if (!parsedSocial.success) {
+    return { fieldErrors: fieldErrorsFromZod(parsedSocial.error) };
+  }
+
+  const tracking = compact(parsedTracking.data);
+  // pixels são recurso Pro — no básico, só aceita LIMPAR (o layout
+  // público também não renderiza, dupla garantia)
+  if (tracking && tenant.plan !== "pro") {
+    return {
+      error:
+        "Pixels de rastreamento são um recurso do plano Pro. Faça upgrade em Configurações → Assinatura.",
+    };
+  }
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("tenants")
+    .update({
+      settings: {
+        ...tenant.settings,
+        tracking,
+        social: compact(parsedSocial.data),
+      },
+    })
+    .eq("id", tenant.id);
+  if (error) return { error: "Não foi possível salvar." };
+
+  revalidatePath("/admin/configuracoes");
+  revalidatePath(`/${tenant.slug}`);
+  return { ok: true };
+}
+
+// ============================================================
+// Assinatura (Stripe Billing Portal)
+// ============================================================
+
+/**
+ * Abre o Stripe Billing Portal do usuário logado: cancelar, trocar
+ * cartão, pagar fatura pendente, baixar faturas, mudar de plano.
+ * Sem assinatura gravada → volta pro fluxo de contratação.
+ */
+export async function createBillingPortalAction() {
+  // getSession (e não requireTenant): o portal precisa abrir TAMBÉM com a
+  // assinatura da loja suspensa (past_due) — requireTenant redirecionaria.
+  const session = await getSession();
+  if (!session) redirect("/login?next=/admin/configuracoes");
+  if (session.tenant && session.role !== "owner") redirect("/admin");
+
+  const sub = session.tenant
+    ? await getTenantSubscription(session.tenant.id)
+    : await getLatestSubscription();
+  if (!sub) redirect("/cadastro/assinatura");
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const portal = await getStripe().billingPortal.sessions.create({
+    customer: sub.stripe_customer_id,
+    return_url: `${appUrl}/admin/configuracoes`,
+    locale: "pt-BR",
+    // config com troca de plano/cancelamento (scripts/stripe-portal-setup.ts)
+    configuration: process.env.STRIPE_PORTAL_CONFIGURATION_ID || undefined,
+  });
+  redirect(portal.url);
+}
+
+// ============================================================
 // Domínio próprio
 // ============================================================
 
@@ -82,7 +195,13 @@ export async function saveDomainAction(
   _prev: DomainState,
   formData: FormData,
 ): Promise<DomainState> {
-  const { tenant } = await requireTenant();
+  const { tenant } = await requireStaff();
+  if (tenant.plan !== "pro") {
+    return {
+      error:
+        "Domínio próprio é um recurso do plano Pro. Faça upgrade em Configurações → Assinatura.",
+    };
+  }
 
   const raw = String(formData.get("domain") ?? "");
   const domain = normalizeDomain(raw);
@@ -132,7 +251,15 @@ export async function verifyDomainAction(
   _prev: DomainState,
   _formData: FormData,
 ): Promise<DomainState> {
-  const { tenant } = await requireTenant();
+  const { tenant } = await requireStaff();
+  if (tenant.plan !== "pro") {
+    return {
+      verify: {
+        active: false,
+        message: "Domínio próprio é um recurso do plano Pro.",
+      },
+    };
+  }
   const domain = tenant.custom_domain;
   if (!domain) {
     return { verify: { active: false, message: "Nenhum domínio configurado." } };

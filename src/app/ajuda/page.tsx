@@ -9,7 +9,7 @@ const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
 export const metadata: Metadata = {
   title: "Central de ajuda",
   description:
-    "Tire suas dúvidas sobre o estoque.autos: como criar sua loja, apontar domínio próprio, cadastrar veículos pela FIPE e como funciona a cobrança e a troca de plano.",
+    "Tire suas dúvidas sobre o estoque.autos: conta e acesso, cadastro de veículos pela FIPE, fotos, personalização da vitrine, leads, equipe, domínio próprio e cobrança.",
   alternates: { canonical: "/ajuda" },
   openGraph: {
     type: "website",

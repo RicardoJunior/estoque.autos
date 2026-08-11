@@ -5,6 +5,8 @@ import { CarCard } from "../CarCard";
 import { StoreLogo } from "../StoreLogo";
 import { StoreFooter } from "../StoreFooter";
 import { StoreSearch } from "../StoreSearch";
+import { HeroMedia } from "../HeroMedia";
+import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 import { FUEL_LABELS, TRANSMISSION_LABELS } from "@/lib/types";
@@ -16,10 +18,14 @@ import { FUEL_LABELS, TRANSMISSION_LABELS } from "@/lib/types";
  * Acentos vêm do tema da loja (var(--sf-accent)); tom dark.
  */
 export function Premium({ store, vehicles }: TemplateProps) {
-  const hero = vehicles.find((v) => v.featured) ?? vehicles[0];
-  const heroCover = hero?.photos?.[0];
-  const rest = hero ? vehicles.filter((v) => v.id !== hero.id) : vehicles;
-  const curated = (hero ? rest : vehicles).slice(0, 3);
+  const featured = vehicles.find((v) => v.featured) ?? vehicles[0];
+  const featuredCover = featured?.photos?.[0];
+  const rest = featured ? vehicles.filter((v) => v.id !== featured.id) : vehicles;
+  const curated = (featured ? rest : vehicles).slice(0, 3);
+
+  // hero configurável (textos + mídia); com mídia, ela vence a foto do destaque
+  const hero = store.settings.hero;
+  const withMedia = heroMediaActive(hero);
 
   const waHref = store.whatsapp
     ? `https://wa.me/${store.whatsapp.replace(/\D/g, "")}`
@@ -29,51 +35,71 @@ export function Premium({ store, vehicles }: TemplateProps) {
   const aboutLabel = store.settings.about ? "Sobre" : "Localização";
 
   // specs do veículo em destaque (chips elegantes no hero)
-  const heroSpecs: string[] = hero
+  const featuredSpecs: string[] = featured
     ? [
-        hero.year_model ? String(hero.year_model) : null,
-        hero.mileage != null ? formatKm(hero.mileage) : null,
-        hero.transmission ? TRANSMISSION_LABELS[hero.transmission] : null,
-        hero.fuel ? FUEL_LABELS[hero.fuel] : null,
+        featured.year_model ? String(featured.year_model) : null,
+        featured.mileage != null ? formatKm(featured.mileage) : null,
+        featured.transmission ? TRANSMISSION_LABELS[featured.transmission] : null,
+        featured.fuel ? FUEL_LABELS[featured.fuel] : null,
       ].filter((s): s is string => s != null)
     : [];
 
   return (
     <div
-      className="min-h-dvh bg-[#0a0e1a] text-slate-200"
-      style={{ fontFamily: "var(--sf-font)" }}
+      className="min-h-dvh"
+      style={{
+        fontFamily: "var(--sf-font)",
+        background: "var(--sf-bg, #0a0e1a)",
+        color: "var(--sf-ink, #e2e8f0)",
+      }}
     >
       {/* header */}
-      <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-[#0a0e1a]/80 backdrop-blur-xl">
+      <header
+        className="sticky top-0 z-40 border-b backdrop-blur-xl"
+        style={{
+          borderColor: "var(--sf-border, rgba(255,255,255,0.06))",
+          background: "color-mix(in srgb, var(--sf-bg, #0a0e1a) 85%, transparent)",
+        }}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
           <Link href={`/${store.slug}`} className="flex items-center gap-3.5">
             <StoreLogo store={store} size={44} />
-            <div className="leading-tight">
-              <div
-                className="text-sm font-light uppercase tracking-[0.28em] text-white"
-                style={{ fontFamily: "var(--sf-font-head)" }}
-              >
-                {store.name}
-              </div>
-              {store.settings.slogan && (
-                <div className="mt-0.5 text-[11px] font-light tracking-[0.2em] text-slate-400">
-                  {store.settings.slogan}
+            {showStoreName(store) && (
+              <div className="leading-tight">
+                <div
+                  className="text-sm font-light uppercase tracking-[0.28em]"
+                  style={{
+                    fontFamily: "var(--sf-font-head)",
+                    color: "var(--sf-ink, #ffffff)",
+                  }}
+                >
+                  {store.name}
                 </div>
-              )}
-            </div>
+                {store.settings.slogan && (
+                  <div
+                    className="mt-0.5 text-[11px] font-light tracking-[0.2em]"
+                    style={{ color: "var(--sf-ink-soft, #94a3b8)" }}
+                  >
+                    {store.settings.slogan}
+                  </div>
+                )}
+              </div>
+            )}
           </Link>
 
           <nav className="flex items-center gap-7 text-[13px] font-light tracking-[0.15em] uppercase">
             <a
               href="#colecao"
-              className="hidden text-slate-300 transition hover:text-white focus-visible:text-white focus-visible:outline-none sm:inline"
+              className="hidden transition hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none sm:inline"
+              style={{ color: "var(--sf-ink, #cbd5e1)" }}
             >
               Coleção
             </a>
             {showAbout && (
               <Link
                 href={aboutHref}
-                className="hidden text-slate-300 transition hover:text-white focus-visible:text-white focus-visible:outline-none sm:inline"
+                className="hidden transition hover:opacity-70 focus-visible:opacity-70 focus-visible:outline-none sm:inline"
+                style={{ color: "var(--sf-ink, #cbd5e1)" }}
               >
                 {aboutLabel}
               </Link>
@@ -94,45 +120,58 @@ export function Premium({ store, vehicles }: TemplateProps) {
       </header>
 
       {/* hero cinematográfico */}
-      {hero ? (
+      {featured ? (
         <section className="relative">
-          <div className="relative aspect-[4/5] w-full overflow-hidden sm:aspect-[16/9] lg:aspect-[21/9]">
-            {heroCover ? (
-              <Image
-                src={heroCover.url}
-                alt={vehicleTitle(hero)}
-                fill
-                priority
-                sizes="100vw"
-                className="object-cover"
-              />
+          <div className="relative isolate aspect-[4/5] w-full overflow-hidden sm:aspect-[16/9] lg:aspect-[21/9]">
+            {withMedia ? (
+              <>
+                {/* mídia configurada pela loja vence a foto do destaque */}
+                <HeroMedia hero={hero} />
+                <div
+                  aria-hidden
+                  className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+                />
+              </>
             ) : (
-              <div
-                aria-hidden
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "radial-gradient(120% 120% at 70% 10%, var(--sf-primary-soft), transparent 55%)",
-                }}
-              />
+              <>
+                {featuredCover ? (
+                  <Image
+                    src={featuredCover.url}
+                    alt={vehicleTitle(featured)}
+                    fill
+                    priority
+                    sizes="100vw"
+                    className="object-cover"
+                  />
+                ) : (
+                  <div
+                    aria-hidden
+                    className="absolute inset-0"
+                    style={{
+                      background:
+                        "radial-gradient(120% 120% at 70% 10%, var(--sf-primary-soft), transparent 55%)",
+                    }}
+                  />
+                )}
+                {/* gradiente cinematográfico — escurece base e laterais */}
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(to top, var(--sf-bg, #0a0e1a) 4%, color-mix(in srgb, var(--sf-bg, #0a0e1a) 72%, transparent) 38%, color-mix(in srgb, var(--sf-bg, #0a0e1a) 15%, transparent) 72%, color-mix(in srgb, var(--sf-bg, #0a0e1a) 35%, transparent) 100%)",
+                  }}
+                />
+                <div
+                  aria-hidden
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(to right, color-mix(in srgb, var(--sf-bg, #0a0e1a) 55%, transparent), transparent 45%)",
+                  }}
+                />
+              </>
             )}
-            {/* gradiente cinematográfico — escurece base e laterais */}
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, #0a0e1a 4%, rgba(10,14,26,0.72) 38%, rgba(10,14,26,0.15) 72%, rgba(10,14,26,0.35) 100%)",
-              }}
-            />
-            <div
-              aria-hidden
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to right, rgba(10,14,26,0.55), transparent 45%)",
-              }}
-            />
 
             <div className="absolute inset-0 flex items-end">
               <div className="mx-auto w-full max-w-6xl px-6 pb-12 sm:pb-16 lg:pb-20">
@@ -143,10 +182,13 @@ export function Premium({ store, vehicles }: TemplateProps) {
                   Destaque da casa
                 </span>
                 <h1
-                  className="mt-4 max-w-3xl text-4xl font-light leading-[1.05] tracking-[0.01em] text-white sm:text-6xl"
-                  style={{ fontFamily: "var(--sf-font-head)" }}
+                  className="mt-4 max-w-3xl text-4xl font-light leading-[1.05] tracking-[0.01em] sm:text-6xl"
+                  style={{
+                    fontFamily: "var(--sf-font-head)",
+                    color: withMedia ? "#ffffff" : "var(--sf-ink, #ffffff)",
+                  }}
                 >
-                  {vehicleTitle(hero)}
+                  {hero?.title ?? vehicleTitle(featured)}
                 </h1>
                 <div
                   aria-hidden
@@ -154,9 +196,29 @@ export function Premium({ store, vehicles }: TemplateProps) {
                   style={{ background: "var(--sf-accent)" }}
                 />
 
-                {heroSpecs.length > 0 && (
-                  <ul className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-light uppercase tracking-[0.2em] text-slate-300">
-                    {heroSpecs.map((spec, i) => (
+                {hero?.subtitle && (
+                  <p
+                    className="mt-6 max-w-2xl text-sm font-light leading-relaxed tracking-wide"
+                    style={{
+                      color: withMedia
+                        ? "rgba(255,255,255,0.85)"
+                        : "var(--sf-ink-soft, #cbd5e1)",
+                    }}
+                  >
+                    {hero.subtitle}
+                  </p>
+                )}
+
+                {featuredSpecs.length > 0 && (
+                  <ul
+                    className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs font-light uppercase tracking-[0.2em]"
+                    style={{
+                      color: withMedia
+                        ? "rgba(255,255,255,0.85)"
+                        : "var(--sf-ink, #cbd5e1)",
+                    }}
+                  >
+                    {featuredSpecs.map((spec, i) => (
                       <li key={i} className="flex items-center gap-4">
                         {i > 0 && (
                           <span aria-hidden className="text-white/20">
@@ -170,11 +232,16 @@ export function Premium({ store, vehicles }: TemplateProps) {
                 )}
 
                 <div className="mt-8 flex flex-wrap items-center gap-6">
-                  <span className="text-2xl font-light tracking-wide text-white sm:text-3xl">
-                    {formatPrice(hero.price)}
+                  <span
+                    className="text-2xl font-light tracking-wide sm:text-3xl"
+                    style={{
+                      color: withMedia ? "#ffffff" : "var(--sf-ink, #ffffff)",
+                    }}
+                  >
+                    {formatPrice(featured.price)}
                   </span>
                   <Link
-                    href={`/${store.slug}/carros/${hero.id}`}
+                    href={`/${store.slug}/carros/${featured.id}`}
                     className="rounded-full px-7 py-3 text-xs font-medium uppercase tracking-[0.2em] transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
                     style={{
                       background: "var(--sf-accent)",
@@ -189,15 +256,31 @@ export function Premium({ store, vehicles }: TemplateProps) {
           </div>
         </section>
       ) : (
-        <section className="relative overflow-hidden border-b border-white/[0.06]">
-          <div
-            aria-hidden
-            className="absolute inset-0 opacity-50"
-            style={{
-              background:
-                "radial-gradient(60% 80% at 30% 0%, var(--sf-primary-soft), transparent 60%)",
-            }}
-          />
+        <section
+          className="relative isolate overflow-hidden border-b"
+          style={{ borderColor: "var(--sf-border, rgba(255,255,255,0.06))" }}
+        >
+          {/* mídia de fundo configurável (vídeo/carrossel) + overlay */}
+          {withMedia && (
+            <>
+              <HeroMedia hero={hero} />
+              <div
+                aria-hidden
+                className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/25"
+              />
+            </>
+          )}
+          {/* decoração própria só quando NÃO há mídia */}
+          {!withMedia && (
+            <div
+              aria-hidden
+              className="absolute inset-0 opacity-50"
+              style={{
+                background:
+                  "radial-gradient(60% 80% at 30% 0%, var(--sf-primary-soft), transparent 60%)",
+              }}
+            />
+          )}
           <div className="relative mx-auto max-w-6xl px-6 py-28 text-center sm:py-36">
             <span
               className="text-[11px] font-light uppercase tracking-[0.4em]"
@@ -206,19 +289,29 @@ export function Premium({ store, vehicles }: TemplateProps) {
               Bem-vindo
             </span>
             <h1
-              className="mt-5 text-4xl font-light tracking-[0.01em] text-white sm:text-6xl"
-              style={{ fontFamily: "var(--sf-font-head)" }}
+              className="mt-5 text-4xl font-light tracking-[0.01em] sm:text-6xl"
+              style={{
+                fontFamily: "var(--sf-font-head)",
+                color: withMedia ? "#ffffff" : "var(--sf-ink, #ffffff)",
+              }}
             >
-              {store.name}
+              {hero?.title ?? store.name}
             </h1>
             <div
               aria-hidden
               className="mx-auto mt-6 h-px w-24"
               style={{ background: "var(--sf-accent)" }}
             />
-            {(store.settings.slogan || store.settings.about) && (
-              <p className="mx-auto mt-7 max-w-xl text-base font-light leading-relaxed tracking-wide text-slate-400">
-                {store.settings.about ?? store.settings.slogan}
+            {(hero?.subtitle || store.settings.slogan || store.settings.about) && (
+              <p
+                className="mx-auto mt-7 max-w-xl text-base font-light leading-relaxed tracking-wide"
+                style={{
+                  color: withMedia
+                    ? "rgba(255,255,255,0.85)"
+                    : "var(--sf-ink-soft, #94a3b8)",
+                }}
+              >
+                {hero?.subtitle ?? store.settings.about ?? store.settings.slogan}
               </p>
             )}
           </div>
@@ -237,8 +330,11 @@ export function Premium({ store, vehicles }: TemplateProps) {
                 Seleção curada
               </span>
               <h2
-                className="mt-3 text-2xl font-light uppercase tracking-[0.2em] text-white sm:text-3xl"
-                style={{ fontFamily: "var(--sf-font-head)" }}
+                className="mt-3 text-2xl font-light uppercase tracking-[0.2em] sm:text-3xl"
+                style={{
+                  fontFamily: "var(--sf-font-head)",
+                  color: "var(--sf-ink, #ffffff)",
+                }}
               >
                 Recém-chegados
               </h2>
@@ -277,12 +373,18 @@ export function Premium({ store, vehicles }: TemplateProps) {
               O acervo
             </span>
             <h2
-              className="mt-3 text-2xl font-light uppercase tracking-[0.2em] text-white sm:text-3xl"
-              style={{ fontFamily: "var(--sf-font-head)" }}
+              className="mt-3 text-2xl font-light uppercase tracking-[0.2em] sm:text-3xl"
+              style={{
+                fontFamily: "var(--sf-font-head)",
+                color: "var(--sf-ink, #ffffff)",
+              }}
             >
               Nossa coleção
             </h2>
-            <p className="mt-3 text-xs font-light uppercase tracking-[0.25em] text-slate-500">
+            <p
+              className="mt-3 text-xs font-light uppercase tracking-[0.25em]"
+              style={{ color: "var(--sf-ink-faint, #64748b)" }}
+            >
               {vehicles.length} veículo{vehicles.length === 1 ? "" : "s"}{" "}
               disponíve{vehicles.length === 1 ? "l" : "is"}
             </p>
@@ -293,11 +395,20 @@ export function Premium({ store, vehicles }: TemplateProps) {
         </div>
 
         {vehicles.length === 0 ? (
-          <div className="border border-dashed border-white/10 py-24 text-center">
-            <p className="text-sm font-light uppercase tracking-[0.3em] text-slate-400">
+          <div
+            className="border border-dashed py-24 text-center"
+            style={{ borderColor: "var(--sf-border, rgba(255,255,255,0.1))" }}
+          >
+            <p
+              className="text-sm font-light uppercase tracking-[0.3em]"
+              style={{ color: "var(--sf-ink-soft, #94a3b8)" }}
+            >
               Acervo em curadoria
             </p>
-            <p className="mt-3 text-xs font-light tracking-wide text-slate-600">
+            <p
+              className="mt-3 text-xs font-light tracking-wide"
+              style={{ color: "var(--sf-ink-faint, #475569)" }}
+            >
               Novas peças chegam em breve.
             </p>
           </div>

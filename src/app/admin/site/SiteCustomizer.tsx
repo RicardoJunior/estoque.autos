@@ -1,79 +1,138 @@
 "use client";
 
-import { useActionState, useRef, useState, useTransition } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { TEMPLATES } from "@/lib/templates";
-import type { TemplateId } from "@/lib/types";
+import type { HeroMediaType, TemplateId, TenantHero } from "@/lib/types";
+import { selectedStoreFonts, type FontPairing } from "@/lib/fonts";
 import {
-  STORE_FONTS,
-  STORE_FONT_IDS,
-  resolveFontId,
-  type StoreFontId,
-} from "@/lib/fonts";
-import { StorefrontPreview } from "@/components/StorefrontPreview";
+  getFontCatalog,
+  previewHref,
+  type GoogleFont,
+} from "@/lib/google-fonts";
+import { injectFontCss } from "@/lib/font-css";
+import { DemoPreview } from "@/components/brand/DemoPreview";
+import { ColorField } from "@/components/brand/ColorField";
+import { FontPicker } from "@/components/brand/FontPicker";
+import { FontPairings } from "@/components/brand/FontPairings";
+import { LogoUploader } from "@/components/brand/LogoUploader";
+import { HeroImagesField } from "@/components/brand/HeroImagesField";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import {
   updateSiteAction,
   uploadLogoAction,
   removeLogoAction,
+  uploadHeroImagesAction,
+  removeHeroImageAction,
   type SiteState,
 } from "./actions";
 import type { Storefront } from "@/lib/public";
 
-/** Famílias CSS (head/body) por fonte — vêm do next/font (server). */
-export type FontPreviews = Record<StoreFontId, { head: string; body: string }>;
+const HERO_MEDIA_OPTIONS: { id: HeroMediaType; label: string; hint: string }[] = [
+  { id: "none", label: "Padrão do template", hint: "Fundo desenhado pelo template" },
+  { id: "images", label: "Carrossel de fotos", hint: "Suas fotos girando no fundo" },
+  { id: "video", label: "Vídeo", hint: "Um vídeo mudo em loop" },
+];
 
-export function SiteCustomizer({
-  store,
-  fontPreviews,
-}: {
-  store: Storefront;
-  fontPreviews: FontPreviews;
-}) {
+export function SiteCustomizer({ store }: { store: Storefront }) {
   const router = useRouter();
   const [template, setTemplate] = useState<TemplateId>(store.template_id);
   const [primary, setPrimary] = useState(store.colors.primary);
   const [accent, setAccent] = useState(store.colors.accent);
-  const [font, setFont] = useState<StoreFontId>(
-    resolveFontId(store.settings.font),
+  const [background, setBackground] = useState<string | null>(
+    store.colors.background ?? null,
   );
+
+  const initialFonts = selectedStoreFonts(store.settings);
+  const [fontHead, setFontHead] = useState(initialFonts.head);
+  const [fontBody, setFontBody] = useState(initialFonts.body);
+  const [sameFont, setSameFont] = useState(
+    initialFonts.head === initialFonts.body,
+  );
+  const effectiveBody = sameFont ? fontHead : fontBody;
+
   const [logoUrl, setLogoUrl] = useState<string | null>(store.logo_url);
-  const [logoPending, startLogo] = useTransition();
-  const fileRef = useRef<HTMLInputElement>(null);
+  const [showName, setShowName] = useState(store.settings.show_name === true);
+
+  // hero
+  const initialHero = store.settings.hero;
+  const [heroTitle, setHeroTitle] = useState(initialHero?.title ?? "");
+  const [heroSubtitle, setHeroSubtitle] = useState(initialHero?.subtitle ?? "");
+  const [heroMedia, setHeroMedia] = useState<HeroMediaType>(
+    initialHero?.media ?? "none",
+  );
+  const [heroVideoUrl, setHeroVideoUrl] = useState(
+    initialHero?.video_url ?? "",
+  );
+  const [heroImages, setHeroImages] = useState<
+    NonNullable<TenantHero["images"]>
+  >(initialHero?.images ?? []);
+
+  // textos controlados: o React 19 reseta campos não-controlados do form
+  // após a action — num save que falha, o lojista perderia o que digitou
+  const [slogan, setSlogan] = useState(store.settings.slogan ?? "");
+  const [about, setAbout] = useState(store.settings.about ?? "");
+  const [footerText, setFooterText] = useState(store.settings.footer_text ?? "");
+  const [businessHours, setBusinessHours] = useState(
+    store.settings.business_hours ?? "",
+  );
+
+  // catálogo completo do Google Fonts (chunk separado, carrega 1x)
+  const [catalog, setCatalog] = useState<GoogleFont[] | null>(null);
+  useEffect(() => {
+    let active = true;
+    getFontCatalog().then((c) => {
+      if (active) setCatalog(c);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  // fontes escolhidas carregam completas (pesos reais) para a prévia
+  useEffect(() => {
+    if (!catalog) return;
+    for (const family of [fontHead, effectiveBody]) {
+      const meta = catalog.find(
+        (f) => f.f.toLowerCase() === family.toLowerCase(),
+      );
+      if (meta) injectFontCss(previewHref(meta));
+    }
+  }, [catalog, fontHead, effectiveBody]);
 
   const [state, formAction] = useActionState<SiteState, FormData>(
     updateSiteAction,
     {},
   );
 
-  function onLogoPick(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const fd = new FormData();
-    fd.append("logo", file);
-    if (fileRef.current) fileRef.current.value = "";
-    startLogo(async () => {
-      const res = await uploadLogoAction(fd);
-      if (res.ok && res.url) {
-        setLogoUrl(res.url);
-        router.refresh();
-      }
-    });
+  function applyPairing(p: FontPairing) {
+    setFontHead(p.head);
+    setFontBody(p.body);
+    setSameFont(p.head === p.body);
   }
 
-  function onRemoveLogo() {
-    startLogo(async () => {
-      await removeLogoAction();
-      setLogoUrl(null);
+  async function handleLogoUpload(fd: FormData) {
+    const res = await uploadLogoAction(fd);
+    if (res.ok && res.url) {
+      setLogoUrl(res.url);
       router.refresh();
-    });
+    }
+    return res;
   }
+
+  async function handleLogoRemove() {
+    await removeLogoAction();
+    setLogoUrl(null);
+    router.refresh();
+  }
+
+  const errors = state.fieldErrors ?? {};
 
   return (
     <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
@@ -81,18 +140,11 @@ export function SiteCustomizer({
         <input type="hidden" name="template_id" value={template} />
         <input type="hidden" name="primary" value={primary} />
         <input type="hidden" name="accent" value={accent} />
-        <input type="hidden" name="font" value={font} />
-
-        {state.ok && (
-          <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-            ✓ Site atualizado.
-          </div>
-        )}
-        {state.error && (
-          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-            {state.error}
-          </div>
-        )}
+        <input type="hidden" name="background" value={background ?? ""} />
+        <input type="hidden" name="font_head" value={fontHead} />
+        <input type="hidden" name="font_body" value={effectiveBody} />
+        <input type="hidden" name="show_name" value={String(showName)} />
+        <input type="hidden" name="hero_media" value={heroMedia} />
 
         {/* Template */}
         <Card>
@@ -109,7 +161,7 @@ export function SiteCustomizer({
                     key={t.id}
                     onClick={() => setTemplate(t.id)}
                     aria-pressed={active}
-                    className={`rounded-lg border p-3 text-left transition ${
+                    className={`cursor-pointer rounded-lg border p-3 text-left transition ${
                       active
                         ? "border-primary ring-2 ring-primary bg-primary/5"
                         : "border-border hover:border-primary/40 hover:bg-muted/50"
@@ -134,57 +186,90 @@ export function SiteCustomizer({
             <CardTitle className="text-sm">Cores</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <ColorRow
+            <ColorField
               label="Cor principal"
+              hint="Cabeçalho, links e destaques"
               value={primary}
               onChange={setPrimary}
             />
-            <ColorRow
+            <ColorField
               label="Cor de destaque"
+              hint="Botões de ação e chamadas"
               value={accent}
               onChange={setAccent}
             />
+            <div className="space-y-3 border-t border-border pt-4">
+              <label className="flex items-center gap-2 text-sm text-foreground">
+                <Switch
+                  checked={background !== null}
+                  onCheckedChange={(on) =>
+                    setBackground(on ? (background ?? "#ffffff") : null)
+                  }
+                />
+                Cor de fundo personalizada
+              </label>
+              {background !== null ? (
+                <ColorField
+                  label="Cor de fundo"
+                  hint="Fundo geral do site (textos se ajustam sozinhos)"
+                  value={background}
+                  onChange={setBackground}
+                />
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  Usando o fundo padrão do template.
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
 
-        {/* Fonte */}
+        {/* Fontes */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">Fonte</CardTitle>
+            <CardTitle className="text-sm">Fontes</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {STORE_FONT_IDS.map((id) => {
-                const active = font === id;
-                const fam = fontPreviews[id];
-                return (
-                  <button
-                    type="button"
-                    key={id}
-                    onClick={() => setFont(id)}
-                    aria-pressed={active}
-                    className={`rounded-lg border p-3 text-left transition ${
-                      active
-                        ? "border-primary ring-2 ring-primary bg-primary/5"
-                        : "border-border hover:border-primary/40 hover:bg-muted/50"
-                    }`}
-                  >
-                    <div
-                      className="truncate text-lg leading-tight text-foreground"
-                      style={{ fontFamily: fam.head }}
-                    >
-                      {STORE_FONTS[id].head}
-                    </div>
-                    <div
-                      className="mt-1 truncate text-xs text-muted-foreground"
-                      style={{ fontFamily: fam.body }}
-                    >
-                      {STORE_FONTS[id].label}
-                    </div>
-                  </button>
-                );
-              })}
+          <CardContent className="space-y-4">
+            <div>
+              <p className="mb-2 text-xs font-medium text-muted-foreground">
+                Combinações sugeridas
+              </p>
+              <FontPairings
+                head={fontHead}
+                body={effectiveBody}
+                onSelect={applyPairing}
+              />
             </div>
+
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label>Fonte dos títulos</Label>
+                <FontPicker
+                  label="Fonte dos títulos"
+                  value={fontHead}
+                  catalog={catalog}
+                  onChange={(f) => setFontHead(f.f)}
+                />
+              </div>
+              {!sameFont && (
+                <div className="grid gap-2">
+                  <Label>Fonte dos textos</Label>
+                  <FontPicker
+                    label="Fonte dos textos"
+                    value={fontBody}
+                    catalog={catalog}
+                    onChange={(f) => setFontBody(f.f)}
+                  />
+                </div>
+              )}
+            </div>
+
+            <label className="flex items-center gap-2 text-sm text-foreground">
+              {/* fontBody fica intacto ao ligar — desligar restaura a
+                  escolha anterior em vez de descartá-la */}
+              <Switch checked={sameFont} onCheckedChange={setSameFont} />
+              Usar a mesma fonte em títulos e textos
+            </label>
           </CardContent>
         </Card>
 
@@ -193,56 +278,113 @@ export function SiteCustomizer({
           <CardHeader>
             <CardTitle className="text-sm">Logo</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-4">
-              <div className="flex h-20 w-20 items-center justify-center overflow-hidden rounded-lg border border-dashed border-border bg-muted">
-                {logoUrl ? (
-                  <Image
-                    src={logoUrl}
-                    alt="Logo"
-                    width={80}
-                    height={80}
-                    unoptimized
-                    className="h-full w-full object-contain"
-                  />
-                ) : (
-                  <span className="text-2xl font-bold text-muted-foreground">
-                    {store.name.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
-              <div className="space-y-2">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  disabled={logoPending}
-                  onClick={() => fileRef.current?.click()}
-                >
-                  {logoPending
-                    ? "Enviando…"
-                    : logoUrl
-                      ? "Trocar logo"
-                      : "Enviar logo"}
-                </Button>
-                {logoUrl && (
-                  <button
-                    type="button"
-                    disabled={logoPending}
-                    onClick={onRemoveLogo}
-                    className="block text-xs text-destructive hover:underline"
-                  >
-                    Remover logo
-                  </button>
-                )}
-              </div>
-              <input
-                ref={fileRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={onLogoPick}
+          <CardContent className="space-y-4">
+            <LogoUploader
+              logoUrl={logoUrl}
+              storeName={store.name}
+              onUpload={handleLogoUpload}
+              onRemove={handleLogoRemove}
+            />
+            <label className="flex items-center gap-2 border-t border-border pt-4 text-sm text-foreground">
+              <Switch checked={showName} onCheckedChange={setShowName} />
+              Mostrar o nome da loja em texto ao lado do logo
+            </label>
+          </CardContent>
+        </Card>
+
+        {/* Hero */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm">Hero (topo do site)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="hero_title">Título</Label>
+              <Input
+                id="hero_title"
+                name="hero_title"
+                value={heroTitle}
+                onChange={(e) => setHeroTitle(e.target.value)}
+                placeholder="Deixe vazio para usar o padrão do template"
               />
+              {errors.title && (
+                <p className="text-xs text-destructive">{errors.title}</p>
+              )}
             </div>
+            <div className="grid gap-2">
+              <Label htmlFor="hero_subtitle">Subtítulo</Label>
+              <Textarea
+                id="hero_subtitle"
+                name="hero_subtitle"
+                className="min-h-16"
+                value={heroSubtitle}
+                onChange={(e) => setHeroSubtitle(e.target.value)}
+                placeholder="Frase de apoio abaixo do título"
+              />
+              {errors.subtitle && (
+                <p className="text-xs text-destructive">{errors.subtitle}</p>
+              )}
+            </div>
+
+            <div className="grid gap-2">
+              <Label>Fundo da hero</Label>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                {HERO_MEDIA_OPTIONS.map((opt) => {
+                  const active = heroMedia === opt.id;
+                  return (
+                    <button
+                      type="button"
+                      key={opt.id}
+                      onClick={() => setHeroMedia(opt.id)}
+                      aria-pressed={active}
+                      className={`cursor-pointer rounded-lg border p-3 text-left transition ${
+                        active
+                          ? "border-primary ring-2 ring-primary bg-primary/5"
+                          : "border-border hover:border-primary/40 hover:bg-muted/50"
+                      }`}
+                    >
+                      <div className="text-sm font-semibold text-foreground">
+                        {opt.label}
+                      </div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
+                        {opt.hint}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {heroMedia === "video" && (
+              <div className="grid gap-2">
+                <Label htmlFor="hero_video_url">Link do vídeo</Label>
+                <Input
+                  id="hero_video_url"
+                  name="hero_video_url"
+                  value={heroVideoUrl}
+                  onChange={(e) => setHeroVideoUrl(e.target.value)}
+                  placeholder="https://exemplo.com/video.mp4"
+                />
+                {errors.video_url && (
+                  <p className="text-xs text-destructive">{errors.video_url}</p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Arquivo .mp4 ou .webm hospedado (toca sem som, em loop).
+                </p>
+              </div>
+            )}
+
+            {heroMedia === "images" && (
+              <HeroImagesField
+                images={heroImages}
+                onUpload={uploadHeroImagesAction}
+                onRemove={removeHeroImageAction}
+                onChanged={(imgs) => {
+                  setHeroImages(imgs);
+                  router.refresh();
+                }}
+              />
+            )}
           </CardContent>
         </Card>
 
@@ -257,9 +399,13 @@ export function SiteCustomizer({
               <Input
                 id="slogan"
                 name="slogan"
-                defaultValue={store.settings.slogan ?? ""}
+                value={slogan}
+                onChange={(e) => setSlogan(e.target.value)}
                 placeholder="Os melhores seminovos da região"
               />
+              {errors.slogan && (
+                <p className="text-xs text-destructive">{errors.slogan}</p>
+              )}
             </div>
             <div className="grid gap-2">
               <Label htmlFor="about">Sobre a loja</Label>
@@ -267,9 +413,13 @@ export function SiteCustomizer({
                 id="about"
                 name="about"
                 className="min-h-24"
-                defaultValue={store.settings.about ?? ""}
+                value={about}
+                onChange={(e) => setAbout(e.target.value)}
                 placeholder="Conte um pouco sobre a sua loja…"
               />
+              {errors.about && (
+                <p className="text-xs text-destructive">{errors.about}</p>
+              )}
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
@@ -277,8 +427,14 @@ export function SiteCustomizer({
                 <Input
                   id="footer_text"
                   name="footer_text"
-                  defaultValue={store.settings.footer_text ?? ""}
+                  value={footerText}
+                  onChange={(e) => setFooterText(e.target.value)}
                 />
+                {errors.footer_text && (
+                  <p className="text-xs text-destructive">
+                    {errors.footer_text}
+                  </p>
+                )}
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="business_hours">Horário de atendimento</Label>
@@ -286,31 +442,77 @@ export function SiteCustomizer({
                   id="business_hours"
                   name="business_hours"
                   className="min-h-16"
-                  defaultValue={store.settings.business_hours ?? ""}
+                  value={businessHours}
+                  onChange={(e) => setBusinessHours(e.target.value)}
                   placeholder="Seg a Sex 9h-18h&#10;Sáb 9h-13h"
                 />
+                {errors.business_hours && (
+                  <p className="text-xs text-destructive">
+                    {errors.business_hours}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* feedback junto do botão de salvar (visível sem rolar) */}
+        <div aria-live="polite">
+          {state.ok && (
+            <div
+              role="status"
+              className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary"
+            >
+              ✓ Site atualizado.
+            </div>
+          )}
+          {state.error && (
+            <div
+              role="alert"
+              className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive"
+            >
+              {state.error}
+            </div>
+          )}
+          {!state.error && state.fieldErrors && (
+            <div
+              role="alert"
+              className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive"
+            >
+              Não foi possível salvar — confira os campos destacados acima.
+            </div>
+          )}
+        </div>
 
         <div className="flex justify-end">
           <SaveButton />
         </div>
       </form>
 
-      {/* Prévia ao vivo */}
+      {/* Prévia ao vivo — o template REAL num iframe escalado */}
       <div className="hidden lg:block">
         <div className="sticky top-6">
           <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
             Prévia ao vivo
           </p>
-          <StorefrontPreview
+          <DemoPreview
             template={template}
             name={store.name}
             primary={primary}
             accent={accent}
+            background={background}
+            fontHead={fontHead}
+            fontBody={effectiveBody}
             logoUrl={logoUrl}
+            slogan={slogan || undefined}
+            showName={showName}
+            hero={{
+              title: heroTitle || undefined,
+              subtitle: heroSubtitle || undefined,
+              media: heroMedia,
+              videoUrl: heroVideoUrl || undefined,
+              images: heroImages.map((i) => i.url),
+            }}
           />
           <a
             href={`/${store.slug}`}
@@ -332,33 +534,5 @@ function SaveButton() {
     <Button type="submit" disabled={pending}>
       {pending ? "Salvando…" : "Salvar alterações"}
     </Button>
-  );
-}
-
-function ColorRow({
-  label,
-  value,
-  onChange,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-}) {
-  return (
-    <div className="flex items-center gap-3">
-      <input
-        type="color"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-12 cursor-pointer rounded-lg border border-border bg-transparent"
-        aria-label={label}
-      />
-      <div className="flex-1">
-        <div className="text-sm font-medium text-foreground">{label}</div>
-        <div className="font-mono text-xs uppercase text-muted-foreground">
-          {value}
-        </div>
-      </div>
-    </div>
   );
 }
