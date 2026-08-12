@@ -129,10 +129,14 @@ export const SOCIAL_NETWORK_LABELS: Record<SocialNetwork, string> = {
 
 /** Hero configurável da vitrine (textos + mídia de fundo). */
 export interface TenantHero {
+  /** Olho/eyebrow acima do título; "" = não renderiza */
+  eyebrow?: string;
   /** Título principal; ausente = padrão do template (ou slogan) */
   title?: string;
   /** Subtítulo/apoio; ausente = padrão do template (ou "sobre") */
   subtitle?: string;
+  /** Rótulo do botão principal do hero; "" = não renderiza o botão */
+  cta_label?: string;
   /** Fundo da hero: nada (padrão do template), vídeo ou carrossel */
   media?: HeroMediaType;
   /** URL https de um .mp4/.webm (autoplay mudo em loop) */
@@ -152,6 +156,12 @@ export interface TenantSettings {
   fonts?: TenantFonts;
   /** Hero configurável (textos + mídia de fundo). */
   hero?: TenantHero;
+  /** Headings editáveis das seções ("" = ocultar; ver lib/template-texts). */
+  texts?: {
+    featured_title?: string;
+    featured_subtitle?: string;
+    stock_title?: string;
+  };
   /**
    * Exibir o nome da loja em TEXTO ao lado do logo. Default false:
    * com logo, só o logo aparece; sem logo, o nome sempre aparece.

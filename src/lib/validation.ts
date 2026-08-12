@@ -96,17 +96,28 @@ export const tenantCustomizationSchema = z.object({
   settings: z
     .object({
       slogan: z.string().max(120).optional(),
-      about: z.string().max(2000).optional(),
+      // HTML sanitizado do editor (marcação ocupa parte do limite)
+      about: z.string().max(6000).optional(),
       footer_text: z.string().max(300).optional(),
       business_hours: z.string().max(200).optional(),
       /** legado (lista curada antiga) — aceito só para compatibilidade */
       font: z.string().max(40).optional(),
       fonts: z.object({ head: fontFamily, body: fontFamily }).optional(),
       show_name: z.boolean().optional(),
+      texts: z
+        .object({
+          featured_title: z.string().max(80).optional(),
+          featured_subtitle: z.string().max(160).optional(),
+          stock_title: z.string().max(80).optional(),
+        })
+        .optional(),
       hero: z
         .object({
-          title: z.string().max(90).optional(),
-          subtitle: z.string().max(200).optional(),
+          eyebrow: z.string().max(60).optional(),
+          // HTML inline do editor (b/i/u/br) — marcação ocupa o limite
+          title: z.string().max(300).optional(),
+          subtitle: z.string().max(600).optional(),
+          cta_label: z.string().max(40).optional(),
           media: z.enum(HERO_MEDIA_TYPES).optional(),
           video_url: heroVideoUrl.optional(),
         })
