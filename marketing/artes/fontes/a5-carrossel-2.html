@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px 84px 0; align-items: flex-start; }
+  .h1 { font-size: 88px; }
+  .pills { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 44px; position: relative; z-index: 2; }
+  .pill { border: 1.5px solid var(--line); border-radius: 999px; padding: 14px 30px; font-size: 27px; font-weight: 600; color: var(--muted); background: rgba(255, 255, 255, 0.02); }
+  .pill.on { background: var(--amber); color: var(--amber-ink); border-color: var(--amber); box-shadow: 0 10px 40px rgba(255, 122, 26, 0.35); }
+  .note { font-size: 29px; color: var(--muted); margin-top: 30px; position: relative; z-index: 2; }
+  .note strong { color: var(--ink); font-weight: 600; }
+  .browser { position: absolute; z-index: 1; left: 84px; right: -70px; bottom: -170px; transform: rotate(-1.6deg); }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:620px;height:620px;left:-260px;top:-260px"></div>
+
+  <div class="h h1">
+    <span>Seis estilos.</span>
+    <span class="am">Uma loja só sua.</span>
+  </div>
+
+  <div class="pills">
+    <span class="pill">Clássico</span>
+    <span class="pill">Moderno</span>
+    <span class="pill on">Premium</span>
+    <span class="pill">Minimal</span>
+    <span class="pill">Esportivo</span>
+    <span class="pill">Vitrine</span>
+  </div>
+  <p class="note">Troque quando quiser — <strong>sua cor, sua fonte e seu logo</strong> se aplicam na hora, sem perder nada.</p>
+
+  <div class="browser">
+    <div class="bar">
+      <span class="r"></span><span class="r"></span><span class="r"></span>
+      <span class="url">estoque.autos/<i>sua-loja</i></span>
+    </div>
+    <img src="shot-premium-desktop.png" alt="" />
+  </div>
+</div>
+</body>
+</html>

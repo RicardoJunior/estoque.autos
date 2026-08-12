@@ -1,3 +1,4 @@
+import { InlineRichText } from "../InlineRichText";
 import Image from "next/image";
 import Link from "next/link";
 import type { TemplateProps } from "../types";
@@ -11,6 +12,7 @@ import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 import { FUEL_LABELS, TRANSMISSION_LABELS } from "@/lib/types";
+import { templateTexts } from "@/lib/template-texts";
 
 /**
  * Template Esportivo — performance, energia e velocidade.
@@ -26,15 +28,10 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
   // config da hero editável ("hero" aqui já é o veículo em destaque)
   const heroCfg = store.settings.hero;
   const withMedia = heroMediaActive(heroCfg);
-  const headline =
-    heroCfg?.title ??
-    store.settings.slogan ??
-    store.settings.about ??
-    "POTÊNCIA NA SUA GARAGEM";
-  const subtitle =
-    heroCfg?.subtitle ??
-    store.settings.about ??
-    "Velocidade, adrenalina e os melhores negócios. Acelere rumo ao carro dos seus sonhos.";
+
+  // textos editáveis (undefined = default do template; "" = apagado → não renderiza)
+  const { heroEyebrow, heroTitle, heroSubtitle, heroCta, featuredTitle, stockTitle } =
+    templateTexts("esportivo", store.settings);
   const waHref = store.whatsapp
     ? `https://wa.me/${store.whatsapp.replace(/\D/g, "")}`
     : null;
@@ -57,17 +54,18 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
       className="min-h-dvh"
       style={{
         fontFamily: "var(--sf-font)",
-        background: "var(--sf-bg, #020617)",
-        color: "var(--sf-ink, #ffffff)",
+        // fundo FIXO do template: header/hero/footer mantêm a identidade
+        // esportiva; a cor personalizada (--sf-bg) pinta só o miolo (main)
+        background: "#020617",
+        color: "#ffffff",
       }}
     >
-      {/* header */}
+      {/* header — não responde a --sf-bg/--sf-ink (identidade do template) */}
       <header
         className="sticky top-0 z-30 border-b backdrop-blur"
         style={{
-          borderColor: "var(--sf-border, rgba(255,255,255,0.1))",
-          background:
-            "color-mix(in srgb, var(--sf-bg, #020617) 85%, transparent)",
+          borderColor: "rgba(255,255,255,0.1)",
+          background: "color-mix(in srgb, #020617 85%, transparent)",
         }}
       >
         <div
@@ -79,20 +77,20 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
           }}
         />
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
-          <Link href={`/${store.slug}`} className="flex items-center gap-3">
+          <Link href={`/${store.slug}`} className="flex min-w-0 items-center gap-3">
             <StoreLogo store={store} size={44} />
             {showStoreName(store) && (
-              <div>
+              <div className="min-w-0">
                 <div
-                  className="text-lg font-black uppercase italic leading-none tracking-tight"
+                  className="truncate text-lg font-black uppercase italic leading-none tracking-tight"
                   style={{ fontFamily: "var(--sf-font-head)" }}
                 >
                   {store.name}
                 </div>
                 {store.settings.slogan && (
                   <div
-                    className="text-[11px] font-semibold uppercase tracking-[0.2em]"
-                    style={{ color: "var(--sf-ink-soft, rgba(255,255,255,0.5))" }}
+                    className="truncate text-[11px] font-semibold uppercase tracking-[0.2em]"
+                    style={{ color: "rgba(255,255,255,0.5)" }}
                   >
                     {store.settings.slogan}
                   </div>
@@ -104,7 +102,7 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
             <a
               href="#estoque"
               className="hidden rounded text-sm font-bold uppercase tracking-wide opacity-70 transition hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
-              style={{ color: "var(--sf-ink, #ffffff)" }}
+              style={{ color: "#ffffff" }}
             >
               Estoque
             </a>
@@ -112,7 +110,7 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
               <Link
                 href={`/${store.slug}/sobre`}
                 className="hidden rounded text-sm font-bold uppercase tracking-wide opacity-70 transition hover:opacity-100 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-white sm:block"
-                style={{ color: "var(--sf-ink, #ffffff)" }}
+                style={{ color: "#ffffff" }}
               >
                 {aboutLabel}
               </Link>
@@ -196,38 +194,44 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
           style={{ background: "var(--sf-accent)" }}
         />
 
-        <div className="relative mx-auto max-w-6xl px-5 py-24 sm:py-32">
-          <span
-            className="inline-flex -skew-x-6 items-center px-3 py-1 text-xs font-black uppercase tracking-[0.2em]"
-            style={{
-              background: "var(--sf-accent)",
-              color: "var(--sf-on-accent)",
-            }}
-          >
-            <span className="block skew-x-6">
-              {vehicles.length} no estoque · pronta entrega
-            </span>
-          </span>
-          <h1
-            className="mt-6 max-w-3xl text-5xl font-black uppercase italic leading-[0.92] tracking-tighter sm:text-7xl"
-            style={{ fontFamily: "var(--sf-font-head)" }}
-          >
-            {headline}
-          </h1>
-          <p className="mt-5 max-w-xl text-base font-medium text-white/75 sm:text-lg">
-            {subtitle}
-          </p>
-          <div className="mt-9 flex flex-wrap items-center gap-4">
-            <a
-              href="#estoque"
-              className="-skew-x-6 px-8 py-4 text-base font-black uppercase italic tracking-wide shadow-xl transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        <div className="relative mx-auto max-w-6xl px-5 py-16 sm:py-32">
+          {heroEyebrow && (
+            <span
+              className="inline-flex -skew-x-6 items-center px-3 py-1 text-xs font-black uppercase tracking-[0.2em]"
               style={{
                 background: "var(--sf-accent)",
                 color: "var(--sf-on-accent)",
               }}
             >
-              <span className="block skew-x-6">Ver estoque</span>
-            </a>
+              <span className="block skew-x-6">{heroEyebrow}</span>
+            </span>
+          )}
+          {heroTitle && (
+            <h1
+              className="mt-6 max-w-3xl break-words text-4xl font-black uppercase italic leading-[0.95] tracking-tighter sm:text-7xl sm:leading-[0.92]"
+              style={{ fontFamily: "var(--sf-font-head)" }}
+            >
+              <InlineRichText value={heroTitle} />
+            </h1>
+          )}
+          {heroSubtitle && (
+            <p className="mt-5 max-w-xl text-base font-medium text-white/75 sm:text-lg">
+              <InlineRichText value={heroSubtitle} />
+            </p>
+          )}
+          <div className="mt-9 flex flex-wrap items-center gap-4">
+            {heroCta && (
+              <a
+                href="#estoque"
+                className="-skew-x-6 px-8 py-4 text-base font-black uppercase italic tracking-wide shadow-xl transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+                style={{
+                  background: "var(--sf-accent)",
+                  color: "var(--sf-on-accent)",
+                }}
+              >
+                <span className="block skew-x-6">{heroCta}</span>
+              </a>
+            )}
             {waHref && (
               <a
                 href={waHref}
@@ -246,12 +250,14 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
               href={`/${store.slug}/carros/${hero.id}`}
               className="group mt-12 inline-flex max-w-full -skew-x-3 flex-col gap-3 border border-white/15 bg-black/40 p-5 backdrop-blur transition hover:border-white/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white sm:flex-row sm:items-center sm:gap-6"
             >
-              <div className="skew-x-3">
-                <span className="text-[11px] font-black uppercase tracking-[0.25em] text-white/55">
-                  Em destaque
-                </span>
+              <div className="min-w-0 skew-x-3">
+                {featuredTitle && (
+                  <span className="text-[11px] font-black uppercase tracking-[0.25em] text-white/55">
+                    {featuredTitle}
+                  </span>
+                )}
                 <div
-                  className="mt-1 text-xl font-black uppercase italic tracking-tight"
+                  className="mt-1 break-words text-xl font-black uppercase italic tracking-tight"
                   style={{ fontFamily: "var(--sf-font-head)" }}
                 >
                   {vehicleTitle(hero)}
@@ -312,19 +318,21 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
       {/* destaques (pista de bólidos selecionados) */}
       {featured.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 pt-14">
-          <div className="mb-7 flex items-center gap-4">
-            <span
-              aria-hidden
-              className="h-8 w-2 -skew-x-12"
-              style={{ background: "var(--sf-accent)" }}
-            />
-            <h2
-              className="text-2xl font-black uppercase italic tracking-tighter sm:text-3xl"
-              style={{ fontFamily: "var(--sf-font-head)" }}
-            >
-              Em destaque
-            </h2>
-          </div>
+          {featuredTitle && (
+            <div className="mb-7 flex items-center gap-4">
+              <span
+                aria-hidden
+                className="h-8 w-2 -skew-x-12"
+                style={{ background: "var(--sf-accent)" }}
+              />
+              <h2
+                className="text-2xl font-black uppercase italic tracking-tighter sm:text-3xl"
+                style={{ fontFamily: "var(--sf-font-head)" }}
+              >
+                {featuredTitle}
+              </h2>
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((v) => (
               <CarCard
@@ -341,25 +349,27 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
 
       {/* estoque */}
       <section id="estoque" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14">
-        <div className="mb-8 flex items-center gap-4">
-          <span
-            aria-hidden
-            className="h-8 w-2 -skew-x-12"
-            style={{ background: "var(--sf-primary)" }}
-          />
-          <h2
-            className="text-3xl font-black uppercase italic tracking-tighter"
-            style={{ fontFamily: "var(--sf-font-head)" }}
-          >
-            Todo o estoque{" "}
+        {stockTitle && (
+          <div className="mb-8 flex items-center gap-4">
             <span
-              className="text-base font-bold not-italic"
-              style={{ color: "var(--sf-ink-faint, rgba(255,255,255,0.4))" }}
+              aria-hidden
+              className="h-8 w-2 -skew-x-12"
+              style={{ background: "var(--sf-primary)" }}
+            />
+            <h2
+              className="text-3xl font-black uppercase italic tracking-tighter"
+              style={{ fontFamily: "var(--sf-font-head)" }}
             >
-              ({vehicles.length})
-            </span>
-          </h2>
-        </div>
+              {stockTitle}{" "}
+              <span
+                className="text-base font-bold not-italic"
+                style={{ color: "var(--sf-ink-faint, rgba(255,255,255,0.4))" }}
+              >
+                ({vehicles.length})
+              </span>
+            </h2>
+          </div>
+        )}
 
         <VehicleGrid
           vehicles={vehicles}

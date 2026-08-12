@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Storefront } from "@/lib/public";
+import { isRichText, sanitizeRichText } from "@/lib/rich-text";
 import { StoreLogo } from "@/components/storefront/StoreLogo";
 import { StoreFooter } from "@/components/storefront/StoreFooter";
 import { StoreMap } from "@/components/storefront/StoreMap";
@@ -60,9 +61,21 @@ export function StoreAbout({
 
         {store.settings.about && (
           <section className="mt-8 max-w-3xl">
-            <p className="whitespace-pre-line text-base leading-relaxed text-slate-600">
-              {store.settings.about}
-            </p>
+            {isRichText(store.settings.about) ? (
+              // HTML do editor do admin — re-sanitizado na renderização
+              // (defesa em profundidade; dados antigos podem preceder o filtro)
+              <div
+                className="text-base leading-relaxed text-slate-600 [&_a]:underline [&_a]:underline-offset-2 [&_a:hover]:text-slate-900 [&_ol]:list-decimal [&_ol]:pl-5 [&_p:not(:first-child)]:mt-3 [&_ul]:list-disc [&_ul]:pl-5 [&_li:not(:first-child)]:mt-1"
+                dangerouslySetInnerHTML={{
+                  __html: sanitizeRichText(store.settings.about),
+                }}
+              />
+            ) : (
+              // legado: texto puro salvo antes do editor
+              <p className="whitespace-pre-line text-base leading-relaxed text-slate-600">
+                {store.settings.about}
+              </p>
+            )}
           </section>
         )}
 

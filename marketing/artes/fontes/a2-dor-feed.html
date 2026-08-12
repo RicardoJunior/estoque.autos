@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px 84px 0; align-items: flex-start; }
+  .h1 { font-size: 94px; position: relative; z-index: 2; }
+  .sub { font-size: 31px; margin-top: 34px; width: 800px; position: relative; z-index: 2; }
+  .row { display: flex; align-items: center; gap: 30px; margin-top: 40px; position: relative; z-index: 2; }
+  .cta { padding: 24px 44px; font-size: 31px; }
+  .logo { font-size: 30px; }
+  .browser { position: absolute; z-index: 1; left: 84px; right: -80px; bottom: -565px; transform: rotate(-1.6deg); box-shadow: 0 -30px 120px rgba(0, 0, 0, 0.75); }
+  .fade { position: absolute; z-index: 1; inset: auto 0 0 0; height: 240px; background: linear-gradient(180deg, rgba(7, 8, 10, 0), rgba(7, 8, 10, 0.55)); pointer-events: none; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:640px;height:640px;left:-260px;top:-280px"></div>
+
+  <div class="h h1">
+    <span>No portal, seu carro</span>
+    <span style="color:var(--muted)">aparece do lado</span>
+    <span style="color:var(--muted)">do concorrente.</span>
+    <span class="am" style="margin-top:16px">No seu site, não.</span>
+  </div>
+  <p class="sub">No site da <strong>sua</strong> loja, o comprador só vê os seus carros — e o lead cai no <strong>seu WhatsApp</strong>.</p>
+  <div class="row">
+    <span class="cta">Criar meu site →</span>
+    <span class="logo">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+  </div>
+
+  <div class="browser">
+    <div class="bar">
+      <span class="r"></span><span class="r"></span><span class="r"></span>
+      <span class="url">estoque.autos/<i>sua-loja</i></span>
+    </div>
+    <img src="shot-premium-desktop.png" alt="" />
+  </div>
+  <div class="fade"></div>
+</div>
+</body>
+</html>

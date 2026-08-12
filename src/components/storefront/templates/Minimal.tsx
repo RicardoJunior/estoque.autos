@@ -1,3 +1,4 @@
+import { InlineRichText } from "../InlineRichText";
 import Image from "next/image";
 import Link from "next/link";
 import type { TemplateProps } from "../types";
@@ -9,6 +10,7 @@ import { HeroMedia } from "../HeroMedia";
 import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress, formatAddressShort } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
+import { templateTexts } from "@/lib/template-texts";
 
 /**
  * Template Minimal — editorial/galeria.
@@ -20,11 +22,12 @@ import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
 export function Minimal({ store, vehicles }: TemplateProps) {
   const hero = store.settings.hero;
   const withMedia = heroMediaActive(hero);
-  const headline = hero?.title ?? store.settings.slogan ?? store.name;
-  const subtitle =
-    hero?.subtitle ??
-    store.settings.about ??
-    "Uma seleção cuidadosa de veículos.";
+  // textos editáveis em Meu site → Conteúdo ("" = elemento não renderiza);
+  // título tem fallback DINÂMICO (slogan/nome), nunca texto genérico
+  const texts = templateTexts("minimal", store.settings);
+  const headline =
+    texts.heroTitle ?? (store.settings.slogan || store.name);
+  const subtitle = texts.heroSubtitle;
 
   const showAbout = !!store.settings.about || hasAddress(store.address);
   const aboutLabel = hasAddress(store.address) ? "Localização" : "Sobre";
@@ -48,16 +51,16 @@ export function Minimal({ store, vehicles }: TemplateProps) {
         className="border-b"
         style={{ borderColor: "var(--sf-border, #e2e8f0)" }}
       >
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-6 py-5">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-5 sm:gap-6 sm:px-6">
           <Link
             href={`/${store.slug}`}
-            className="flex items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+            className="flex min-w-0 items-center gap-3 rounded outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
             style={{ ["--tw-ring-color" as string]: "var(--sf-primary)" }}
           >
             <StoreLogo store={store} size={32} />
             {showStoreName(store) && (
               <span
-                className="text-sm font-medium tracking-tight"
+                className="truncate text-sm font-medium tracking-tight"
                 style={{
                   fontFamily: "var(--sf-font-head)",
                   color: "var(--sf-ink, #0f172a)",
@@ -121,52 +124,56 @@ export function Minimal({ store, vehicles }: TemplateProps) {
         )}
 
         <div
-          className={`relative mx-auto max-w-6xl px-6 ${
+          className={`relative mx-auto max-w-6xl px-4 sm:px-6 ${
             withMedia
               ? "pt-32 pb-24 sm:pt-48 sm:pb-32"
               : "pt-20 pb-14 sm:pt-32 sm:pb-20"
           }`}
         >
-          <span
-            className="block text-xs font-light uppercase tracking-[0.4em]"
-            style={{
-              color: withMedia
-                ? "rgba(255,255,255,0.7)"
-                : "var(--sf-ink-faint, #94a3b8)",
-            }}
-          >
-            Estoque · {new Date().getFullYear()}
-          </span>
+          {texts.heroEyebrow && (
+            <span
+              className="block text-xs font-light uppercase tracking-[0.4em]"
+              style={{
+                color: withMedia
+                  ? "rgba(255,255,255,0.7)"
+                  : "var(--sf-ink-faint, #94a3b8)",
+              }}
+            >
+              {texts.heroEyebrow}
+            </span>
+          )}
           <h1
-            className="mt-7 max-w-5xl text-[2.75rem] font-light leading-[0.98] tracking-tight sm:text-7xl lg:text-[5.5rem]"
+            className="mt-7 max-w-5xl break-words text-[2.25rem] font-light leading-[1.02] tracking-tight sm:text-7xl sm:leading-[0.98] lg:text-[5.5rem]"
             style={{
               fontFamily: "var(--sf-font-head)",
               color: withMedia ? "#ffffff" : "var(--sf-ink, #0f172a)",
             }}
           >
-            {headline}
+            <InlineRichText value={headline} />
           </h1>
           <span
             aria-hidden
             className="mt-9 block h-px w-24"
             style={{ background: "var(--sf-accent)" }}
           />
-          <p
-            className="mt-9 max-w-xl text-lg font-light leading-relaxed"
-            style={{
-              color: withMedia
-                ? "rgba(255,255,255,0.85)"
-                : "var(--sf-ink-soft, #64748b)",
-            }}
-          >
-            {subtitle}
-          </p>
+          {subtitle && (
+            <p
+              className="mt-9 max-w-xl text-lg font-light leading-relaxed"
+              style={{
+                color: withMedia
+                  ? "rgba(255,255,255,0.85)"
+                  : "var(--sf-ink-soft, #64748b)",
+              }}
+            >
+              <InlineRichText value={subtitle} />
+            </p>
+          )}
         </div>
       </section>
 
       {/* destaque editorial — uma peça grande, índice + foto + meta */}
       {feature && (
-        <section className="mx-auto max-w-6xl px-6 pb-16 sm:pb-24">
+        <section className="mx-auto max-w-6xl px-4 pb-16 sm:px-6 sm:pb-24">
           <Link
             href={`/${store.slug}/carros/${feature.id}`}
             className="group grid items-stretch gap-8 border-t pt-10 outline-none focus-visible:ring-2 focus-visible:ring-offset-4 sm:gap-12 lg:grid-cols-2"
@@ -200,15 +207,17 @@ export function Minimal({ store, vehicles }: TemplateProps) {
                 >
                   01
                 </span>
-                <span
-                  className="text-xs font-light uppercase tracking-[0.3em]"
-                  style={{ color: "var(--sf-ink-faint, #94a3b8)" }}
-                >
-                  Em destaque
-                </span>
+                {texts.featuredTitle && (
+                  <span
+                    className="text-xs font-light uppercase tracking-[0.3em]"
+                    style={{ color: "var(--sf-ink-faint, #94a3b8)" }}
+                  >
+                    {texts.featuredTitle}
+                  </span>
+                )}
               </div>
               <h2
-                className="mt-5 text-3xl font-light leading-[1.05] tracking-tight sm:text-5xl"
+                className="mt-5 break-words text-3xl font-light leading-[1.05] tracking-tight sm:text-5xl"
                 style={{
                   fontFamily: "var(--sf-font-head)",
                   color: "var(--sf-ink, #0f172a)",
@@ -272,38 +281,42 @@ export function Minimal({ store, vehicles }: TemplateProps) {
                 </div>
               </dl>
 
-              <span
-                className="mt-8 inline-flex items-center gap-2 text-sm font-light tracking-wide"
-                style={{ color: "var(--sf-ink, #0f172a)" }}
-              >
-                Ver detalhes
+              {texts.heroCta && (
                 <span
-                  aria-hidden
-                  className="block h-px w-8 transition-all duration-300 group-hover:w-14"
-                  style={{ background: "var(--sf-accent)" }}
-                />
-              </span>
+                  className="mt-8 inline-flex items-center gap-2 text-sm font-light tracking-wide"
+                  style={{ color: "var(--sf-ink, #0f172a)" }}
+                >
+                  {texts.heroCta}
+                  <span
+                    aria-hidden
+                    className="block h-px w-8 transition-all duration-300 group-hover:w-14"
+                    style={{ background: "var(--sf-accent)" }}
+                  />
+                </span>
+              )}
             </div>
           </Link>
         </section>
       )}
 
       {/* estoque — grade arejada */}
-      <section id="estoque" className="mx-auto max-w-6xl px-6 pb-28">
+      <section id="estoque" className="mx-auto max-w-6xl px-4 pb-28 sm:px-6">
         <div
           className="mb-12 flex flex-wrap items-end justify-between gap-6 border-t pt-12"
           style={{ borderColor: "var(--sf-border, #e2e8f0)" }}
         >
           <div>
-            <h2
-              className="text-2xl font-light tracking-tight sm:text-3xl"
-              style={{
-                fontFamily: "var(--sf-font-head)",
-                color: "var(--sf-ink, #0f172a)",
-              }}
-            >
-              Estoque
-            </h2>
+            {texts.stockTitle && (
+              <h2
+                className="text-2xl font-light tracking-tight sm:text-3xl"
+                style={{
+                  fontFamily: "var(--sf-font-head)",
+                  color: "var(--sf-ink, #0f172a)",
+                }}
+              >
+                {texts.stockTitle}
+              </h2>
+            )}
             <div className="mt-3 flex items-center gap-3">
               <span
                 aria-hidden

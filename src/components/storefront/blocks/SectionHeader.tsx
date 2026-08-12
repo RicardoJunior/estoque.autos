@@ -1,7 +1,8 @@
 import type { ReactNode } from "react";
 
 interface Props {
-  title: string;
+  /** null = loja apagou o título → só subtitle/action renderizam */
+  title?: string | null;
   /** subtítulo/contagem opcional (ex.: "12 veículos") */
   subtitle?: ReactNode;
   /** conteúdo à direita (ex.: <StoreSearch />) */
@@ -31,15 +32,17 @@ export function SectionHeader({
       className={`mb-6 flex flex-wrap items-end justify-between gap-4 ${className}`}
     >
       <div>
-        <h2
-          className="text-xl font-bold sm:text-2xl"
-          style={{
-            fontFamily: "var(--sf-font-head)",
-            color: dark ? "var(--sf-ink, #ffffff)" : "var(--sf-ink, #0f172a)",
-          }}
-        >
-          {title}
-        </h2>
+        {title != null && (
+          <h2
+            className="text-xl font-bold sm:text-2xl"
+            style={{
+              fontFamily: "var(--sf-font-head)",
+              color: dark ? "var(--sf-ink, #ffffff)" : "var(--sf-ink, #0f172a)",
+            }}
+          >
+            {title}
+          </h2>
+        )}
         {accentRule && (
           <div
             className="mt-3 h-px w-16"

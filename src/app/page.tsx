@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Image from "next/image";
 import { Logo } from "@/components/Logo";
 import { buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -274,9 +275,14 @@ export default function HomePage() {
                 aria-label={`Ver demonstração do template ${t.name}`}
               >
                 <div className={`lp-tpl-prev lp-tpl-${i}`} aria-hidden>
-                  <span className="lp-tpl-bar" />
-                  <span className="lp-tpl-blk" />
-                  <span className="lp-tpl-blk" />
+                  {/* screenshot real da demo (public/demo/thumbs, gerado das páginas /demo) */}
+                  <Image
+                    src={`/demo/thumbs/${t.id}.webp`}
+                    alt=""
+                    fill
+                    sizes="(max-width: 620px) 100vw, 33vw"
+                    className="lp-tpl-shot"
+                  />
                   <span className="lp-tpl-cta">Ver demo →</span>
                 </div>
                 <div className="lp-tpl-meta">
@@ -494,7 +500,10 @@ const css = `
 .lp-tpl-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:48px}
 .lp-tpl{display:block;color:inherit;border:1px solid var(--color-border);border-radius:14px;overflow:hidden;background:var(--color-card);
   transition:transform .2s,border-color .2s}
-.lp-tpl-cta{position:absolute;right:14px;bottom:12px;font-size:12px;font-weight:700;color:var(--amber);
+.lp-tpl-shot{object-fit:cover;object-position:top;transition:transform .3s}
+.lp-tpl:hover .lp-tpl-shot{transform:scale(1.03)}
+.lp-tpl-cta{position:absolute;right:10px;bottom:10px;font-size:12px;font-weight:700;color:var(--amber);
+  background:rgba(8,8,10,.72);padding:4px 12px;border-radius:999px;backdrop-filter:blur(4px);
   opacity:0;transform:translateX(-4px);transition:opacity .2s,transform .2s}
 .lp-tpl:hover .lp-tpl-cta,.lp-tpl:focus-visible .lp-tpl-cta{opacity:1;transform:none}
 @media(hover:none){.lp-tpl-cta{opacity:1;transform:none}}

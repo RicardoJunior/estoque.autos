@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefront, listPublicVehicles } from "@/lib/public";
+import { richTextToPlain } from "@/lib/rich-text";
 import { StorefrontView } from "@/components/storefront/registry";
 
 type SP = {
@@ -23,9 +24,12 @@ export async function generateMetadata({
   if (!store) return { title: "Loja não encontrada" };
 
   const title = store.name;
+  // about pode ser HTML do editor — para SEO, sempre texto puro
   const description =
     store.settings.slogan ??
-    store.settings.about ??
+    (store.settings.about
+      ? richTextToPlain(store.settings.about)
+      : undefined) ??
     `Confira o estoque de veículos da ${store.name}.`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
 
@@ -84,7 +88,11 @@ export default async function StorefrontPage({
     telephone: store.phone ?? store.whatsapp ?? undefined,
     email: store.email ?? undefined,
     image: store.logo_url ?? undefined,
-    description: store.settings.slogan ?? store.settings.about ?? undefined,
+    description:
+      store.settings.slogan ??
+      (store.settings.about
+        ? richTextToPlain(store.settings.about)
+        : undefined),
     address: a.city
       ? {
           "@type": "PostalAddress",

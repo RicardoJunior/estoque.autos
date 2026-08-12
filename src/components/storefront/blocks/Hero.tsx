@@ -5,7 +5,8 @@ import type { ReactNode } from "react";
 interface Props {
   /** linha de destaque acima do título (ex.: "Bem-vindo", "Destaque") */
   eyebrow?: ReactNode;
-  title: ReactNode;
+  /** null/undefined = loja apagou o título → o h1 não renderiza */
+  title?: ReactNode;
   subtitle?: ReactNode;
   /** preço/valor exibido em destaque (ex.: hero de veículo) */
   price?: ReactNode;
@@ -57,15 +58,17 @@ export function Hero({
           {eyebrow}
         </span>
       )}
-      <h1
-        className="text-3xl font-bold leading-tight sm:text-5xl"
-        style={{
-          fontFamily: "var(--sf-font-head)",
-          color: dark ? "#ffffff" : "var(--sf-ink, #0f172a)",
-        }}
-      >
-        {title}
-      </h1>
+      {title != null && (
+        <h1
+          className="text-3xl font-bold leading-tight sm:text-5xl"
+          style={{
+            fontFamily: "var(--sf-font-head)",
+            color: dark ? "#ffffff" : "var(--sf-ink, #0f172a)",
+          }}
+        >
+          {title}
+        </h1>
+      )}
       {accentRule && (
         <div
           className={`h-px w-20 ${centered ? "mx-auto" : ""}`}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefront } from "@/lib/public";
+import { richTextToPlain } from "@/lib/rich-text";
 import { StoreAbout } from "@/components/storefront/StoreAbout";
 import { formatAddressShort } from "@/components/storefront/address";
 
@@ -14,8 +15,11 @@ export async function generateMetadata({
   if (!store) return { title: "Loja não encontrada" };
 
   const title = `Sobre · ${store.name}`;
+  // about pode ser HTML do editor — para SEO, sempre texto puro
   const description =
-    store.settings.about ??
+    (store.settings.about
+      ? richTextToPlain(store.settings.about)
+      : undefined) ??
     formatAddressShort(store.address) ??
     `Conheça a ${store.name}: localização, horário e contato.`;
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";

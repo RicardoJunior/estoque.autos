@@ -1,3 +1,4 @@
+import { InlineRichText } from "../InlineRichText";
 import Link from "next/link";
 import type { TemplateProps } from "../types";
 import { CarCard } from "../CarCard";
@@ -9,6 +10,7 @@ import { VehicleGrid } from "../blocks/VehicleGrid";
 import { HeroMedia } from "../HeroMedia";
 import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
+import { templateTexts } from "@/lib/template-texts";
 
 /**
  * Template Moderno — vibe startup automotiva: claro e arrojado.
@@ -20,12 +22,16 @@ export function Moderno({ store, vehicles }: TemplateProps) {
   const featured = vehicles.filter((v) => v.featured).slice(0, 3);
   const hero = store.settings.hero;
   const withMedia = heroMediaActive(hero);
-  const headline =
-    hero?.title ?? store.settings.slogan ?? "Seu próximo carro está aqui";
-  const subtitle =
-    hero?.subtitle ??
-    store.settings.about ??
-    "Estoque selecionado, condições especiais e atendimento direto. Encontre o veículo certo para você.";
+  // textos editáveis em Meu site → Conteúdo ("" = elemento não renderiza)
+  const {
+    heroEyebrow,
+    heroTitle,
+    heroSubtitle,
+    heroCta,
+    featuredTitle,
+    featuredSubtitle,
+    stockTitle,
+  } = templateTexts("moderno", store.settings);
 
   const waHref = store.whatsapp
     ? `https://wa.me/${store.whatsapp.replace(/\D/g, "")}`
@@ -38,7 +44,6 @@ export function Moderno({ store, vehicles }: TemplateProps) {
   const stats = [
     { value: vehicles.length, label: "no estoque" },
     { value: featured.length, label: "em destaque" },
-    { value: "100%", label: "atendimento direto" },
   ];
 
   return (
@@ -59,12 +64,12 @@ export function Moderno({ store, vehicles }: TemplateProps) {
         }}
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-3.5">
-          <Link href={`/${store.slug}`} className="flex items-center gap-3">
-            <StoreLogo store={store} size={44} className="rounded-2xl" />
+          <Link href={`/${store.slug}`} className="flex min-w-0 items-center gap-3">
+            <StoreLogo store={store} size={44} className="shrink-0 rounded-2xl" />
             {showStoreName(store) && (
-              <div>
+              <div className="min-w-0">
                 <div
-                  className="font-extrabold leading-tight tracking-tight"
+                  className="break-words font-extrabold leading-tight tracking-tight"
                   style={{ fontFamily: "var(--sf-font-head)" }}
                 >
                   {store.name}
@@ -162,41 +167,50 @@ export function Moderno({ store, vehicles }: TemplateProps) {
         )}
 
         <div className="relative mx-auto max-w-6xl px-5 pb-28 pt-16 sm:pb-32 sm:pt-24">
-          <span
-            className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide backdrop-blur"
-            style={{
-              background: "color-mix(in srgb, var(--sf-on-primary) 16%, transparent)",
-            }}
-          >
+          {heroEyebrow && (
             <span
-              className="h-1.5 w-1.5 rounded-full"
-              style={{ background: "var(--sf-accent)" }}
-            />
-            {vehicles.length} veículos disponíveis agora
-          </span>
+              className="inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold uppercase tracking-wide backdrop-blur"
+              style={{
+                background:
+                  "color-mix(in srgb, var(--sf-on-primary) 16%, transparent)",
+              }}
+            >
+              <span
+                className="h-1.5 w-1.5 rounded-full"
+                style={{ background: "var(--sf-accent)" }}
+              />
+              {heroEyebrow}
+            </span>
+          )}
 
-          <h1
-            className="mt-6 max-w-3xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl"
-            style={{ fontFamily: "var(--sf-font-head)" }}
-          >
-            {headline}
-          </h1>
-          <p className="mt-5 max-w-xl text-base/relaxed opacity-80 sm:text-lg/relaxed">
-            {subtitle}
-          </p>
+          {heroTitle && (
+            <h1
+              className="mt-6 max-w-3xl break-words text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl"
+              style={{ fontFamily: "var(--sf-font-head)" }}
+            >
+              <InlineRichText value={heroTitle} />
+            </h1>
+          )}
+          {heroSubtitle && (
+            <p className="mt-5 max-w-xl text-base/relaxed opacity-80 sm:text-lg/relaxed">
+              <InlineRichText value={heroSubtitle} />
+            </p>
+          )}
 
           {/* CTAs */}
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <a
-              href="#estoque"
-              className="rounded-full px-6 py-3 text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-              style={{
-                background: "var(--sf-accent)",
-                color: "var(--sf-on-accent)",
-              }}
-            >
-              Explorar estoque
-            </a>
+            {heroCta && (
+              <a
+                href="#estoque"
+                className="rounded-full px-6 py-3 text-sm font-bold shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+                style={{
+                  background: "var(--sf-accent)",
+                  color: "var(--sf-on-accent)",
+                }}
+              >
+                {heroCta}
+              </a>
+            )}
             {hasAbout && (
               <Link
                 href={`/${store.slug}/sobre`}
@@ -238,7 +252,7 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       {/* faixa de stats sólida abaixo do cartão de busca */}
       <section className="pt-20 sm:pt-24">
         <div className="mx-auto max-w-6xl px-5">
-          <div className="grid grid-cols-3 gap-3 sm:gap-5">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5">
             {stats.map((s, i) => (
               <div
                 key={i}
@@ -269,10 +283,7 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       {/* ── destaques ────────────────────────────────────────── */}
       {featured.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 pt-16">
-          <SectionHeader
-            title="Destaques da semana"
-            subtitle="Seleção especial do nosso time"
-          />
+          <SectionHeader title={featuredTitle} subtitle={featuredSubtitle} />
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {featured.map((v) => (
               <CarCard
@@ -289,7 +300,7 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       {/* ── todo o estoque ───────────────────────────────────── */}
       <section id="estoque" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-16">
         <SectionHeader
-          title="Todo o estoque"
+          title={stockTitle}
           subtitle={`${vehicles.length} ${vehicles.length === 1 ? "veículo" : "veículos"} à sua espera`}
         />
         <VehicleGrid

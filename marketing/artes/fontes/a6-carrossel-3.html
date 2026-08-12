@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px; align-items: flex-start; }
+  .h1 { font-size: 88px; }
+  .chat { width: 100%; margin-top: 56px; display: flex; flex-direction: column; gap: 22px; position: relative; z-index: 2; }
+  .msg { max-width: 760px; border-radius: 26px; padding: 30px 36px; font-size: 30px; line-height: 1.4; position: relative; }
+  .in { align-self: flex-start; background: var(--card); border: 1.5px solid var(--line); border-bottom-left-radius: 8px; }
+  .in .who { font-size: 24px; color: var(--amber); font-weight: 700; display: block; margin-bottom: 8px; }
+  .in .meta { display: block; font-size: 23px; color: var(--muted); margin-top: 12px; }
+  .badge-lead { align-self: flex-start; display: inline-flex; align-items: center; gap: 12px; background: rgba(255, 122, 26, 0.14); border: 1.5px solid rgba(255, 122, 26, 0.5); color: var(--amber); border-radius: 999px; padding: 12px 26px; font-size: 25px; font-weight: 700; }
+  .cta-row { display: flex; align-items: center; justify-content: space-between; width: 100%; margin-top: auto; }
+  .cta { padding: 26px 46px; font-size: 33px; }
+  .logo { font-size: 30px; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:640px;height:640px;right:-240px;top:-260px"></div>
+
+  <div class="h h1">
+    <span>Leads no <span class="am">seu</span></span>
+    <span class="am">WhatsApp —</span>
+    <span>não no leilão</span>
+    <span>do portal.</span>
+  </div>
+
+  <div class="chat">
+    <div class="msg in">
+      <span class="who">Novo lead · estoque.autos/sua-loja</span>
+      Olá! Vi o <strong>Civic Touring 2023</strong> no site de vocês. Aceita troca? Posso passar aí hoje?
+      <span class="meta">Proposta: R$ 158.000 · via página do carro</span>
+    </div>
+    <span class="badge-lead">✓ Lead registrado no seu painel</span>
+  </div>
+
+  <div class="cta-row">
+    <span class="cta">Criar meu site →</span>
+    <span class="logo">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+  </div>
+</div>
+</body>
+</html>

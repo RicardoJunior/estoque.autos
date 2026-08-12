@@ -136,7 +136,11 @@ export function VehicleDetail({
               <section className="mt-8">
                 <h2 className="mb-3 text-lg font-bold">Opcionais</h2>
                 <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                  {vehicle.optionals.map((o) => (
+                  {/* ordem alfabética no DISPLAY: independe da ordem gravada
+                      (cadastros antigos guardaram a ordem de clique) */}
+                  {[...vehicle.optionals]
+                    .sort((a, b) => a.localeCompare(b, "pt-BR"))
+                    .map((o) => (
                     <li
                       key={o}
                       className="flex items-center gap-2 text-sm text-slate-600"
@@ -226,6 +230,8 @@ export function VehicleDetail({
                       vehicleId={vehicle.id}
                       vehicleTitle={title}
                       storeName={store.name}
+                      whatsapp={store.whatsapp}
+                      waMessage={waMessage}
                       triggerClassName="flex w-full items-center justify-center gap-2 rounded-lg py-3 text-sm font-bold"
                       triggerStyle={{
                         background: "var(--sf-accent)",

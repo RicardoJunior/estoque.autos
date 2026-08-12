@@ -9,12 +9,14 @@ import { VehicleGrid } from "../blocks/VehicleGrid";
 import { HeroMedia } from "../HeroMedia";
 import { heroMediaActive, showStoreName } from "../identity";
 import { formatAddressShort, hasAddress } from "../address";
+import { templateTexts } from "@/lib/template-texts";
+import { InlineRichText } from "../InlineRichText";
 
 /**
  * Template Clássico — concessionária estabelecida, sóbria e confiável.
  * Barra de utilidades fina, cabeçalho com nav tipográfica clássica
- * (var(--sf-font-head)), hero claro com traço de destaque, selos de
- * confiança, faixa de destaques, grid de 3 colunas e rodapé completo.
+ * (var(--sf-font-head)), hero claro com traço de destaque, faixa de
+ * destaques, grid de 3 colunas e rodapé completo.
  * Tom claro.
  */
 export function Classico({ store, vehicles }: TemplateProps) {
@@ -23,12 +25,16 @@ export function Classico({ store, vehicles }: TemplateProps) {
 
   const hero = settings.hero;
   const withMedia = heroMediaActive(hero);
-  const heroTitle =
-    hero?.title ?? (settings.about ? store.name : "O carro certo, com confiança");
-  const heroSubtitle =
-    hero?.subtitle ??
-    settings.about ??
-    "Veículos selecionados e revisados, com atendimento próximo do início ao fim da sua compra.";
+  // textos editáveis em Meu site → Conteúdo ("" = elemento não renderiza)
+  const {
+    heroEyebrow,
+    heroTitle,
+    heroSubtitle,
+    heroCta,
+    featuredTitle,
+    featuredSubtitle,
+    stockTitle,
+  } = templateTexts("classico", settings);
 
   const aboutHref = `/${slug}/sobre`;
   const showAbout = !!settings.about || hasAddress(store.address);
@@ -66,9 +72,7 @@ export function Classico({ store, vehicles }: TemplateProps) {
       >
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-2">
           <span className="opacity-90">
-            {settings.business_hours
-              ? settings.business_hours.split("\n")[0]
-              : "Seu próximo carro está aqui"}
+            {settings.business_hours?.split("\n")[0]}
           </span>
           <div className="flex items-center gap-5">
             {store.phone && <span className="opacity-90">{store.phone}</span>}
@@ -158,40 +162,22 @@ export function Classico({ store, vehicles }: TemplateProps) {
           </>
         )}
         <Hero
-          eyebrow={settings.slogan ?? "Concessionária"}
-          title={heroTitle}
-          subtitle={heroSubtitle}
-          cta={{ label: "Ver estoque", href: "#estoque" }}
+          eyebrow={heroEyebrow}
+          title={heroTitle && <InlineRichText value={heroTitle} />}
+          subtitle={heroSubtitle && <InlineRichText value={heroSubtitle} />}
+          cta={heroCta ? { label: heroCta, href: "#estoque" } : undefined}
           accentRule
           align="left"
           tone={withMedia ? "dark" : "light"}
         />
       </section>
 
-      {/* selos de confiança */}
-      <section
-        className="border-y"
-        style={{
-          borderColor: "var(--sf-border, #e2e8f0)",
-          background: "var(--sf-surface, #f8fafc)",
-        }}
-      >
-        <div className="mx-auto grid max-w-6xl grid-cols-1 divide-y px-5 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
-          <Trust
-            value={`${vehicles.length}`}
-            label={vehicles.length === 1 ? "veículo no estoque" : "veículos no estoque"}
-          />
-          <Trust value="Revisados" label="Procedência verificada" />
-          <Trust value="Atendimento" label="Próximo e sem pressa" />
-        </div>
-      </section>
-
       {/* destaques */}
       {featured.length > 0 && (
         <section id="destaques" className="mx-auto max-w-6xl px-5 pt-14">
           <SectionHeader
-            title="Destaques da loja"
-            subtitle="Selecionados a dedo pela nossa equipe."
+            title={featuredTitle}
+            subtitle={featuredSubtitle}
             accentRule
             tone="light"
           />
@@ -207,7 +193,7 @@ export function Classico({ store, vehicles }: TemplateProps) {
       {/* estoque completo */}
       <section id="estoque" className="mx-auto max-w-6xl scroll-mt-20 px-5 py-14">
         <SectionHeader
-          title="Todo o estoque"
+          title={stockTitle}
           subtitle={`${vehicles.length} ${
             vehicles.length === 1 ? "veículo disponível" : "veículos disponíveis"
           }`}
@@ -265,27 +251,6 @@ export function Classico({ store, vehicles }: TemplateProps) {
       )}
 
       <StoreFooter store={store} />
-    </div>
-  );
-}
-
-/** Selo de confiança da faixa abaixo do hero. */
-function Trust({ value, label }: { value: string; label: string }) {
-  return (
-    // borderColor cobre os divisores criados pelos divide-* do grid pai
-    <div
-      className="flex flex-col items-center gap-0.5 px-5 py-6 text-center"
-      style={{ borderColor: "var(--sf-border, #e2e8f0)" }}
-    >
-      <span
-        className="text-xl font-bold"
-        style={{ fontFamily: "var(--sf-font-head)", color: "var(--sf-primary)" }}
-      >
-        {value}
-      </span>
-      <span className="text-sm" style={{ color: "var(--sf-ink-soft, #64748b)" }}>
-        {label}
-      </span>
     </div>
   );
 }

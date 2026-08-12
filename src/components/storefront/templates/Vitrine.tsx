@@ -1,3 +1,4 @@
+import { InlineRichText } from "../InlineRichText";
 import Image from "next/image";
 import Link from "next/link";
 import type { TemplateProps, PublicVehicle } from "../types";
@@ -10,6 +11,7 @@ import { HeroMedia } from "../HeroMedia";
 import { heroMediaActive, showStoreName } from "../identity";
 import { hasAddress } from "../address";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
+import { templateTexts } from "@/lib/template-texts";
 
 /**
  * Template Vitrine — galeria editorial, a foto em primeiro lugar.
@@ -28,6 +30,10 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
 
   const hero = store.settings.hero;
   const withMedia = heroMediaActive(hero);
+  // textos editáveis ("" = oculta); fallbacks dinâmicos usam dados da loja
+  const texts = templateTexts("vitrine", store.settings);
+  const heroTitle = texts.heroTitle ?? store.name;
+  const heroSubtitle = texts.heroSubtitle ?? (store.settings.slogan || null);
 
   const showAbout = !!store.settings.about || hasAddress(store.address);
   const aboutLabel = store.settings.about ? "Sobre" : "Localização";
@@ -49,11 +55,11 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-5 sm:px-8">
           <Link
             href={`/${store.slug}`}
-            className="flex items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-white/80"
+            className="flex min-w-0 items-center gap-3 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-white/80"
           >
             <StoreLogo store={store} size={44} />
             {showStoreName(store) && (
-              <div className="leading-tight text-white drop-shadow-sm">
+              <div className="min-w-0 leading-tight text-white drop-shadow-sm">
                 <div
                   className="text-sm font-semibold tracking-tight sm:text-base"
                   style={{ fontFamily: "var(--sf-font-head)" }}
@@ -125,39 +131,37 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/30" />
 
-          {/* marcador editorial no topo */}
-          <div className="absolute inset-x-0 top-24 hidden sm:block">
-            <div className="mx-auto flex max-w-7xl items-center gap-3 px-8 text-white/70">
-              <span
-                className="h-px w-12"
-                style={{ background: "var(--sf-accent)" }}
-              />
-              <span className="text-[11px] font-semibold uppercase tracking-[0.4em]">
-                A vitrine
-              </span>
+          {/* marcador editorial no topo (olho/eyebrow editável) */}
+          {texts.heroEyebrow && (
+            <div className="absolute inset-x-0 top-24">
+              <div className="mx-auto flex max-w-7xl items-center gap-3 px-5 text-white/70 sm:px-8">
+                <span
+                  className="h-px w-8 sm:w-12"
+                  style={{ background: "var(--sf-accent)" }}
+                />
+                <span className="text-[11px] font-semibold uppercase tracking-[0.25em] sm:tracking-[0.4em]">
+                  {texts.heroEyebrow}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="absolute inset-x-0 bottom-0">
             <div className="mx-auto w-full max-w-7xl px-5 pb-12 sm:px-8 sm:pb-16">
-              <span
-                className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.2em]"
-                style={{
-                  background: "var(--sf-primary)",
-                  color: "var(--sf-on-primary)",
-                }}
-              >
-                Destaque
-              </span>
               <h1
-                className="mt-4 max-w-3xl text-3xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-sm sm:text-6xl"
+                className="max-w-3xl break-words text-3xl font-bold leading-[1.05] tracking-tight text-white drop-shadow-sm sm:text-6xl"
                 style={{ fontFamily: "var(--sf-font-head)" }}
               >
-                {hero?.title ?? vehicleTitle(featured)}
+                {/* aqui o fallback dinâmico é o PRÓPRIO destaque */}
+                {texts.heroTitle ? (
+                  <InlineRichText value={texts.heroTitle} />
+                ) : (
+                  vehicleTitle(featured)
+                )}
               </h1>
-              {hero?.subtitle && (
+              {texts.heroSubtitle && (
                 <p className="mt-3 max-w-2xl text-sm text-white/85 sm:text-base">
-                  {hero.subtitle}
+                  <InlineRichText value={texts.heroSubtitle} />
                 </p>
               )}
 
@@ -177,18 +181,22 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
                       .join(" · ")}
                   </span>
                 )}
-                <span
-                  className="ml-auto inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold shadow transition group-hover:opacity-90 sm:ml-0"
-                  style={{
-                    background: "var(--sf-accent)",
-                    color: "var(--sf-on-accent)",
-                  }}
-                >
-                  Ver detalhes
-                  <span aria-hidden className="transition group-hover:translate-x-0.5">
-                    →
+                {/* CTA decorativo (o hero inteiro já é o Link p/ /carros/{id});
+                    rótulo editável — se null, não renderiza */}
+                {texts.heroCta && (
+                  <span
+                    className="ml-auto inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold shadow transition group-hover:opacity-90 sm:ml-0"
+                    style={{
+                      background: "var(--sf-accent)",
+                      color: "var(--sf-on-accent)",
+                    }}
+                  >
+                    {texts.heroCta}
+                    <span aria-hidden className="transition group-hover:translate-x-0.5">
+                      →
+                    </span>
                   </span>
-                </span>
+                )}
               </div>
             </div>
           </div>
@@ -219,9 +227,9 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
                 color: withMedia ? "#ffffff" : undefined,
               }}
             >
-              {hero?.title ?? store.name}
+              <InlineRichText value={heroTitle} />
             </h1>
-            {(hero?.subtitle ?? store.settings.slogan) && (
+            {heroSubtitle && (
               <p
                 className="mt-4 text-lg"
                 style={{
@@ -230,7 +238,7 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
                     : "var(--sf-ink-soft, #64748b)",
                 }}
               >
-                {hero?.subtitle ?? store.settings.slogan}
+                <InlineRichText value={heroSubtitle} />
               </p>
             )}
           </div>
@@ -240,7 +248,7 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
       {/* GALERIA */}
       <section className="mx-auto max-w-7xl px-5 py-12 sm:px-8 sm:py-16">
         <SectionHeader
-          title="A vitrine"
+          title={texts.stockTitle}
           subtitle={`${vehicles.length} veículo${
             vehicles.length === 1 ? "" : "s"
           } para explorar`}
@@ -271,7 +279,7 @@ export function Vitrine({ store, vehicles }: TemplateProps) {
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
             {gallery.map((v, i) => (
               <GalleryTile
                 key={v.id}

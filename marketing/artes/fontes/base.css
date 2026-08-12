@@ -1,0 +1,55 @@
+/* Identidade estoque.autos p/ artes de anúncio — dark + âmbar da landing */
+:root {
+  --bg: #07080a;
+  --bg2: #0d0f13;
+  --card: #15171c;
+  --ink: #f4f1ea;
+  --muted: #9a9d97;
+  --amber: #ff7a1a;
+  --amber-ink: #160a02;
+  --line: rgba(255, 255, 255, 0.09);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { font-family: "Archivo", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+.art { position: relative; width: 1080px; overflow: hidden; background: var(--bg); display: flex; flex-direction: column; }
+.sq { height: 1080px; }
+.st { height: 1920px; }
+
+/* glow de farol (motivo da landing) */
+.glow { position: absolute; pointer-events: none; filter: blur(90px); opacity: 0.55; border-radius: 50%; background: radial-gradient(circle, rgba(255, 122, 26, 0.55), rgba(255, 122, 26, 0) 70%); }
+
+.eyebrow { display: inline-flex; align-items: center; gap: 12px; border: 1.5px solid var(--line); border-radius: 999px; padding: 12px 22px; font-size: 24px; font-weight: 600; letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; background: rgba(255, 255, 255, 0.02); }
+.eyebrow .dot { width: 10px; height: 10px; border-radius: 50%; background: var(--amber); box-shadow: 0 0 14px var(--amber); }
+
+.h { font-family: "Anton", sans-serif; font-weight: 400; text-transform: uppercase; line-height: 0.94; letter-spacing: 0.004em; }
+.h span { display: block; }
+.h .am { color: var(--amber); text-shadow: 0 0 60px rgba(255, 122, 26, 0.45); }
+
+.sub { color: var(--muted); font-size: 30px; line-height: 1.45; }
+.sub strong { color: var(--ink); font-weight: 600; }
+
+.cta { display: inline-flex; align-items: center; gap: 14px; background: var(--amber); color: var(--amber-ink); font-weight: 700; border-radius: 999px; box-shadow: 0 12px 48px rgba(255, 122, 26, 0.38); }
+.cta-ghost { display: inline-flex; align-items: center; gap: 14px; border: 1.5px solid var(--line); color: var(--ink); font-weight: 600; border-radius: 999px; }
+
+.chip { display: inline-flex; align-items: baseline; gap: 10px; background: var(--card); border: 1.5px solid var(--line); border-radius: 18px; }
+
+.logo { display: inline-flex; align-items: center; gap: 14px; }
+.logo .word { font-weight: 700; letter-spacing: -0.01em; }
+.logo .word i { font-style: normal; color: var(--amber); }
+
+.check { color: var(--amber); font-weight: 700; }
+
+/* mockup de celular */
+.phone { position: relative; border-radius: 56px; background: #1b1e25; padding: 16px; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.65), inset 0 0 0 2px rgba(255, 255, 255, 0.08); }
+.phone .screen { border-radius: 42px; overflow: hidden; display: block; }
+.phone .screen img { display: block; width: 100%; }
+.phone .notch { position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 130px; height: 34px; border-radius: 20px; background: #07080a; }
+
+/* mockup de browser */
+.browser { border-radius: 22px; overflow: hidden; background: #1b1e25; box-shadow: 0 40px 120px rgba(0, 0, 0, 0.6), inset 0 0 0 2px rgba(255, 255, 255, 0.07); }
+.browser .bar { display: flex; align-items: center; gap: 10px; padding: 18px 22px; background: #101318; }
+.browser .bar .r { width: 14px; height: 14px; border-radius: 50%; background: #2a2e36; }
+.browser .bar .url { margin-left: 14px; background: #07080a; border-radius: 10px; padding: 8px 18px; font-size: 22px; color: var(--muted); }
+.browser .bar .url i { font-style: normal; color: var(--amber); font-weight: 600; }
+.browser img { display: block; width: 100%; }

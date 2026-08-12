@@ -15,6 +15,12 @@ export interface DemoPreviewHero {
   images?: string[];
 }
 
+export interface DemoPreviewTexts {
+  featuredTitle: string;
+  featuredSubtitle: string;
+  stockTitle: string;
+}
+
 /**
  * Prévia EXATA do site: um iframe escalado apontando para
  * /demo-preview, que renderiza o template real com os overrides de
@@ -33,6 +39,7 @@ export function DemoPreview({
   slogan,
   showName,
   hero,
+  texts,
 }: {
   template: TemplateId;
   name: string;
@@ -45,6 +52,7 @@ export function DemoPreview({
   slogan?: string;
   showName?: boolean;
   hero?: DemoPreviewHero;
+  texts?: DemoPreviewTexts;
 }) {
   const params = new URLSearchParams({ template, name });
   params.set("primary", primary);
@@ -55,11 +63,19 @@ export function DemoPreview({
   if (logoUrl) params.set("logo", logoUrl);
   if (slogan) params.set("slogan", slogan);
   if (showName) params.set("show_name", "true");
-  if (hero?.title) params.set("hero_title", hero.title);
-  if (hero?.subtitle) params.set("hero_subtitle", hero.subtitle);
+  if (hero) {
+    // "" viaja de propósito: apagar o texto tem que sumir na prévia
+    if (hero.title !== undefined) params.set("hero_title", hero.title);
+    if (hero.subtitle !== undefined) params.set("hero_subtitle", hero.subtitle);
+  }
   if (hero?.media) params.set("hero_media", hero.media);
   if (hero?.videoUrl) params.set("hero_video", hero.videoUrl);
   if (hero?.images?.length) params.set("hero_imgs", hero.images.join(","));
+  if (texts) {
+    params.set("t_ft", texts.featuredTitle);
+    params.set("t_fs", texts.featuredSubtitle);
+    params.set("t_st", texts.stockTitle);
+  }
   const url = `/demo-preview?${params.toString()}`;
 
   // debounce: arrastar o seletor de cor dispara dezenas de mudanças/s

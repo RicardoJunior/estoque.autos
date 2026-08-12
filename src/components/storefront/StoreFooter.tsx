@@ -21,22 +21,17 @@ export function StoreFooter({
   })).filter((s): s is { net: (typeof SOCIAL_NETWORKS)[number]; url: string } =>
     Boolean(s.url?.startsWith("https://")),
   );
-  // títulos das colunas seguem a tinta do tema (fallback = visual atual)
-  const ink = dark ? "var(--sf-ink, #ffffff)" : "var(--sf-ink, #0f172a)";
+  // o rodapé NÃO segue a cor de fundo personalizada da loja: usa neutros
+  // fixos por tom para garantir contraste/legibilidade em qualquer paleta
+  const ink = dark ? "#ffffff" : "#0f172a";
 
   return (
     <footer
       className="border-t"
       style={{
-        borderColor: dark
-          ? "var(--sf-border, rgba(255,255,255,0.1))"
-          : "var(--sf-border, #e2e8f0)",
-        background: dark
-          ? "var(--sf-surface, rgba(0,0,0,0.3))"
-          : "var(--sf-surface, #f8fafc)",
-        color: dark
-          ? "var(--sf-ink-soft, #cbd5e1)"
-          : "var(--sf-ink-soft, #64748b)",
+        borderColor: dark ? "rgba(255,255,255,0.1)" : "#e2e8f0",
+        background: dark ? "rgba(0,0,0,0.3)" : "#f8fafc",
+        color: dark ? "#cbd5e1" : "#64748b",
       }}
     >
       <div className="mx-auto grid max-w-6xl gap-6 px-5 py-10 sm:grid-cols-3">
@@ -108,12 +103,8 @@ export function StoreFooter({
       <div
         className="border-t py-4 text-center text-xs"
         style={{
-          borderColor: dark
-            ? "var(--sf-border, rgba(255,255,255,0.1))"
-            : "var(--sf-border, #e2e8f0)",
-          color: dark
-            ? "var(--sf-ink-faint, #64748b)"
-            : "var(--sf-ink-faint, #94a3b8)",
+          borderColor: dark ? "rgba(255,255,255,0.1)" : "#e2e8f0",
+          color: dark ? "#64748b" : "#94a3b8",
         }}
       >
         © {new Date().getFullYear()} {store.name} · feito com estoque.autos

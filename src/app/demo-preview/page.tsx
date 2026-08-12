@@ -33,6 +33,12 @@ function str(sp: SP, key: string, max = 200): string | undefined {
   return typeof v === "string" && v.trim() ? v.slice(0, max) : undefined;
 }
 
+/** Como str(), mas preserva "" — textos apagados de propósito no admin. */
+function strEmptyOk(sp: SP, key: string, max = 200): string | undefined {
+  const v = sp[key];
+  return typeof v === "string" ? v.slice(0, max) : undefined;
+}
+
 function hex(sp: SP, key: string): string | undefined {
   const v = str(sp, key, 7);
   return v && HEX.test(v) ? v : undefined;
@@ -94,14 +100,26 @@ export default async function DemoPreviewPage({
   const video = str(sp, "hero_video", 300);
   store.settings.hero = {
     ...store.settings.hero,
-    title: str(sp, "hero_title", 90) ?? store.settings.hero?.title,
-    subtitle: str(sp, "hero_subtitle", 200) ?? store.settings.hero?.subtitle,
+    title: strEmptyOk(sp, "hero_title", 300) ?? store.settings.hero?.title,
+    subtitle:
+      strEmptyOk(sp, "hero_subtitle", 600) ?? store.settings.hero?.subtitle,
     media:
       media && (HERO_MEDIA_TYPES as readonly string[]).includes(media)
         ? (media as HeroMediaType)
         : store.settings.hero?.media,
     video_url: video && VIDEO.test(video) ? video : undefined,
     images: heroImages.length > 0 ? heroImages : store.settings.hero?.images,
+  };
+
+  // títulos das seções ("" preservado = seção sem título na prévia)
+  store.settings.texts = {
+    ...store.settings.texts,
+    featured_title:
+      strEmptyOk(sp, "t_ft", 80) ?? store.settings.texts?.featured_title,
+    featured_subtitle:
+      strEmptyOk(sp, "t_fs", 160) ?? store.settings.texts?.featured_subtitle,
+    stock_title:
+      strEmptyOk(sp, "t_st", 80) ?? store.settings.texts?.stock_title,
   };
 
   const fonts = await resolveStorefrontFonts(store.settings);
