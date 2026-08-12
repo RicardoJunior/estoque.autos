@@ -33,6 +33,20 @@ const dateTimeFmt = new Intl.DateTimeFormat("pt-BR", {
   minute: "2-digit",
 });
 
+/** "agora" · "há 35 min" · "há 3 h" · "ontem" · "há 5 dias" · "12/07/2026" */
+export function formatRelativeTime(iso: string): string {
+  const then = new Date(iso).getTime();
+  const mins = Math.floor((Date.now() - then) / 60_000);
+  if (mins < 1) return "agora";
+  if (mins < 60) return `há ${mins} min`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `há ${hours} h`;
+  const days = Math.floor(hours / 24);
+  if (days === 1) return "ontem";
+  if (days < 30) return `há ${days} dias`;
+  return formatDate(iso);
+}
+
 export function formatDateTime(iso: string): string {
   return dateTimeFmt.format(new Date(iso));
 }

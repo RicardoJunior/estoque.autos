@@ -46,6 +46,30 @@ export const COMMON_OPTIONALS = [
   "Tração 4x4",
   "Volante com regulagem de altura",
   "Volante multifuncional",
+  // conectividade e conforto (Webmotors / iCarros)
+  "Apple CarPlay / Android Auto",
+  "Painel digital (TFT)",
+  "Head-up display",
+  "Carregador por indução",
+  "Ar-condicionado digital",
+  "Ar-condicionado dual zone",
+  "Bancos elétricos",
+  "Bancos com memória",
+  "Bancos com ventilação",
+  "Vidros com um toque",
+  "Isofix",
+  "Engate para reboque",
+  "Faróis automáticos",
+  "Faróis de xenônio",
+  "Sensor crepuscular",
+  // assistências de condução (ADAS)
+  "Câmera 360°",
+  "Sensor de ponto cego",
+  "Assistente de permanência em faixa",
+  "Alerta de colisão frontal",
+  "Frenagem autônoma de emergência",
+  "Reconhecimento de placas de trânsito",
+  "Assistente de partida em rampa",
 ] as const;
 
 /** Cores de veículo (dropdown do cadastro — conjunto do Webmotors). */

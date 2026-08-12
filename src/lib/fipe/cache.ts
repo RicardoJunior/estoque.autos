@@ -47,6 +47,29 @@ function isFresh(fetchedAt: string | undefined, ttlMs: number): boolean {
   return Date.now() - new Date(fetchedAt).getTime() < ttlMs;
 }
 
+export interface FipeSearchHit {
+  brand_id: string;
+  brand_name: string;
+  model_id: string;
+  model_name: string;
+}
+
+/** Busca textual marca+modelo no catálogo local ("honda civic"). */
+export async function searchFipe(
+  type: FipeVehicleType,
+  q: string,
+): Promise<FipeSearchHit[]> {
+  const term = q.trim();
+  if (term.length < 2) return [];
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("fipe_search", {
+    p_type: type,
+    p_q: term,
+  });
+  if (error) throw new Error(`fipe_search: ${error.message}`);
+  return (data ?? []) as FipeSearchHit[];
+}
+
 export async function getFipeBrands(
   type: FipeVehicleType,
 ): Promise<FipeBrand[]> {

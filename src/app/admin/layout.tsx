@@ -1,22 +1,27 @@
 import { requireTenant } from "@/lib/auth";
-import { logoutAction } from "../(auth)/actions";
 import { Sidebar } from "@/components/admin/Sidebar";
 import { LeadsRealtime } from "@/components/admin/LeadsRealtime";
-import { buttonVariants } from "@/components/ui/button";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const { tenant, profile, role, memberships } = await requireTenant();
+  const { tenant, profile, email, role, memberships } = await requireTenant();
 
   return (
-    <div className="flex min-h-dvh">
+    <SidebarProvider>
       <Sidebar
         storeName={tenant.name}
         slug={tenant.slug}
         role={role}
+        userName={profile.name || email}
+        userEmail={email}
         activeStoreId={tenant.id}
         stores={memberships.map((m) => ({
           id: m.tenant.id,
@@ -24,26 +29,17 @@ export default async function AdminLayout({
           role: m.role,
         }))}
       />
-      <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center justify-between border-b border-border bg-card px-6 pl-16 md:pl-6">
-          <div />
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">
-              {profile.name}
-            </span>
-            <form action={logoutAction}>
-              <button
-                type="submit"
-                className={buttonVariants({ variant: "ghost", size: "sm" })}
-              >
-                Sair
-              </button>
-            </form>
-          </div>
+      <SidebarInset>
+        {/* header só no mobile: o gatilho do menu; no desktop o sidebar é fixo */}
+        <header className="flex h-14 items-center gap-2 border-b border-border px-4 md:hidden">
+          <SidebarTrigger />
+          <span className="text-sm font-semibold">
+            estoque<span className="text-primary">.autos</span>
+          </span>
         </header>
-        <main className="flex-1 p-6">{children}</main>
-      </div>
+        <main className="flex-1 p-4 sm:p-6">{children}</main>
+      </SidebarInset>
       <LeadsRealtime tenantId={tenant.id} />
-    </div>
+    </SidebarProvider>
   );
 }

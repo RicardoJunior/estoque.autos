@@ -1,8 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import { Plus } from "lucide-react";
 import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
@@ -47,21 +49,17 @@ export default async function VehicleListPage({
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-bold">Estoque</h1>
-          <p className="text-sm text-muted-foreground">
-            {vehicles.length}{" "}
-            {vehicles.length === 1 ? "veículo" : "veículos"}
-          </p>
-        </div>
-        <Link
-          href="/admin/veiculos/novo"
-          className={buttonVariants({ className: "shrink-0" })}
-        >
-          + Cadastrar carro
+      <PageHeader
+        title="Estoque"
+        description={`${vehicles.length} ${
+          vehicles.length === 1 ? "veículo" : "veículos"
+        }`}
+      >
+        <Link href="/admin/veiculos/novo" className={buttonVariants()}>
+          <Plus data-icon="inline-start" aria-hidden />
+          Cadastrar carro
         </Link>
-      </div>
+      </PageHeader>
 
       <VehicleFilters count={vehicles.length} />
 
@@ -98,7 +96,7 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   return (
     <Link
       href={`/admin/veiculos/${vehicle.id}`}
-      className={`group overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 transition hover:ring-foreground/20 ${
+      className={`group block overflow-hidden rounded-xl bg-card text-card-foreground ring-1 ring-foreground/10 transition hover:ring-foreground/20 ${
         muted.includes(vehicle.status) ? "opacity-70" : ""
       }`}
     >

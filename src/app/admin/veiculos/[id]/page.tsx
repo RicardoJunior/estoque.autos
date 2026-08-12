@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ExternalLink } from "lucide-react";
 import { getSession, requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { vehicleTitle } from "@/lib/format";
@@ -7,6 +7,8 @@ import { VehicleForm } from "../VehicleForm";
 import { PhotoManager } from "./PhotoManager";
 import { VehicleActions } from "./VehicleActions";
 import { updateVehicleAction } from "../actions";
+import { PageHeader } from "@/components/admin/PageHeader";
+import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { Vehicle } from "@/lib/types";
 
@@ -52,25 +54,21 @@ export default async function EditVehiclePage({
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <div>
-        <Link
-          href="/admin/veiculos"
-          className="text-sm text-muted-foreground hover:underline"
+      <PageHeader
+        title={vehicleTitle(vehicle)}
+        backHref="/admin/veiculos"
+        backLabel="Estoque"
+      >
+        <a
+          href={`/${tenant.slug}/carros/${vehicle.id}`}
+          target="_blank"
+          rel="noreferrer"
+          className={buttonVariants({ variant: "outline", size: "sm" })}
         >
-          ← Estoque
-        </Link>
-        <div className="mt-1 flex items-center justify-between gap-4">
-          <h1 className="text-xl font-bold">{vehicleTitle(vehicle)}</h1>
-          <a
-            href={`/${tenant.slug}/carros/${vehicle.id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="shrink-0 text-sm font-medium text-primary hover:underline"
-          >
-            Ver no site ↗
-          </a>
-        </div>
-      </div>
+          Ver no site
+          <ExternalLink data-icon="inline-end" aria-hidden />
+        </a>
+      </PageHeader>
 
       {novo && (
         <Card className="bg-primary/5 p-4 text-sm ring-primary/20">

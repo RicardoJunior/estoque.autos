@@ -1,5 +1,6 @@
 import { requireTenant } from "@/lib/auth";
 import type { Storefront } from "@/lib/public";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { SiteCustomizer } from "./SiteCustomizer";
 
 export const metadata = { title: "Meu site" };
@@ -24,12 +25,10 @@ export default async function SitePage() {
 
   return (
     <div className="mx-auto max-w-6xl space-y-5">
-      <div>
-        <h1 className="text-xl font-bold">Meu site</h1>
-        <p className="text-sm text-[var(--color-ink-soft)]">
-          Personalize o template, as cores, o logo e os textos da sua loja.
-        </p>
-      </div>
+      <PageHeader
+        title="Meu site"
+        description="Personalize o template, as cores, o logo e os textos da sua loja."
+      />
       <SiteCustomizer store={store} />
     </div>
   );

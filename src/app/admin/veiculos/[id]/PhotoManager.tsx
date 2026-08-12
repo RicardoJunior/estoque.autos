@@ -3,6 +3,12 @@
 import { useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ImagePlus,
+  Loader2,
+} from "lucide-react";
 import type { VehiclePhoto } from "@/lib/types";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -148,11 +154,16 @@ export function PhotoManager({
         </div>
         <Button
           type="button"
-          variant="ghost"
+          variant="outline"
           disabled={pending || photos.length >= MAX_PHOTOS}
           onClick={() => fileRef.current?.click()}
         >
-          {pending ? "Enviando…" : "+ Adicionar fotos"}
+          {pending ? (
+            <Loader2 data-icon="inline-start" className="animate-spin" aria-hidden />
+          ) : (
+            <ImagePlus data-icon="inline-start" aria-hidden />
+          )}
+          {pending ? "Enviando…" : "Adicionar fotos"}
         </Button>
         <input
           ref={fileRef}
@@ -206,8 +217,12 @@ export function PhotoManager({
                 </div>
                 <div className="flex items-center justify-between gap-1 p-1.5">
                   <div className="flex gap-1">
-                    <IconBtn label="Mover para a esquerda" disabled={i === 0 || pending} onClick={() => move(p.id, -1)}>←</IconBtn>
-                    <IconBtn label="Mover para a direita" disabled={i === photos.length - 1 || pending} onClick={() => move(p.id, 1)}>→</IconBtn>
+                    <IconBtn label="Mover para a esquerda" disabled={i === 0 || pending} onClick={() => move(p.id, -1)}>
+                      <ChevronLeft aria-hidden />
+                    </IconBtn>
+                    <IconBtn label="Mover para a direita" disabled={i === photos.length - 1 || pending} onClick={() => move(p.id, 1)}>
+                      <ChevronRight aria-hidden />
+                    </IconBtn>
                   </div>
                   <div className="flex gap-1">
                     {i !== 0 && (

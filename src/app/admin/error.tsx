@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
+import { RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 
 export default function AdminError({
   error,
@@ -16,7 +18,7 @@ export default function AdminError({
 
   return (
     <div className="flex min-h-[60vh] items-center justify-center">
-      <div className="w-full max-w-md rounded-xl bg-card p-8 text-center text-card-foreground ring-1 ring-foreground/10">
+      <Card className="w-full max-w-md items-center gap-0 p-8 text-center">
         <h2 className="text-lg font-bold">
           Não foi possível carregar esta tela
         </h2>
@@ -25,6 +27,7 @@ export default function AdminError({
           seus leads continuam salvos.
         </p>
         <Button className="mt-6" onClick={() => unstable_retry()}>
+          <RotateCw data-icon="inline-start" aria-hidden />
           Tentar de novo
         </Button>
         {error.digest && (
@@ -32,7 +35,7 @@ export default function AdminError({
             código: {error.digest}
           </p>
         )}
-      </div>
+      </Card>
     </div>
   );
 }

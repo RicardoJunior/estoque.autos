@@ -5,6 +5,7 @@ import {
   getFipeModels,
   getFipePrice,
   getFipeYears,
+  searchFipe,
 } from "@/lib/fipe/cache";
 import { FIPE_VEHICLE_TYPES, type FipeVehicleType } from "@/lib/fipe/types";
 
@@ -38,6 +39,8 @@ export async function GET(
 
   try {
     switch (resource) {
+      case "search":
+        return Response.json(await searchFipe(type, q.get("q") ?? ""));
       case "brands":
         return Response.json(await getFipeBrands(type));
       case "models":

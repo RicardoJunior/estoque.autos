@@ -38,7 +38,12 @@ async function countActiveVehicles(
 }
 
 function parseVehicleForm(formData: FormData) {
-  const optionals = formData.getAll("optionals").map(String).filter(Boolean);
+  // sempre alfabético: o anúncio público exibe na ordem gravada
+  const optionals = formData
+    .getAll("optionals")
+    .map(String)
+    .filter(Boolean)
+    .sort((a, b) => a.localeCompare(b, "pt-BR"));
   const conditionFlags = formData
     .getAll("condition_flags")
     .map(String)
@@ -68,6 +73,27 @@ function parseVehicleForm(formData: FormData) {
   });
 }
 
+/** Fotos enviadas durante o cadastro (PhotoStage) — valida que os
+ *  arquivos são do staging DA loja ativa antes de anexar. */
+function parseStagedPhotos(formData: FormData, tenantId: string): VehiclePhoto[] {
+  try {
+    const raw = JSON.parse(String(formData.get("staged_photos") || "[]"));
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .filter(
+        (p): p is VehiclePhoto =>
+          !!p &&
+          typeof p.id === "string" &&
+          typeof p.url === "string" &&
+          typeof p.path === "string" &&
+          p.path.startsWith(`${tenantId}/novo/`),
+      )
+      .slice(0, MAX_PHOTOS);
+  } catch {
+    return [];
+  }
+}
+
 export async function createVehicleAction(
   _prev: VehicleFormState,
   formData: FormData,
@@ -86,9 +112,11 @@ export async function createVehicleAction(
     return { error: activeVehicleLimitMessage(tenant.plan) };
   }
 
+  const photos = parseStagedPhotos(formData, tenant.id);
+
   const { data, error } = await supabase
     .from("vehicles")
-    .insert({ ...parsed.data, tenant_id: tenant.id })
+    .insert({ ...parsed.data, tenant_id: tenant.id, photos })
     .select("id")
     .single();
 
@@ -97,7 +125,7 @@ export async function createVehicleAction(
   }
 
   revalidatePath("/admin/veiculos");
-  redirect(`/admin/veiculos/${data.id}?novo=1`);
+  redirect(`/admin/veiculos/${data.id}${photos.length ? "" : "?novo=1"}`);
 }
 
 export async function updateVehicleAction(

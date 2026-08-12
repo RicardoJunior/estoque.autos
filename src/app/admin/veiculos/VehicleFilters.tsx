@@ -153,7 +153,7 @@ export function VehicleFilters({ count }: { count: number }) {
             >
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent alignItemWithTrigger={false} align="start">
               <SelectItem value="all">Todos os status</SelectItem>
               {VEHICLE_STATUSES.map((s) => (
                 <SelectItem key={s} value={s}>
@@ -177,7 +177,7 @@ export function VehicleFilters({ count }: { count: number }) {
               <ArrowUpDownIcon className="size-3.5 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent alignItemWithTrigger={false} align="start">
               {Object.entries(SORTS).map(([k, v]) => (
                 <SelectItem key={k} value={k}>
                   {v}

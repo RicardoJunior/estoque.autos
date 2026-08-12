@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { prepareLogo, prepareHeroImage, LogoError } from "@/lib/logo";
+import { sanitizeInlineText, sanitizeRichText } from "@/lib/rich-text";
 import { findGoogleFont } from "@/lib/google-fonts";
 import { uploadPublic, removePublic, pathFromPublicUrl } from "@/lib/storage";
 import {
@@ -35,6 +36,18 @@ export async function updateSiteAction(
   const fontHead = formData.get("font_head");
   const fontBody = formData.get("font_body");
   const rawShowName = formData.get("show_name");
+  // textos editáveis: "" é DIFERENTE de ausente — vazio significa
+  // "apagado de propósito" (o template oculta o elemento)
+  const text = (key: string): string | undefined => {
+    const v = formData.get(key);
+    return v == null ? undefined : String(v);
+  };
+
+  // o "Sobre a loja" vem do editor rich text — HTML passa pelo
+  // sanitizador (allowlist) ANTES da validação; editor vazio vira ""
+  const rawAbout = formData.get("about");
+  const about =
+    rawAbout == null ? undefined : sanitizeRichText(String(rawAbout));
 
   const parsed = tenantCustomizationSchema.safeParse({
     template_id: formData.get("template_id") || undefined,
@@ -46,7 +59,7 @@ export async function updateSiteAction(
     },
     settings: {
       slogan: formData.get("slogan") || undefined,
-      about: formData.get("about") || undefined,
+      about: about || undefined,
       footer_text: formData.get("footer_text") || undefined,
       business_hours: formData.get("business_hours") || undefined,
       fonts:
@@ -54,9 +67,23 @@ export async function updateSiteAction(
           ? { head: String(fontHead), body: String(fontBody) }
           : undefined,
       show_name: rawShowName == null ? undefined : rawShowName === "true",
+      texts: {
+        featured_title: text("text_featured_title"),
+        featured_subtitle: text("text_featured_subtitle"),
+        stock_title: text("text_stock_title"),
+      },
       hero: {
-        title: formData.get("hero_title") || undefined,
-        subtitle: formData.get("hero_subtitle") || undefined,
+        // eyebrow e CTA são texto simples (não rich): text() já trata ""=apagado
+        eyebrow: text("hero_eyebrow"),
+        // título/subtítulo vêm do editor inline: sanitiza mantendo a
+        // semântica ""=apagado (sanitize de vazio devolve "")
+        title: text("hero_title") !== undefined
+          ? sanitizeInlineText(text("hero_title")!)
+          : undefined,
+        subtitle: text("hero_subtitle") !== undefined
+          ? sanitizeInlineText(text("hero_subtitle")!)
+          : undefined,
+        cta_label: text("hero_cta_label"),
         media: formData.get("hero_media") || undefined,
         video_url: formData.get("hero_video_url") || undefined,
       },
@@ -91,10 +118,20 @@ export async function updateSiteAction(
   // imagens do carrossel (upload separado) são sempre preservadas
   update.settings.hero = {
     ...tenant.settings.hero,
-    title: heroPatch?.title,
-    subtitle: heroPatch?.subtitle,
+    eyebrow: heroPatch?.eyebrow ?? tenant.settings.hero?.eyebrow,
+    title: heroPatch?.title ?? tenant.settings.hero?.title,
+    subtitle: heroPatch?.subtitle ?? tenant.settings.hero?.subtitle,
+    cta_label: heroPatch?.cta_label ?? tenant.settings.hero?.cta_label,
     media: heroPatch?.media ?? tenant.settings.hero?.media,
     video_url: heroPatch?.video_url,
+  };
+  // headings de seções: mesmo modelo (""=ocultar; ausente=preserva)
+  const textsPatch = parsed.data.settings?.texts;
+  update.settings.texts = {
+    ...tenant.settings.texts,
+    ...(textsPatch?.featured_title !== undefined && { featured_title: textsPatch.featured_title }),
+    ...(textsPatch?.featured_subtitle !== undefined && { featured_subtitle: textsPatch.featured_subtitle }),
+    ...(textsPatch?.stock_title !== undefined && { stock_title: textsPatch.stock_title }),
   };
 
   // fontes: o zod valida a FORMA; a existência é conferida no catálogo

@@ -16,7 +16,15 @@ import {
   type VehicleCategory,
 } from "@/lib/types";
 import { FipePicker, type FipeFill } from "./FipePicker";
+import { PhotoStage } from "./PhotoStage";
 import { COMMON_OPTIONALS, VEHICLE_COLORS } from "@/lib/optionals";
+import { ChipPicker } from "@/components/admin/ChipPicker";
+import { CheckboxGrid } from "@/components/admin/CheckboxGrid";
+import {
+  MoneyInput,
+  SuffixNumberInput,
+} from "@/components/admin/masked-inputs";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -40,20 +48,49 @@ type Action = (
 function SubmitButton({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
   return (
-    <Button type="submit" disabled={pending}>
+    <Button type="submit" size="lg" disabled={pending}>
       {pending ? "Salvando…" : children}
     </Button>
   );
+}
+
+function Section({
+  title,
+  hint,
+  children,
+}: {
+  title: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="font-sans text-base font-semibold tracking-normal">
+          {title}
+        </CardTitle>
+        {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      </CardHeader>
+      <CardContent className="space-y-4">{children}</CardContent>
+    </Card>
+  );
+}
+
+function FieldError({ msg }: { msg?: string }) {
+  return msg ? <p className="text-xs text-destructive">{msg}</p> : null;
 }
 
 export function VehicleForm({
   action,
   initial,
   submitLabel,
+  withPhotoStage,
 }: {
   action: Action;
   initial?: Vehicle;
   submitLabel: string;
+  /** cadastro novo: fotos sobem junto (staging) */
+  withPhotoStage?: boolean;
 }) {
   const router = useRouter();
   const [state, formAction] = useActionState<VehicleFormState, FormData>(
@@ -61,10 +98,8 @@ export function VehicleForm({
     {},
   );
   const e = state.fieldErrors ?? {};
-  const selectedOptionals = new Set(initial?.optionals ?? []);
-  const selectedFlags = new Set(initial?.condition_flags ?? []);
 
-  // controlados: a cascata FIPE preenche e o lojista pode ajustar
+  // controlados: a busca FIPE preenche e o lojista ajusta à vontade
   const [category, setCategory] = useState<VehicleCategory>(
     initial?.category ?? "carro",
   );
@@ -86,317 +121,296 @@ export function VehicleForm({
   }
 
   return (
-    <form action={formAction} className="space-y-6">
-      {state.error && (
-        <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-          {state.error}
-        </div>
-      )}
+    <form action={formAction} className="space-y-5">
+      {state.error && <FormBanner variant="error">{state.error}</FormBanner>}
       {state.success && (
-        <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-          ✓ Alterações salvas.
-        </div>
+        <FormBanner variant="success">Alterações salvas.</FormBanner>
       )}
 
-      {/* Identificação — cascata FIPE primeiro, campos editáveis embaixo */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Identificação</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
+      <Section title="Identificação">
+        <div className="grid gap-2">
+          <Label htmlFor="category">Categoria</Label>
+          <Select
+            name="category"
+            value={category}
+            onValueChange={(v) =>
+              setCategory((v ?? "carro") as VehicleCategory)
+            }
+          >
+            <SelectTrigger id="category" className="w-full sm:max-w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent alignItemWithTrigger={false} align="start">
+              {VEHICLE_CATEGORIES.map((c) => (
+                <SelectItem key={c} value={c}>
+                  {CATEGORY_LABELS[c]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError msg={e.category} />
+        </div>
+
+        <FipePicker
+          category={category}
+          initialSnapshot={
+            initial?.fipe_code &&
+            initial.fipe_year_id &&
+            initial.fipe_price != null &&
+            initial.fipe_reference
+              ? {
+                  fipe_code: initial.fipe_code,
+                  fipe_year_id: initial.fipe_year_id,
+                  fipe_price: initial.fipe_price,
+                  fipe_reference: initial.fipe_reference,
+                }
+              : null
+          }
+          onFill={applyFipe}
+          onUsePrice={(p) => setPrice(String(p))}
+        />
+
+        <p className="text-xs text-muted-foreground">
+          Buscar pela FIPE preenche os campos abaixo — ajuste o que quiser.
+        </p>
+
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="grid gap-2">
-            <Label htmlFor="category">Categoria</Label>
+            <Label htmlFor="brand">Marca</Label>
+            <Input
+              id="brand"
+              name="brand"
+              required
+              value={brand}
+              onChange={(ev) => setBrand(ev.target.value)}
+              placeholder="Honda"
+            />
+            <FieldError msg={e.brand} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="model">Modelo</Label>
+            <Input
+              id="model"
+              name="model"
+              required
+              value={model}
+              onChange={(ev) => setModel(ev.target.value)}
+              placeholder="Civic"
+            />
+            <FieldError msg={e.model} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="version">Versão</Label>
+            <Input
+              id="version"
+              name="version"
+              defaultValue={initial?.version ?? ""}
+              placeholder="EXL 2.0"
+            />
+            <FieldError msg={e.version} />
+          </div>
+        </div>
+      </Section>
+
+      <Section title="Ficha técnica">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="year_fab">Ano de fabricação</Label>
+            <Input
+              id="year_fab"
+              name="year_fab"
+              type="number"
+              inputMode="numeric"
+              value={yearFab}
+              onChange={(ev) => setYearFab(ev.target.value)}
+              placeholder="2021"
+            />
+            <FieldError msg={e.year_fab} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="year_model">Ano do modelo</Label>
+            <Input
+              id="year_model"
+              name="year_model"
+              type="number"
+              inputMode="numeric"
+              value={yearModel}
+              onChange={(ev) => setYearModel(ev.target.value)}
+              placeholder="2022"
+            />
+            <FieldError msg={e.year_model} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="mileage">Quilometragem</Label>
+            <SuffixNumberInput
+              id="mileage"
+              name="mileage"
+              suffix="km"
+              defaultValue={initial?.mileage ?? ""}
+              placeholder="32.000"
+            />
+            <FieldError msg={e.mileage} />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="fuel">Combustível</Label>
             <Select
-              name="category"
-              value={category}
-              onValueChange={(v) => setCategory((v ?? "carro") as VehicleCategory)}
+              name="fuel"
+              value={fuel}
+              onValueChange={(v) => setFuel(String(v ?? ""))}
             >
-              <SelectTrigger id="category" className="w-full sm:max-w-56">
-                <SelectValue />
+              <SelectTrigger id="fuel" className="w-full">
+                <SelectValue placeholder="Selecione" />
               </SelectTrigger>
-              <SelectContent>
-                {VEHICLE_CATEGORIES.map((c) => (
-                  <SelectItem key={c} value={c}>{CATEGORY_LABELS[c]}</SelectItem>
+              <SelectContent alignItemWithTrigger={false} align="start">
+                {FUELS.map((f) => (
+                  <SelectItem key={f} value={f}>
+                    {FUEL_LABELS[f]}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            {e.category && <p className="text-xs text-destructive">{e.category}</p>}
-          </div>
-
-          <FipePicker
-            category={category}
-            initialSnapshot={
-              initial?.fipe_code &&
-              initial.fipe_year_id &&
-              initial.fipe_price != null &&
-              initial.fipe_reference
-                ? {
-                    fipe_code: initial.fipe_code,
-                    fipe_year_id: initial.fipe_year_id,
-                    fipe_price: initial.fipe_price,
-                    fipe_reference: initial.fipe_reference,
-                  }
-                : null
-            }
-            onFill={applyFipe}
-            onUsePrice={(p) => setPrice(String(p))}
-          />
-
-          <p className="text-xs text-muted-foreground">
-            Buscar pela FIPE preenche os campos abaixo — ajuste o que quiser.
-          </p>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="brand">Marca</Label>
-              <Input
-                id="brand"
-                name="brand"
-                required
-                value={brand}
-                onChange={(ev) => setBrand(ev.target.value)}
-                placeholder="Honda"
-              />
-              {e.brand && <p className="text-xs text-destructive">{e.brand}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="model">Modelo</Label>
-              <Input
-                id="model"
-                name="model"
-                required
-                value={model}
-                onChange={(ev) => setModel(ev.target.value)}
-                placeholder="Civic"
-              />
-              {e.model && <p className="text-xs text-destructive">{e.model}</p>}
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="version">Versão</Label>
-              <Input id="version" name="version" defaultValue={initial?.version ?? ""} placeholder="EXL 2.0" />
-              {e.version && <p className="text-xs text-destructive">{e.version}</p>}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Ficha técnica */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Ficha técnica</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="grid gap-2">
-              <Label htmlFor="year_fab">Ano fabricação</Label>
-              <Input
-                id="year_fab"
-                name="year_fab"
-                type="number"
-                inputMode="numeric"
-                value={yearFab}
-                onChange={(ev) => setYearFab(ev.target.value)}
-                placeholder="2021"
-              />
-              {e.year_fab && <p className="text-xs text-destructive">{e.year_fab}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="year_model">Ano modelo</Label>
-              <Input
-                id="year_model"
-                name="year_model"
-                type="number"
-                inputMode="numeric"
-                value={yearModel}
-                onChange={(ev) => setYearModel(ev.target.value)}
-                placeholder="2022"
-              />
-              {e.year_model && <p className="text-xs text-destructive">{e.year_model}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="mileage">Quilometragem</Label>
-              <Input id="mileage" name="mileage" type="number" inputMode="numeric" defaultValue={initial?.mileage ?? ""} placeholder="32000" />
-              {e.mileage && <p className="text-xs text-destructive">{e.mileage}</p>}
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-3">
-            <div className="grid gap-2">
-              <Label htmlFor="fuel">Combustível</Label>
-              <Select
-                name="fuel"
-                value={fuel}
-                onValueChange={(v) => setFuel(String(v ?? ""))}
-              >
-                <SelectTrigger id="fuel" className="w-full">
-                  <SelectValue placeholder="—" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  {FUELS.map((f) => (
-                    <SelectItem key={f} value={f}>{FUEL_LABELS[f]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {e.fuel && <p className="text-xs text-destructive">{e.fuel}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="transmission">Câmbio</Label>
-              <Select name="transmission" defaultValue={initial?.transmission ?? ""}>
-                <SelectTrigger id="transmission" className="w-full">
-                  <SelectValue placeholder="—" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  {TRANSMISSIONS.map((t) => (
-                    <SelectItem key={t} value={t}>{TRANSMISSION_LABELS[t]}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {e.transmission && <p className="text-xs text-destructive">{e.transmission}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="doors">Portas</Label>
-              <Input id="doors" name="doors" type="number" inputMode="numeric" defaultValue={initial?.doors ?? ""} placeholder="4" />
-              {e.doors && <p className="text-xs text-destructive">{e.doors}</p>}
-            </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="color">Cor</Label>
-              <Select name="color" defaultValue={initial?.color ?? ""}>
-                <SelectTrigger id="color" className="w-full">
-                  <SelectValue placeholder="—" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">—</SelectItem>
-                  {VEHICLE_COLORS.map((c) => (
-                    <SelectItem key={c} value={c}>{c}</SelectItem>
-                  ))}
-                  {/* cor fora da lista (cadastros antigos) continua válida */}
-                  {initial?.color &&
-                    !VEHICLE_COLORS.includes(
-                      initial.color as (typeof VEHICLE_COLORS)[number],
-                    ) && (
-                      <SelectItem value={initial.color}>
-                        {initial.color}
-                      </SelectItem>
-                    )}
-                </SelectContent>
-              </Select>
-              {e.color && <p className="text-xs text-destructive">{e.color}</p>}
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="plate">Placa (uso interno)</Label>
-              <Input id="plate" name="plate" defaultValue={initial?.plate ?? ""} placeholder="ABC1D23" />
-              {e.plate ? (
-                <p className="text-xs text-destructive">{e.plate}</p>
-              ) : (
-                <p className="text-xs text-muted-foreground">Não aparece no site público.</p>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Condição do veículo (marcadores estilo Webmotors) */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Condição do veículo</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {VEHICLE_FLAGS.map((flag) => (
-              <label key={flag} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  name="condition_flags"
-                  value={flag}
-                  defaultChecked={selectedFlags.has(flag)}
-                  className="h-4 w-4 rounded border-border accent-primary"
-                />
-                {VEHICLE_FLAG_LABELS[flag]}
-              </label>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Os marcadores aparecem como selos no anúncio. “Veículo de
-            leilão” e “Alienado” são divulgação de procedência — aparecem
-            em destaque de aviso.
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Opcionais */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Opcionais</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {COMMON_OPTIONALS.map((opt) => (
-              <label key={opt} className="flex items-center gap-2 text-sm">
-                <input
-                  type="checkbox"
-                  name="optionals"
-                  value={opt}
-                  defaultChecked={selectedOptionals.has(opt)}
-                  className="h-4 w-4 rounded border-border accent-primary"
-                />
-                {opt}
-              </label>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Preço e descrição */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Anúncio</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="price">Preço (R$)</Label>
-              <Input
-                id="price"
-                name="price"
-                type="number"
-                inputMode="numeric"
-                step="100"
-                required
-                value={price}
-                onChange={(ev) => setPrice(ev.target.value)}
-                placeholder="132900"
-              />
-              {e.price && <p className="text-xs text-destructive">{e.price}</p>}
-            </div>
-            <label className="flex items-end gap-2 pb-2.5 text-sm">
-              <Switch name="featured" defaultChecked={initial?.featured} />
-              Marcar como destaque na vitrine
-            </label>
+            <FieldError msg={e.fuel} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="description">Descrição</Label>
-            <Textarea
-              id="description"
-              name="description"
-              className="min-h-28"
-              defaultValue={initial?.description ?? ""}
-              placeholder="Único dono, todas as revisões em concessionária…"
-            />
-            {e.description && <p className="text-xs text-destructive">{e.description}</p>}
+            <Label htmlFor="transmission">Câmbio</Label>
+            <Select name="transmission" defaultValue={initial?.transmission ?? ""}>
+              <SelectTrigger id="transmission" className="w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false} align="start">
+                {TRANSMISSIONS.map((t) => (
+                  <SelectItem key={t} value={t}>
+                    {TRANSMISSION_LABELS[t]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError msg={e.transmission} />
           </div>
-        </CardContent>
-      </Card>
+          <div className="grid gap-2">
+            <Label htmlFor="doors">Portas</Label>
+            <Input
+              id="doors"
+              name="doors"
+              type="number"
+              inputMode="numeric"
+              defaultValue={initial?.doors ?? ""}
+              placeholder="4"
+            />
+            <FieldError msg={e.doors} />
+          </div>
+        </div>
 
-      <div className="flex items-center justify-end gap-3">
-        <Button type="button" variant="ghost" onClick={() => router.back()}>
-          Cancelar
-        </Button>
-        <SubmitButton>{submitLabel}</SubmitButton>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="color">Cor</Label>
+            <Select name="color" defaultValue={initial?.color ?? ""}>
+              <SelectTrigger id="color" className="w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false} align="start">
+                {VEHICLE_COLORS.map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c}
+                  </SelectItem>
+                ))}
+                {initial?.color &&
+                  !VEHICLE_COLORS.includes(
+                    initial.color as (typeof VEHICLE_COLORS)[number],
+                  ) && (
+                    <SelectItem value={initial.color}>{initial.color}</SelectItem>
+                  )}
+              </SelectContent>
+            </Select>
+            <FieldError msg={e.color} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="plate">Placa (uso interno)</Label>
+            <Input
+              id="plate"
+              name="plate"
+              defaultValue={initial?.plate ?? ""}
+              placeholder="ABC1D23"
+            />
+            <FieldError msg={e.plate} />
+          </div>
+        </div>
+      </Section>
+
+      {withPhotoStage && (
+        <Section
+          title="Fotos"
+          hint="Suba as fotos agora mesmo — o anúncio já nasce completo."
+        >
+          <PhotoStage />
+        </Section>
+      )}
+
+      <Section
+        title="Condição do veículo"
+        hint="Viram selos no anúncio. “Veículo de leilão” e “Alienado” são divulgação de procedência e aparecem em tom de aviso."
+      >
+        <ChipPicker
+          name="condition_flags"
+          options={VEHICLE_FLAGS}
+          labels={VEHICLE_FLAG_LABELS}
+          initial={initial?.condition_flags ?? []}
+          warnValues={["leilao", "alienado"]}
+        />
+      </Section>
+
+      <Section title="Opcionais">
+        <CheckboxGrid
+          name="optionals"
+          options={COMMON_OPTIONALS}
+          initial={initial?.optionals ?? []}
+          searchable
+        />
+      </Section>
+
+      <Section title="Anúncio">
+        <div className="grid items-end gap-4 sm:grid-cols-2">
+          <div className="grid gap-2">
+            <Label htmlFor="price">Preço</Label>
+            <MoneyInput
+              id="price"
+              name="price"
+              required
+              value={price}
+              onValueChange={setPrice}
+              placeholder="132.900"
+            />
+            <FieldError msg={e.price} />
+          </div>
+          <label className="flex items-center gap-2 pb-2 text-sm">
+            <Switch name="featured" defaultChecked={initial?.featured} />
+            Destaque na vitrine
+          </label>
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="description">Descrição</Label>
+          <Textarea
+            id="description"
+            name="description"
+            className="min-h-28"
+            defaultValue={initial?.description ?? ""}
+            placeholder="Único dono, todas as revisões em concessionária…"
+          />
+          <FieldError msg={e.description} />
+        </div>
+      </Section>
+
+      {/* barra de ação grudada no rodapé: salvar sempre à mão num form longo */}
+      <div className="sticky bottom-0 z-10 -mx-4 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">
+        <div className="flex items-center justify-end gap-3">
+          <Button type="button" variant="ghost" onClick={() => router.back()}>
+            Cancelar
+          </Button>
+          <SubmitButton>{submitLabel}</SubmitButton>
+        </div>
       </div>
     </form>
   );

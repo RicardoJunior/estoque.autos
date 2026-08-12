@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { requireStaff } from "@/lib/auth";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { VehicleForm } from "../VehicleForm";
 import { createVehicleAction } from "../actions";
 
@@ -23,19 +23,17 @@ export default async function NewVehiclePage({
           </p>
         </div>
       )}
-      <div>
-        <Link
-          href="/admin/veiculos"
-          className="text-sm text-[var(--color-ink-soft)] hover:underline"
-        >
-          ← Estoque
-        </Link>
-        <h1 className="mt-1 text-xl font-bold">Cadastrar carro</h1>
-        <p className="text-sm text-[var(--color-ink-soft)]">
-          Preencha os dados. Em seguida você adiciona as fotos.
-        </p>
-      </div>
-      <VehicleForm action={createVehicleAction} submitLabel="Salvar e adicionar fotos →" />
+      <PageHeader
+        title="Cadastrar carro"
+        description="Busque na FIPE, confira os dados e suba as fotos — tudo numa tela só."
+        backHref="/admin/veiculos"
+        backLabel="Estoque"
+      />
+      <VehicleForm
+        action={createVehicleAction}
+        submitLabel="Publicar anúncio"
+        withPhotoStage
+      />
     </div>
   );
 }

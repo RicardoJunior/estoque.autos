@@ -83,11 +83,15 @@
   --border: oklch(0.92 0 0);
   --input: oklch(0.92 0 0);
   --ring: oklch(0.72 0.18 47);
-  --chart-1: oklch(0.72 0.18 47);
-  --chart-2: oklch(0.81 0.13 65);
-  --chart-3: oklch(0.65 0.12 200);
-  --chart-4: oklch(0.6 0.1 160);
-  --chart-5: oklch(0.55 0.08 300);
+  /* Paleta categórica dos gráficos (variante clara). A ORDEM dos slots é o
+     mecanismo de segurança p/ daltonismo — séries adjacentes (pilhas, linhas)
+     usam slots vizinhos; nunca reordenar sem revalidar (dataviz validator:
+     slots 1-3 passam todas as checagens sobre superfície branca). */
+  --chart-1: oklch(0.6 0.17 47);   /* âmbar (marca) */
+  --chart-2: oklch(0.55 0.14 245); /* azul */
+  --chart-3: oklch(0.55 0.12 155); /* verde */
+  --chart-4: oklch(0.55 0.13 300); /* violeta (reserva) */
+  --chart-5: oklch(0.58 0.11 210); /* ciano (reserva) */
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.15 0 0);
   --sidebar-primary: oklch(0.72 0.18 47);
@@ -119,11 +123,15 @@
   --border: oklch(1 0 0 / 9%);
   --input: oklch(1 0 0 / 14%);
   --ring: oklch(0.72 0.18 47);
-  --chart-1: oklch(0.72 0.18 47);
-  --chart-2: oklch(0.81 0.13 65);
-  --chart-3: oklch(0.65 0.12 200);
-  --chart-4: oklch(0.6 0.1 160);
-  --chart-5: oklch(0.55 0.08 300);
+  /* Paleta categórica dos gráficos — validada contra o card escuro
+     (contraste ≥3:1, separação CVD e visão normal; âmbar rebaixado a
+     L 0.67 p/ caber na banda dark — o primary L 0.72 estoura). A ordem
+     dos slots é segurança p/ daltonismo; não reordenar sem revalidar. */
+  --chart-1: oklch(0.67 0.17 47);  /* âmbar (marca) */
+  --chart-2: oklch(0.6 0.14 245);  /* azul */
+  --chart-3: oklch(0.62 0.12 155); /* verde */
+  --chart-4: oklch(0.6 0.13 300);  /* violeta (reserva) */
+  --chart-5: oklch(0.65 0.12 200); /* ciano (reserva) */
   --sidebar: oklch(0.17 0.005 265);
   --sidebar-foreground: oklch(0.95 0.008 95);
   --sidebar-primary: oklch(0.72 0.18 47);
