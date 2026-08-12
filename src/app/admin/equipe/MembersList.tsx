@@ -4,6 +4,7 @@ import { startTransition, useActionState, useState } from "react";
 import { Crown, MoreVertical, Trash2, UserCog } from "lucide-react";
 import { TEAM_ROLE_LABELS, type TeamMember } from "@/lib/types";
 import { formatDate } from "@/lib/format";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
@@ -89,11 +90,7 @@ export function MembersList({
 
   return (
     <>
-      {error && (
-        <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-          {error}
-        </div>
-      )}
+      {error && <FormBanner variant="error">{error}</FormBanner>}
 
       <Card className="gap-0 p-0">
         <CardHeader className="px-5 pt-5 pb-3">

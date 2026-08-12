@@ -13,6 +13,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { createBillingPortalAction } from "./actions";
 import { ContactForm } from "./ContactForm";
 import { DomainForm } from "./DomainForm";
@@ -37,25 +44,38 @@ export default async function SettingsPage() {
   const subscription =
     role === "owner" ? await getTenantSubscription(tenant.id) : null;
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <div>
-        <h1 className="text-xl font-bold">Configurações</h1>
-        <p className="text-sm text-[var(--color-ink-soft)]">
-          Assinatura, dados de contato e endereço exibidos no seu site.
-        </p>
-      </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      <PageHeader
+        title="Configurações"
+        description="Assinatura da loja e, nas abas abaixo, dados de contato, marketing e domínio do seu site."
+      />
       {subscription && <SubscriptionCard sub={subscription} />}
-      <ContactForm tenant={tenant} />
-      <MarketingForm tenant={tenant} />
-      {tenant.plan === "pro" ? (
-        <DomainForm
-          tenant={tenant}
-          appHost={appHost()}
-          cfEnabled={isCloudflareSaasEnabled()}
-        />
-      ) : (
-        <DomainUpgradeCard />
-      )}
+      {/* um form por aba — só um botão "Salvar" visível por vez */}
+      <Tabs defaultValue="loja" className="gap-4">
+        <TabsList>
+          <TabsTrigger value="loja">Dados da loja</TabsTrigger>
+          <TabsTrigger value="marketing">Marketing</TabsTrigger>
+          <TabsTrigger value="dominio">Domínio próprio</TabsTrigger>
+        </TabsList>
+        {/* keepMounted preserva o que foi digitado ao alternar de aba */}
+        <TabsContent value="loja" keepMounted>
+          <ContactForm tenant={tenant} />
+        </TabsContent>
+        <TabsContent value="marketing" keepMounted>
+          <MarketingForm tenant={tenant} />
+        </TabsContent>
+        <TabsContent value="dominio" keepMounted>
+          {tenant.plan === "pro" ? (
+            <DomainForm
+              tenant={tenant}
+              appHost={appHost()}
+              cfEnabled={isCloudflareSaasEnabled()}
+            />
+          ) : (
+            <DomainUpgradeCard />
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -127,15 +147,17 @@ function SubscriptionCard({ sub }: { sub: Subscription }) {
         </div>
         {sub.plan === "basico" && (
           <form action={createBillingPortalAction} className="border-t pt-3">
-            <button
+            <Button
               type="submit"
-              className="text-left text-xs text-muted-foreground transition-colors hover:text-primary"
+              variant="link"
+              size="sm"
+              className="h-auto whitespace-normal px-0 text-left text-xs font-normal text-muted-foreground hover:text-primary"
             >
               Precisa de mais carros ou domínio próprio?{" "}
               <span className="underline underline-offset-2">
                 Faça upgrade para o Pro
               </span>
-            </button>
+            </Button>
           </form>
         )}
       </CardContent>

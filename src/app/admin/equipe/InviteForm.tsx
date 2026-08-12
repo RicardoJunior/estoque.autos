@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
 import { TEAM_ROLE_LABELS } from "@/lib/types";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -44,15 +45,9 @@ export function InviteForm() {
       <CardContent className="px-0">
         <form action={action} className="space-y-4">
           {state.ok && (
-            <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-              ✓ Convite enviado por e-mail.
-            </div>
+            <FormBanner variant="success">Convite enviado por e-mail.</FormBanner>
           )}
-          {state.error && (
-            <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-              {state.error}
-            </div>
-          )}
+          {state.error && <FormBanner variant="error">{state.error}</FormBanner>}
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
             <div className="grid flex-1 gap-2">
               <Label htmlFor="invite-email">E-mail</Label>
@@ -70,7 +65,7 @@ export function InviteForm() {
                 <SelectTrigger id="invite-role" className="w-full sm:w-44">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent alignItemWithTrigger={false} align="start">
                   {INVITE_ROLES.map((r) => (
                     <SelectItem key={r} value={r}>
                       {TEAM_ROLE_LABELS[r]}

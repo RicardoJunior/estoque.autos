@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -11,6 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { CepInput, PhoneInput } from "@/components/admin/masked-inputs";
 import { updateContactAction, type ContactState } from "./actions";
 import type { Tenant } from "@/lib/types";
 
@@ -54,16 +56,8 @@ export function ContactForm({ tenant }: { tenant: Tenant }) {
 
   return (
     <form action={action} className="space-y-6">
-      {state.ok && (
-        <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-          ✓ Dados salvos.
-        </div>
-      )}
-      {state.error && (
-        <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-          {state.error}
-        </div>
-      )}
+      {state.ok && <FormBanner variant="success">Dados salvos.</FormBanner>}
+      {state.error && <FormBanner variant="error">{state.error}</FormBanner>}
 
       <Card>
         <CardHeader>
@@ -80,20 +74,19 @@ export function ContactForm({ tenant }: { tenant: Tenant }) {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="phone">Telefone</Label>
-              <Input
+              <PhoneInput
                 id="phone"
                 name="phone"
-                defaultValue={tenant.phone ?? ""}
+                defaultValue={tenant.phone}
                 placeholder="(11) 3333-4444"
               />
             </div>
             <div className="grid gap-2">
               <Label htmlFor="whatsapp">WhatsApp</Label>
-              <Input
+              <PhoneInput
                 id="whatsapp"
                 name="whatsapp"
-                defaultValue={tenant.whatsapp ?? ""}
-                placeholder="(11) 99999-9999"
+                defaultValue={tenant.whatsapp}
               />
             </div>
           </div>
@@ -122,12 +115,11 @@ export function ContactForm({ tenant }: { tenant: Tenant }) {
           <div className="grid gap-4 sm:grid-cols-[160px_1fr]">
             <div className="grid gap-2">
               <Label htmlFor="cep">CEP</Label>
-              <Input
+              <CepInput
                 id="cep"
                 name="cep"
-                defaultValue={addr.cep ?? ""}
-                placeholder="00000-000"
-                onBlur={(ev) => lookupCep(ev.currentTarget.value)}
+                defaultValue={addr.cep}
+                onComplete={lookupCep}
               />
               {cepLoading && (
                 <p className="text-xs text-muted-foreground">Buscando…</p>

@@ -86,6 +86,25 @@ async function notifyStoreByEmail(
  * tenant derivado do veículo, status/notes forçados — anon nunca forja).
  * Funciona para o formulário de proposta E para cliques de WhatsApp/telefone.
  */
+/**
+ * O diálogo envia o carro da troca em campos estruturados
+ * (trade_brand/model/year/color/km) — compõe o texto único que a
+ * coluna trade_vehicle guarda: "Fiat Argo 2019 · Prata · 45.000 km".
+ */
+function tradeVehicleText(formData: FormData): string | undefined {
+  const get = (key: string) => String(formData.get(key) ?? "").trim();
+  const name = [get("trade_brand"), get("trade_model")]
+    .filter(Boolean)
+    .join(" ");
+  const km = get("trade_km").replace(/\D/g, "");
+  const parts = [
+    [name, get("trade_year")].filter(Boolean).join(" "),
+    get("trade_color"),
+    km ? `${Number(km).toLocaleString("pt-BR")} km` : "",
+  ].filter(Boolean);
+  return parts.length > 0 ? parts.join(" · ").slice(0, 200) : undefined;
+}
+
 export async function submitLeadAction(
   _prev: LeadFormState,
   formData: FormData,
@@ -98,7 +117,8 @@ export async function submitLeadAction(
     email: formData.get("email") || undefined,
     message: formData.get("message") || undefined,
     proposal_value: formData.get("proposal_value") || undefined,
-    trade_vehicle: formData.get("trade_vehicle") || undefined,
+    trade_vehicle:
+      formData.get("trade_vehicle") || tradeVehicleText(formData),
     website: formData.get("website") || undefined, // honeypot
   });
 

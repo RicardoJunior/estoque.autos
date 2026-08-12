@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { useFormStatus } from "react-dom";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -56,16 +57,8 @@ export function MarketingForm({ tenant }: { tenant: Tenant }) {
 
   return (
     <form action={action} className="space-y-5">
-      {state.ok && (
-        <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-          ✓ Marketing salvo.
-        </div>
-      )}
-      {state.error && (
-        <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-          {state.error}
-        </div>
-      )}
+      {state.ok && <FormBanner variant="success">Marketing salvo.</FormBanner>}
+      {state.error && <FormBanner variant="error">{state.error}</FormBanner>}
 
       <Card>
         <CardHeader>

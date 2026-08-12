@@ -2,6 +2,7 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { FormBanner } from "@/components/admin/FormBanner";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -61,14 +62,12 @@ export function DomainForm({
       </CardHeader>
       <CardContent className="space-y-5">
         {saveState.ok && (
-          <div className="rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary">
-            ✓ Domínio salvo. Configure o apontamento abaixo.
-          </div>
+          <FormBanner variant="success">
+            Domínio salvo. Configure o apontamento abaixo.
+          </FormBanner>
         )}
         {saveState.error && (
-          <div className="rounded-lg bg-destructive/10 px-3.5 py-2.5 text-sm text-destructive">
-            {saveState.error}
-          </div>
+          <FormBanner variant="error">{saveState.error}</FormBanner>
         )}
 
         <form action={save} className="space-y-2">
@@ -119,15 +118,11 @@ export function DomainForm({
               </form>
             </div>
             {verifyState.verify && (
-              <div
-                className={
-                  verifyState.verify.active
-                    ? "rounded-lg bg-primary/10 px-3.5 py-2.5 text-sm text-primary"
-                    : "rounded-lg bg-muted px-3.5 py-2.5 text-sm text-muted-foreground"
-                }
+              <FormBanner
+                variant={verifyState.verify.active ? "success" : "neutral"}
               >
                 {verifyState.verify.message}
-              </div>
+              </FormBanner>
             )}
           </div>
         )}

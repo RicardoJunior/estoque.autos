@@ -1,6 +1,7 @@
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import type { Invite, TeamMember } from "@/lib/types";
+import { PageHeader } from "@/components/admin/PageHeader";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -22,7 +23,10 @@ export default async function TeamPage() {
   if (tenant.plan !== "pro") {
     return (
       <div className="mx-auto max-w-3xl space-y-5">
-        <PageHeader />
+        <PageHeader
+          title="Equipe"
+          description="Convide colaboradores para gerenciar o estoque e atender os leads da sua loja."
+        />
         <TeamUpgradeCard />
       </div>
     );
@@ -47,7 +51,10 @@ export default async function TeamPage() {
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
-      <PageHeader />
+      <PageHeader
+        title="Equipe"
+        description="Convide colaboradores para gerenciar o estoque e atender os leads da sua loja."
+      />
       <MembersList
         members={members}
         isOwner={role === "owner"}
@@ -60,29 +67,14 @@ export default async function TeamPage() {
   );
 }
 
-function PageHeader() {
-  return (
-    <div>
-      <h1 className="text-xl font-bold">Equipe</h1>
-      <p className="text-sm text-[var(--color-ink-soft)]">
-        Convide colaboradores para gerenciar o estoque e atender os leads da
-        sua loja.
-      </p>
-    </div>
-  );
-}
-
 function TeamUpgradeCard() {
   return (
     <Card className="gap-3 px-5 py-5">
       <CardHeader className="px-0">
-        <CardTitle className="text-sm font-semibold">
-          Equipe da loja
-        </CardTitle>
+        <CardTitle className="text-sm font-semibold">Equipe da loja</CardTitle>
         <CardDescription>
-          Convide vendedores e administradores para trabalhar com você no
-          painel — cada um com o próprio acesso e permissões. Disponível no
-          plano Pro.
+          Convide vendedores e administradores para trabalhar com você no painel
+          — cada um com o próprio acesso e permissões. Disponível no plano Pro.
         </CardDescription>
       </CardHeader>
       <CardContent className="px-0">
