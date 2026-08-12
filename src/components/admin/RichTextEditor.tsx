@@ -10,6 +10,7 @@ import {
 import StarterKit from "@tiptap/starter-kit";
 import {
   Bold,
+  CornerDownLeft,
   Italic,
   Link2,
   Link2Off,
@@ -150,6 +151,16 @@ export function RichTextEditor({
         >
           <Underline />
         </MarkButton>
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Quebra de linha"
+          title="Quebra de linha (Shift+Enter)"
+          onClick={() => editor?.chain().focus().setHardBreak().run()}
+        >
+          <CornerDownLeft />
+        </Button>
         {!inline && (
           <>
             <Separator orientation="vertical" className="mx-1 h-5" />
