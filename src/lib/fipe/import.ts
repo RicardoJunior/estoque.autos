@@ -340,11 +340,23 @@ async function importType(
       }
     }
 
-    // um modelo completo = anos garantidos + toda versão precificada
+    // um modelo completo = anos garantidos + toda versão precificada.
+    // Na virada de mês: modelo 100% precificado NA REFERÊNCIA atual é
+    // pulado; modelo pendente re-busca os anos AO VIVO (1 req) — é
+    // assim que versões novas do mês (zero km, ano-modelo seguinte)
+    // entram, sem quebrar o resume entre execuções.
     const processModel = async (model: { brand_id: string; id: string }) => {
       const k = `${model.brand_id}|${model.id}`;
-      let yearIds = yearsByModel.get(k);
-      if (!yearIds || yearIds.length === 0) {
+      const cached = yearsByModel.get(k) ?? [];
+      const fullyPriced =
+        crawlPrices &&
+        cached.length > 0 &&
+        cached.every((id) => priced.has(`${k}|${id}`));
+      if (fullyPriced) return;
+
+      let yearIds = cached;
+      const mustFetchYears = crawlPrices || cached.length === 0;
+      if (mustFetchYears) {
         await randomDelay(DELAY_MIN_MS, DELAY_MAX_MS);
         const years = await officialFetchYears(
           type,
@@ -464,6 +476,175 @@ async function importType(
  *  MesReferencia dos preços) — é assim que fipe_prices.reference fica */
 function refMonthLabel(ref: FipeReference): string {
   return ref.mes.replace("/", " de ");
+}
+
+const MONTH_INDEX: Record<string, number> = {
+  janeiro: 0, fevereiro: 1, março: 2, abril: 3, maio: 4, junho: 5,
+  julho: 6, agosto: 7, setembro: 8, outubro: 9, novembro: 10, dezembro: 11,
+};
+
+/** "julho/2026" → ISO do dia 1º do mês. Preço histórico entra com
+ *  fetched_at DATADO DO PRÓPRIO MÊS — o cache on-demand ordena por
+ *  fetched_at, então um mês antigo importado hoje passaria por
+ *  "preço vigente" se levasse o timestamp de agora. */
+function referenceTimestamp(mes: string): string {
+  const [nome, ano] = mes.toLowerCase().split("/");
+  const m = MONTH_INDEX[nome ?? ""];
+  if (m === undefined || !ano) {
+    throw new Error(`mês de referência inválido: ${mes}`);
+  }
+  return new Date(Date.UTC(Number(ano), m, 1, 12)).toISOString();
+}
+
+export interface HistoricalImportReport {
+  reference: string;
+  prices: number;
+  /** combos que não existiam naquele mês ("nadaencontrado") — normal */
+  skipped: number;
+  problems: string[];
+}
+
+/**
+ * Importa a tabela de preços de um MÊS específico (histórico) sobre
+ * o catálogo de anos já existente no banco. Não mexe em estrutura —
+ * rode a importação corrente antes. Resume por (versão, mês).
+ * Modelos que não existiam no mês voltam "nadaencontrado" e são
+ * pulados (contados em skipped), não são erro.
+ */
+export async function importFipePricesForReference(
+  supabase: SupabaseClient,
+  ref: FipeReference,
+  options: {
+    types?: readonly FipeVehicleType[];
+    log?: (msg: string) => void;
+    /** paralelismo entre MÁQUINAS (IPs distintos, ex. runners do CI):
+     *  fatia K de N — processa só marcas com index % N === K-1.
+     *  O ritmo por máquina continua o educado. */
+    fatia?: { k: number; n: number };
+  } = {},
+): Promise<HistoricalImportReport> {
+  const { types = FIPE_VEHICLE_TYPES, log = console.log, fatia } = options;
+  const label = refMonthLabel(ref);
+  const fetchedAt = referenceTimestamp(ref.mes);
+  const report: HistoricalImportReport = {
+    reference: label,
+    prices: 0,
+    skipped: 0,
+    problems: [],
+  };
+  log(`preços históricos de ${label} (tabela ${ref.codigo})`);
+
+  for (const type of types) {
+    log(`\n── ${type} · ${label} ──`);
+    const brands = await selectAll<{ id: string; name: string }>(
+      supabase,
+      "fipe_brands",
+      "id,name",
+      { vehicle_type: type },
+    );
+    const years = await selectAll<{
+      brand_id: string;
+      model_id: string;
+      id: string;
+    }>(supabase, "fipe_years", "brand_id,model_id,id", { vehicle_type: type });
+
+    const priced = new Set<string>();
+    for (const r of await selectAll<{
+      brand_id: string;
+      model_id: string;
+      year_id: string;
+    }>(supabase, "fipe_prices", "brand_id,model_id,year_id", {
+      vehicle_type: type,
+      reference: label,
+    })) {
+      priced.add(`${r.brand_id}|${r.model_id}|${r.year_id}`);
+    }
+
+    const byBrand = new Map<string, Array<{ model_id: string; year_id: string }>>();
+    for (const y of years) {
+      const key = `${y.brand_id}|${y.model_id}|${y.id}`;
+      if (priced.has(key)) continue;
+      (byBrand.get(y.brand_id) ?? byBrand.set(y.brand_id, []).get(y.brand_id)!)
+        .push({ model_id: y.model_id, year_id: y.id });
+    }
+
+    const work = async (brandId: string, v: { model_id: string; year_id: string }) => {
+      let live;
+      try {
+        live = await officialFetchPrice(type, ref, brandId, v.model_id, v.year_id, BULK_RETRY);
+      } catch (err) {
+        if (/nadaencontrado/i.test((err as Error).message)) {
+          report.skipped++; // versão não existia neste mês — legítimo
+          return;
+        }
+        throw err;
+      }
+      const { error } = await supabase.from("fipe_prices").upsert(
+        {
+          vehicle_type: type,
+          brand_id: brandId,
+          model_id: v.model_id,
+          year_id: v.year_id,
+          fipe_code: live.CodigoFipe,
+          price: parseFipeValor(live.Valor),
+          brand_name: live.Marca,
+          model_name: live.Modelo,
+          year_model: live.AnoModelo,
+          fuel: live.Combustivel,
+          reference: live.MesReferencia,
+          fetched_at: fetchedAt,
+        },
+        { onConflict: "vehicle_type,brand_id,model_id,year_id,reference" },
+      );
+      if (error) throw new Error(`fipe_prices: ${error.message}`);
+      report.prices++;
+    };
+
+    const ordered = orderBrands(
+      type,
+      brands.map((b) => ({ codigo: b.id, nome: b.name })),
+    ).filter((_, i) => !fatia || i % fatia.n === fatia.k - 1);
+    if (fatia) {
+      log(`fatia ${fatia.k}/${fatia.n}: ${ordered.length} marcas deste ${type}`);
+    }
+    const failures: Array<{ brandId: string; v: { model_id: string; year_id: string } }> = [];
+    let done = 0;
+    for (const brand of ordered) {
+      const versions = byBrand.get(brand.codigo) ?? [];
+      done++;
+      if (versions.length === 0) continue;
+      const before = report.prices;
+      const limit = pLimit(CONCURRENCY);
+      await Promise.all(
+        versions.map((v) =>
+          limit(async () => {
+            await randomDelay(DELAY_MIN_MS, DELAY_MAX_MS);
+            try {
+              await work(brand.codigo, v);
+            } catch (err) {
+              failures.push({ brandId: brand.codigo, v });
+              log(`  ✗ ${brand.nome} ${v.model_id}/${v.year_id}: ${(err as Error).message}`);
+            }
+          }),
+        ),
+      );
+      log(`  ✓ ${brand.nome} ${label}: +${report.prices - before} preços (${done}/${ordered.length} marcas)`);
+    }
+
+    const stillFailed = await runRounds(
+      `versões (${label})`,
+      failures,
+      (f) => `${f.brandId}/${f.v.model_id}/${f.v.year_id}`,
+      (f) => work(f.brandId, f.v),
+      log,
+    );
+    for (const f of stillFailed) {
+      report.problems.push(
+        `${type}: ${f.brandId}/${f.v.model_id}/${f.v.year_id} sem preço em ${label}`,
+      );
+    }
+  }
+  return report;
 }
 
 /** Importa/renova estrutura, anos e preços FIPE. Devolve pendências

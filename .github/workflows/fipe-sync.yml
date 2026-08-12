@@ -1,13 +1,17 @@
-# Sync mensal da FIPE — a tabela muda todo mês; este job renova o
-# catálogo (marcas + modelos, podando removidos), o preço dos
-# códigos em uso e o snapshot dos veículos.
+# Sync mensal da FIPE (rápido, ~30 min) — dia 1 de cada mês, quando
+# a tabela nova sai: renova o catálogo (marcas + modelos, podando
+# removidos), o preço dos códigos em uso e o snapshot dos veículos.
+# A TABELA COMPLETA do mês fica com o workflow fipe-full-import
+# (janelas com resume nos dias 1-2).
 # Secrets necessários no repo: SUPABASE_URL, SUPABASE_SECRET_KEY.
 name: fipe-sync
 
 on:
   schedule:
-    # dia 2 de cada mês, 06:00 UTC (a FIPE publica na virada do mês)
-    - cron: "0 6 2 * *"
+    # dia 1 de cada mês, 07:30 UTC (04:30 BRT) — antes das janelas
+    # do full-import; se a FIPE publicar atrasado, o full-import do
+    # dia 2 cobre
+    - cron: "30 7 1 * *"
   workflow_dispatch: {}
 
 jobs:

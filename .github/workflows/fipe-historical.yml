@@ -1,0 +1,56 @@
+# Carga HISTÓRICA da tabela FIPE de um mês específico (--mes), em
+# PARALELO por 4 runners — cada runner tem IP próprio, então o ritmo
+# educado por IP (~1,2 req/s) se multiplica sem abusar da fonte:
+#   • carros fatia 1/2 e 2/2 (metade das marcas cada)
+#   • motos e caminhões inteiros
+# Um mês completo (~50 mil versões) sai em ~3,5-4h de relógio.
+#
+# Disparo manual (ou via gh):
+#   gh workflow run fipe-historical.yml -f mes="julho/2026"
+#
+# Resume por (versão, mês): re-disparar só completa o que falta.
+# Versões que não existiam no mês são puladas ("nadaencontrado").
+# Secrets: SUPABASE_URL, SUPABASE_SECRET_KEY.
+name: fipe-historical
+
+on:
+  workflow_dispatch:
+    inputs:
+      mes:
+        description: 'Mês de referência FIPE (ex.: julho/2026)'
+        required: true
+        type: string
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { label: carros-1de2, args: "--type=carros --fatia=1/2" }
+          - { label: carros-2de2, args: "--type=carros --fatia=2/2" }
+          - { label: motos, args: "--type=motos" }
+          - { label: caminhoes, args: "--type=caminhoes" }
+    name: ${{ matrix.label }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Importar ${{ inputs.mes }} (${{ matrix.label }})
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          set +e
+          timeout 330m npx tsx scripts/seed-fipe.ts --mes="${{ inputs.mes }}" ${{ matrix.args }}
+          code=$?
+          if [ "$code" -eq 124 ]; then
+            echo "Janela estourou com importação PARCIAL — re-dispare o workflow para completar (resume)."
+            exit 1
+          fi
+          exit "$code"

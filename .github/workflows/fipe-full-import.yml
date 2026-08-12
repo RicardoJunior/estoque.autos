@@ -1,0 +1,52 @@
+# Importação COMPLETA mensal da tabela FIPE (anos + preço de cada
+# versão, ~60 mil consultas ≈ 12-14h no ritmo que a fonte tolera).
+#
+# O job do GitHub Actions morre em 6h — por isso o desenho é de
+# JANELAS: várias execuções agendadas nos dias 1 e 2, cada uma roda
+# até ~5,5h e para; o resume do script continua do ponto exato na
+# janela seguinte. Quando o mês está completo, as janelas restantes
+# terminam em ~1 min (nada a fazer). `--force` renova o catálogo de
+# marcas/modelos (com poda) na largada de cada janela (~3 min).
+#
+# timeout (GNU) devolve 124 quando estoura → tratado como "parcial,
+# continua na próxima janela" (exit 0). Exit 1 real = verificação
+# achou buraco após terminar → o cron acusa.
+# Secrets: SUPABASE_URL, SUPABASE_SECRET_KEY.
+name: fipe-full-import
+
+on:
+  schedule:
+    # dias 1 e 2 de cada mês, três janelas por dia (UTC)
+    - cron: "0 9 1,2 * *"
+    - cron: "0 15 1,2 * *"
+    - cron: "0 21 1,2 * *"
+  workflow_dispatch: {}
+
+concurrency:
+  group: fipe-full-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Importar tabela do mês (janela de até 5,5h, com resume)
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+        run: |
+          set +e
+          timeout 330m npx tsx scripts/seed-fipe.ts --prices --force
+          code=$?
+          if [ "$code" -eq 124 ]; then
+            echo "Janela encerrada com importação PARCIAL — a próxima janela continua (resume)."
+            exit 0
+          fi
+          exit "$code"

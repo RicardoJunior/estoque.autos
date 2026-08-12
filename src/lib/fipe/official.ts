@@ -77,17 +77,25 @@ function toRef(items: OfficialRef[]): Array<{ codigo: string; nome: string }> {
   }));
 }
 
-/** Mês de referência vigente (primeiro item da tabela). */
-export async function fetchFipeReference(
+/** Tabela de referência completa (histórico de meses), mais recente
+ *  primeiro. Ex.: [{codigo: 336, mes: "agosto/2026"}, …] */
+export async function fetchFipeReferenceList(
   retry?: RetryOptions,
-): Promise<FipeReference> {
+): Promise<FipeReference[]> {
   const rows = await post<Array<{ Codigo: number; Mes: string }>>(
     "ConsultarTabelaDeReferencia",
     {},
     retry,
   );
   if (!rows?.length) throw new Error("FIPE oficial: tabela de referência vazia");
-  return { codigo: rows[0].Codigo, mes: rows[0].Mes.trim() };
+  return rows.map((r) => ({ codigo: r.Codigo, mes: r.Mes.trim() }));
+}
+
+/** Mês de referência vigente (primeiro item da tabela). */
+export async function fetchFipeReference(
+  retry?: RetryOptions,
+): Promise<FipeReference> {
+  return (await fetchFipeReferenceList(retry))[0];
 }
 
 export async function officialFetchBrands(
