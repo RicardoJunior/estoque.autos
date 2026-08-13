@@ -157,7 +157,9 @@ export function StoreSearch({ tone = "light" }: { tone?: "light" | "dark" }) {
         >
           <SelectTrigger
             aria-label="Ordenar"
-            className={cn("h-10 flex-1 sm:w-auto sm:flex-none", fieldCls)}
+            /* !h-10: o SelectTrigger tem data-[size]:h-8 que vence h-10 por
+               especificidade — o !important alinha com a busca/Filtros (40px) */
+            className={cn("!h-10 flex-1 sm:w-auto sm:flex-none", fieldCls)}
           >
             <SelectValue />
           </SelectTrigger>
