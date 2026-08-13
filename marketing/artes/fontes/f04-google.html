@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px; align-items: flex-start; }
+  .h1 { font-size: 88px; }
+  .search { width: 100%; margin-top: 56px; display: flex; flex-direction: column; gap: 20px; position: relative; z-index: 2; }
+  .bar-s { display: flex; align-items: center; gap: 18px; background: var(--card2); border: 1.5px solid var(--line); border-radius: 999px; padding: 22px 34px; font-size: 30px; color: var(--ink); }
+  .bar-s .lupa { color: var(--muted); font-size: 32px; }
+  .bar-s .cursor { color: var(--muted); }
+  .result { border-radius: 24px; padding: 32px 38px; }
+  .result .url { font-size: 24px; color: var(--muted); display: flex; align-items: center; gap: 12px; }
+  .result .title { font-size: 33px; font-weight: 700; margin-top: 8px; }
+  .result .desc { font-size: 26px; color: var(--muted); margin-top: 6px; line-height: 1.4; }
+  .win { background: linear-gradient(135deg, rgba(255, 122, 26, 0.13), rgba(255, 122, 26, 0.03)); border: 2px solid rgba(255, 122, 26, 0.5); }
+  .win .title { color: var(--ink); }
+  .win .url i { font-style: normal; color: var(--amber); font-weight: 600; }
+  .lose { background: var(--card); border: 1.5px solid var(--line); opacity: 0.62; }
+  .sub { font-size: 30px; margin-top: 40px; width: 850px; position: relative; z-index: 2; }
+  .foot { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto; }
+  .cta { padding: 26px 46px; font-size: 32px; }
+  .logo { font-size: 30px; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:620px;height:620px;left:-260px;top:-280px"></div>
+
+  <div class="h h1">
+    <span>Pesquisaram sua</span>
+    <span>loja no Google.</span>
+    <span class="am">O que vão achar?</span>
+  </div>
+
+  <div class="search">
+    <div class="bar-s"><span class="lupa">⌕</span> loja do joão seminovos <span class="cursor">|</span></div>
+    <div class="result win">
+      <span class="url"><svg width="26" height="26" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg> estoque.autos/<i>loja-do-joao</i></span>
+      <div class="title">Loja do João Seminovos — estoque completo e propostas online</div>
+      <div class="desc">32 carros à venda · fotos, preço e tabela FIPE · fale no WhatsApp</div>
+    </div>
+    <div class="result lose">
+      <span class="url">◦ anúncio avulso em portal</span>
+      <div class="title" style="font-weight:600">O mesmo carro, do lado de 40 concorrentes…</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="cta">Criar meu site →</span>
+    <span class="logo">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+  </div>
+</div>
+</body>
+</html>

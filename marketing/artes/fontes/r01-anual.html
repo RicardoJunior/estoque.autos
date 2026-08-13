@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px; align-items: flex-start; }
+  .h1 { font-size: 104px; }
+  .plans { display: flex; gap: 24px; width: 100%; margin-top: 60px; }
+  .plan { flex: 1; border-radius: 26px; padding: 40px 42px; background: var(--card); border: 1.5px solid var(--line); position: relative; }
+  .plan.pro { background: linear-gradient(135deg, rgba(255, 122, 26, 0.14), rgba(255, 122, 26, 0.04)); border: 2px solid rgba(255, 122, 26, 0.55); }
+  .plan .name { font-size: 30px; font-weight: 700; }
+  .plan .name small { color: var(--muted); font-weight: 600; font-size: 24px; }
+  .plan .big { font-family: "Anton", sans-serif; font-size: 74px; margin-top: 14px; }
+  .plan .big small { font-size: 34px; color: var(--muted); font-family: "Archivo", sans-serif; font-weight: 600; }
+  .plan .eq { font-size: 26px; color: var(--muted); margin-top: 10px; }
+  .plan .eq strong { color: var(--amber); }
+  .badge-off { position: absolute; top: -24px; right: 30px; background: var(--amber); color: var(--amber-ink); font-weight: 700; font-size: 26px; border-radius: 999px; padding: 10px 24px; box-shadow: 0 12px 40px rgba(255, 122, 26, 0.4); }
+  .sub { font-size: 30px; color: var(--muted); margin-top: 42px; }
+  .sub strong { color: var(--ink); }
+  .foot { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: auto; }
+  .cta { padding: 26px 46px; font-size: 32px; }
+  .logo { font-size: 30px; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:640px;height:640px;right:-240px;top:-280px"></div>
+
+  <div class="h h1">
+    <span>No anual, até</span>
+    <span class="am">36% off.</span>
+  </div>
+
+  <div class="plans">
+    <div class="plan">
+      <span class="name">Básico <small>· até 20 carros</small></span>
+      <div class="big">R$ 190<small>/ano</small></div>
+      <div class="eq">equivale a <strong>R$ 15,83/mês</strong> — economize 36%</div>
+    </div>
+    <div class="plan pro">
+      <span class="badge-off">mais escolhido</span>
+      <span class="name">Pro <small>· domínio próprio · 60 carros</small></span>
+      <div class="big">R$ 490<small>/ano</small></div>
+      <div class="eq">equivale a <strong>R$ 40,83/mês</strong> — economize 18%</div>
+    </div>
+  </div>
+
+  <p class="sub">Você já viu como funciona. <strong>Um ano de site próprio</strong> pelo preço de alguns leads de portal — sem taxa de setup.</p>
+
+  <div class="foot">
+    <span class="cta">Assinar o anual →</span>
+    <span class="logo">
+      <svg width="36" height="36" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+  </div>
+</div>
+</body>
+</html>

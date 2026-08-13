@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  .art { padding: 84px 84px 76px; align-items: center; text-align: center; }
+  .logo { font-size: 32px; }
+  .h1 { font-size: 106px; margin-top: 40px; }
+  .compare { display: flex; flex-direction: column; gap: 24px; width: 100%; margin-top: 60px; text-align: left; }
+  .cmp { border-radius: 26px; padding: 40px 46px; }
+  .cmp .lbl { font-size: 27px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600; }
+  .cmp .big { font-family: "Anton", sans-serif; font-size: 84px; margin-top: 8px; }
+  .cmp .note { font-size: 26px; margin-top: 8px; }
+  .portal { background: var(--card); border: 1.5px solid var(--line); }
+  .portal .lbl, .portal .note { color: var(--muted); }
+  .portal .big { color: var(--muted); text-decoration: line-through; text-decoration-thickness: 6px; text-decoration-color: rgba(255, 122, 26, 0.75); }
+  .nosso { background: linear-gradient(135deg, rgba(255, 122, 26, 0.16), rgba(255, 122, 26, 0.05)); border: 2px solid rgba(255, 122, 26, 0.55); }
+  .nosso .lbl { color: var(--amber); }
+  .nosso .note { color: var(--muted); }
+  .nosso .note strong { color: var(--ink); }
+  .phone { width: 250px; margin-top: 46px; }
+  .cta { padding: 30px 60px; font-size: 38px; margin-top: 46px; }
+  .base-note { font-size: 26px; color: var(--muted); margin-top: 22px; }
+</style>
+</head>
+<body>
+<div class="art st">
+  <div class="glow" style="width:820px;height:820px;left:50%;top:-380px;transform:translateX(-50%)"></div>
+  <div class="glow" style="width:600px;height:600px;right:-260px;bottom:480px;opacity:.28"></div>
+
+  <span class="logo">
+    <svg width="44" height="44" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="word">estoque<i>.autos</i></span>
+  </span>
+
+  <div class="h h1">
+    <span>Quanto custa</span>
+    <span class="am">ter site próprio?</span>
+  </div>
+
+  <div class="compare">
+    <div class="cmp portal">
+      <span class="lbl">1 lead avulso em portal</span>
+      <div class="big">~R$ 24</div>
+      <div class="note">dividido com a concorrência, além da mensalidade</div>
+    </div>
+    <div class="cmp nosso">
+      <span class="lbl">o site inteiro da sua loja</span>
+      <div class="big">R$ 24,90<span style="font-size:42px">/mês</span></div>
+      <div class="note"><strong>Leads ilimitados no seu WhatsApp.</strong> Sem setup · cancele quando quiser</div>
+    </div>
+  </div>
+
+  <div class="phone">
+    <span class="screen"><img src="shot-premium-mobile.png" alt="" /></span>
+  </div>
+
+  <span class="cta">Criar meu site →</span>
+  <p class="base-note">estoque.autos — feito para lojistas</p>
+</div>
+</body>
+</html>

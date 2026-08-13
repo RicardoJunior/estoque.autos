@@ -7,7 +7,7 @@ import {
   isTemplateId,
 } from "@/lib/demo-store";
 import { formatPrice, vehicleTitle } from "@/lib/format";
-import { VehicleDetail } from "@/components/storefront/VehicleDetail";
+import { VehicleDetailView } from "@/components/storefront/registry";
 
 export async function generateMetadata({
   params,
@@ -33,7 +33,7 @@ export default async function DemoVehiclePage({
   if (!vehicle) notFound();
 
   return (
-    <VehicleDetail
+    <VehicleDetailView
       store={demoStorefront(template)}
       vehicle={vehicle}
       slug={demoSlug(template)}

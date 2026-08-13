@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getStorefront, getPublicVehicle } from "@/lib/public";
 import { formatPrice, vehicleTitle } from "@/lib/format";
-import { VehicleDetail } from "@/components/storefront/VehicleDetail";
+import { VehicleDetailView } from "@/components/storefront/registry";
 
 export async function generateMetadata({
   params,
@@ -54,5 +54,5 @@ export default async function VehicleDetailPage({
   const vehicle = await getPublicVehicle(store.id, id);
   if (!vehicle) notFound();
 
-  return <VehicleDetail store={store} vehicle={vehicle} slug={slug} />;
+  return <VehicleDetailView store={store} vehicle={vehicle} slug={slug} />;
 }
