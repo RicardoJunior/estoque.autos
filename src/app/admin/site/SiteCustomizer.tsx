@@ -13,8 +13,24 @@ import {
 } from "@/lib/google-fonts";
 import { injectFontCss } from "@/lib/font-css";
 import { TEMPLATE_TEXT_DEFAULTS } from "@/lib/template-texts";
+import dynamic from "next/dynamic";
 import { DemoPreview } from "@/components/brand/DemoPreview";
-import { RichTextEditor } from "@/components/admin/RichTextEditor";
+
+// Tiptap/ProseMirror (~400KB) fora do bundle inicial: o chunk do editor só
+// baixa quando um RichTextEditor renderiza. ssr:false — é interativo puro.
+const RichTextEditor = dynamic(
+  () =>
+    import("@/components/admin/RichTextEditor").then((m) => m.RichTextEditor),
+  {
+    ssr: false,
+    loading: () => (
+      <div
+        className="min-h-28 animate-pulse rounded-lg border border-input bg-muted/30"
+        aria-hidden
+      />
+    ),
+  },
+);
 import { ColorField } from "@/components/brand/ColorField";
 import { FontPicker } from "@/components/brand/FontPicker";
 import { FontPairings } from "@/components/brand/FontPairings";

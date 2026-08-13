@@ -30,7 +30,15 @@ import { DemoPreview } from "@/components/brand/DemoPreview";
 import { ColorField } from "@/components/brand/ColorField";
 import { FontPairings } from "@/components/brand/FontPairings";
 import { FontPicker } from "@/components/brand/FontPicker";
-import { LogoCropDialog } from "@/components/brand/LogoCropDialog";
+import dynamic from "next/dynamic";
+
+// react-easy-crop só baixa se o usuário escolher um logo raster —
+// o dialog nem monta antes disso (gate no cropFile, abaixo).
+const LogoCropDialog = dynamic(
+  () =>
+    import("@/components/brand/LogoCropDialog").then((m) => m.LogoCropDialog),
+  { ssr: false },
+);
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -665,11 +673,13 @@ export function OnboardingWizard() {
               className="hidden"
               onChange={onLogoChange}
             />
-            <LogoCropDialog
-              file={cropFile}
-              onCancel={onCropCancel}
-              onConfirm={onCropConfirm}
-            />
+            {cropFile !== null && (
+              <LogoCropDialog
+                file={cropFile}
+                onCancel={onCropCancel}
+                onConfirm={onCropConfirm}
+              />
+            )}
           </section>
 
           {/* ---------- navegação ---------- */}

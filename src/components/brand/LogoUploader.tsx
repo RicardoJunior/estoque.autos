@@ -5,7 +5,14 @@ import Image from "next/image";
 import { Crop, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { LogoCropDialog } from "./LogoCropDialog";
+import dynamic from "next/dynamic";
+
+// react-easy-crop só baixa se o usuário escolher um arquivo raster —
+// o dialog nem monta antes disso (gate no cropFile, abaixo).
+const LogoCropDialog = dynamic(
+  () => import("./LogoCropDialog").then((m) => m.LogoCropDialog),
+  { ssr: false },
+);
 
 const ACCEPT =
   ".svg,.png,.webp,.avif,.jpg,.jpeg,image/svg+xml,image/png,image/webp,image/avif,image/jpeg";
@@ -200,11 +207,13 @@ export function LogoUploader({
         }}
       />
 
-      <LogoCropDialog
-        file={cropFile}
-        onCancel={() => setCropFile(null)}
-        onConfirm={confirmCrop}
-      />
+      {cropFile !== null && (
+        <LogoCropDialog
+          file={cropFile}
+          onCancel={() => setCropFile(null)}
+          onConfirm={confirmCrop}
+        />
+      )}
     </div>
   );
 }
