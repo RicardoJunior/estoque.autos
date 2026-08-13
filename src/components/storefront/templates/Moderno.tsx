@@ -122,8 +122,10 @@ export function Moderno({ store, vehicles }: TemplateProps) {
       </header>
 
       {/* ── hero full-bleed ──────────────────────────────────── */}
+      {/* SEM overflow-hidden na section: o cartão de busca pende -mb-12 além
+          da borda e era cortado; o clip fica só no layer das decorações. */}
       <section
-        className="relative isolate overflow-hidden"
+        className="relative isolate"
         style={{
           background: withMedia
             ? "#0b1120"
@@ -141,29 +143,30 @@ export function Moderno({ store, vehicles }: TemplateProps) {
             />
           </>
         )}
-        {/* decoração própria só quando NÃO há mídia */}
+        {/* decoração própria só quando NÃO há mídia — os blobs estouram a
+            seção, então o clip vive neste layer (inset-0), não na section */}
         {!withMedia && (
-          <>
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 overflow-hidden"
+          >
             <div
-              aria-hidden
-              className="pointer-events-none absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full opacity-30 blur-3xl"
+              className="absolute -right-32 -top-40 h-[28rem] w-[28rem] rounded-full opacity-30 blur-3xl"
               style={{ background: "var(--sf-accent)" }}
             />
             <div
-              aria-hidden
-              className="pointer-events-none absolute -bottom-48 -left-24 h-[26rem] w-[26rem] rounded-full opacity-20 blur-3xl"
+              className="absolute -bottom-48 -left-24 h-[26rem] w-[26rem] rounded-full opacity-20 blur-3xl"
               style={{ background: "var(--sf-on-primary)" }}
             />
             <div
-              aria-hidden
-              className="pointer-events-none absolute inset-0 opacity-[0.07]"
+              className="absolute inset-0 opacity-[0.07]"
               style={{
                 backgroundImage:
                   "linear-gradient(currentColor 1px, transparent 1px), linear-gradient(90deg, currentColor 1px, transparent 1px)",
                 backgroundSize: "44px 44px",
               }}
             />
-          </>
+          </div>
         )}
 
         <div className="relative mx-auto max-w-6xl px-5 pb-28 pt-16 sm:pb-32 sm:pt-24">

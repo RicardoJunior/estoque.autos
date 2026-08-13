@@ -315,6 +315,14 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
         </div>
       </section>
 
+      {/* miolo: é AQUI que a cor de fundo personalizada (--sf-bg) atua —
+          header/hero/busca/footer mantêm a identidade do template */}
+      <main
+        style={{
+          background: "var(--sf-bg, transparent)",
+          color: "var(--sf-ink, #ffffff)",
+        }}
+      >
       {/* destaques (pista de bólidos selecionados) */}
       {featured.length > 0 && (
         <section className="mx-auto max-w-6xl px-5 pt-14">
@@ -401,6 +409,7 @@ export function Esportivo({ store, vehicles }: TemplateProps) {
           }
         />
       </section>
+      </main>
 
       <StoreFooter store={store} tone="dark" />
     </div>
