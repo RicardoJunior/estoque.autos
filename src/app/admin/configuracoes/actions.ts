@@ -70,8 +70,11 @@ export async function updateContactAction(
 
   if (error) return { error: "Não foi possível salvar." };
 
-  revalidatePath("/admin/configuracoes");
-  revalidatePath(`/${tenant.slug}`);
+  // o nome/logo aparecem na sidebar do LAYOUT do admin (compartilhado por
+  // todas as rotas /admin/*) — revalida o segmento inteiro, senão as outras
+  // páginas seguem com o cache antigo (bug do "nome antigo ao navegar")
+  revalidatePath("/admin", "layout");
+  revalidatePath(`/${tenant.slug}`, "layout");
   return { ok: true };
 }
 

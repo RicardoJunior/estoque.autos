@@ -66,6 +66,7 @@ function parseVehicleForm(formData: FormData) {
     optionals,
     condition_flags: conditionFlags,
     featured: formData.get("featured") === "on",
+    consigned: formData.get("consigned") === "on",
     fipe_code: formData.get("fipe_code") || null,
     fipe_year_id: formData.get("fipe_year_id") || null,
     fipe_price: formData.get("fipe_price") || null,
@@ -193,6 +194,24 @@ export async function setVehicleStatusAction(
     return { error: "Não foi possível alterar o status. Tente novamente." };
   }
 
+  revalidatePath("/admin/veiculos");
+  revalidatePath(`/admin/veiculos/${vehicleId}`);
+  return {};
+}
+
+/** Marca/desmarca o veículo como consignado (controle interno). */
+export async function setVehicleConsignedAction(
+  vehicleId: string,
+  consigned: boolean,
+): Promise<{ error?: string }> {
+  const { tenant } = await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("vehicles")
+    .update({ consigned })
+    .eq("id", vehicleId)
+    .eq("tenant_id", tenant.id);
+  if (error) return { error: "Não foi possível atualizar. Tente novamente." };
   revalidatePath("/admin/veiculos");
   revalidatePath(`/admin/veiculos/${vehicleId}`);
   return {};

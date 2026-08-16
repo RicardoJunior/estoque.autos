@@ -385,10 +385,20 @@ export function VehicleForm({
             />
             <FieldError msg={e.price} />
           </div>
-          <label className="flex items-center gap-2 pb-2 text-sm">
-            <Switch name="featured" defaultChecked={initial?.featured} />
-            Destaque na vitrine
-          </label>
+          <div className="grid gap-2 pb-2">
+            <label className="flex items-center gap-2 text-sm">
+              <Switch name="featured" defaultChecked={initial?.featured} />
+              Destaque na vitrine
+            </label>
+            <label className="flex items-center gap-2 text-sm">
+              <Switch name="consigned" defaultChecked={initial?.consigned} />
+              Veículo consignado
+            </label>
+            <p className="text-xs text-muted-foreground">
+              Consignado: você vende em nome de terceiro. É um controle
+              interno — não aparece no site.
+            </p>
+          </div>
         </div>
         <div className="grid gap-2">
           <Label htmlFor="description">Descrição</Label>

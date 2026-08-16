@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { VehicleFilters } from "./VehicleFilters";
+import { VehicleQuickActions } from "./VehicleQuickActions";
 import type { Vehicle, VehicleStatus } from "@/lib/types";
 
 export const metadata = { title: "Estoque" };
@@ -114,14 +115,29 @@ function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
             sem foto
           </div>
         )}
-        <div className="absolute left-2 top-2">
+        <div className="absolute left-2 top-2 flex flex-col items-start gap-1">
           <StatusBadge status={vehicle.status} />
+          <div className="flex flex-wrap gap-1">
+            {vehicle.featured && (
+              <Badge className="rounded-full">Destaque</Badge>
+            )}
+            {vehicle.consigned && (
+              <Badge
+                variant="secondary"
+                className="rounded-full bg-sky-500/15 text-sky-600 dark:text-sky-300"
+              >
+                Consignado
+              </Badge>
+            )}
+          </div>
         </div>
-        {vehicle.featured && (
-          <Badge className="absolute right-2 top-2 rounded-full">
-            Destaque
-          </Badge>
-        )}
+        <div className="absolute right-2 top-2">
+          <VehicleQuickActions
+            vehicleId={vehicle.id}
+            status={vehicle.status}
+            consigned={vehicle.consigned}
+          />
+        </div>
       </div>
       <div className="p-3">
         <div className="truncate font-semibold">{vehicleTitle(vehicle)}</div>

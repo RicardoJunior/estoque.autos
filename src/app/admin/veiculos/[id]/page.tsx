@@ -78,7 +78,11 @@ export default async function EditVehiclePage({
 
       <PhotoManager vehicleId={vehicle.id} initial={vehicle.photos ?? []} />
 
-      <VehicleActions vehicleId={vehicle.id} status={vehicle.status} />
+      <VehicleActions
+        vehicleId={vehicle.id}
+        status={vehicle.status}
+        consigned={vehicle.consigned}
+      />
 
       <VehicleForm
         action={updateVehicleAction.bind(null, vehicle.id)}

@@ -187,6 +187,7 @@ export const vehicleSchema = z.object({
   optionals: z.array(z.string().max(60)).max(50).default([]),
   condition_flags: z.array(z.enum(VEHICLE_FLAGS)).max(VEHICLE_FLAGS.length).default([]),
   featured: z.boolean().default(false),
+  consigned: z.boolean().default(false),
   // snapshot FIPE (preenchido pela cascata; cadastro manual = null)
   fipe_code: z.string().max(20).nullable().optional(),
   fipe_year_id: z.string().max(20).nullable().optional(),

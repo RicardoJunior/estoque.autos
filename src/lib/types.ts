@@ -287,6 +287,8 @@ export interface Vehicle {
   photos: VehiclePhoto[];
   featured: boolean;
   status: VehicleStatus;
+  /** consignado: a loja vende em nome de terceiro (marcação interna) */
+  consigned: boolean;
   /** marcadores de condição (Blindado, IPVA pago, Leilão…) */
   condition_flags: VehicleFlag[];
   sold_at: string | null;
@@ -358,7 +360,8 @@ export const VEHICLE_STATUS_LABELS: Record<VehicleStatus, string> = {
   available: "Disponível",
   reserved: "Reservado",
   sold: "Vendido",
-  archived: "Arquivado",
+  // "archived" no banco; para o lojista é "desativar" (tirar do site)
+  archived: "Desativado",
 };
 
 export const VEHICLE_FLAG_LABELS: Record<VehicleFlag, string> = {

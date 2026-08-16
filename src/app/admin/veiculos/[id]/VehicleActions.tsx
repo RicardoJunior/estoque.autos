@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   AlertDialog,
@@ -23,14 +24,20 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { deleteVehicleAction, setVehicleStatusAction } from "../actions";
+import {
+  deleteVehicleAction,
+  setVehicleStatusAction,
+  setVehicleConsignedAction,
+} from "../actions";
 
 export function VehicleActions({
   vehicleId,
   status,
+  consigned,
 }: {
   vehicleId: string;
   status: VehicleStatus;
+  consigned: boolean;
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -45,13 +52,22 @@ export function VehicleActions({
     });
   }
 
+  function toggleConsigned(next: boolean) {
+    startTransition(async () => {
+      const result = await setVehicleConsignedAction(vehicleId, next);
+      setError(result?.error ?? null);
+      if (!result?.error) router.refresh();
+    });
+  }
+
   return (
     <Card className="gap-4 px-5 py-5">
       <CardHeader className="gap-0 px-0">
         <CardTitle className="text-sm font-semibold">Status do anúncio</CardTitle>
         <p className="mt-0.5 text-xs text-muted-foreground">
-          “Disponível” e “Reservado” aparecem no site. “Vendido” e “Arquivado”
-          são removidos da vitrine.
+          <strong>Disponível</strong> e <strong>Reservado</strong> aparecem no
+          site. <strong>Vendido</strong> e <strong>Desativado</strong> saem da
+          vitrine — o veículo continua no seu painel.
         </p>
       </CardHeader>
       <CardContent className="space-y-4 px-0">
@@ -87,6 +103,24 @@ export function VehicleActions({
             </ToggleGroupItem>
           ))}
         </ToggleGroup>
+
+        <Separator />
+
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium">Veículo consignado</p>
+            <p className="text-xs text-muted-foreground">
+              Você vende em nome de terceiro. Controle interno — não aparece no
+              site.
+            </p>
+          </div>
+          <Switch
+            checked={consigned}
+            disabled={pending}
+            onCheckedChange={toggleConsigned}
+            aria-label="Marcar como consignado"
+          />
+        </div>
 
         <Separator />
 
