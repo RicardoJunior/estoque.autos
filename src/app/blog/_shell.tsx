@@ -2,7 +2,9 @@ import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { buttonVariants } from "@/components/ui/button";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+import { SITE_URL } from "@/lib/site-url";
+
+const APP_URL = SITE_URL;
 
 /**
  * Chrome compartilhado por /blog e /ajuda — usa o TEMA GLOBAL dark/âmbar do app

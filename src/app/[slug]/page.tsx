@@ -1,8 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { getStorefront, listPublicVehicles } from "@/lib/public";
 import { richTextToPlain } from "@/lib/rich-text";
+import { storefrontUrl } from "@/lib/site-url";
 import { StorefrontView } from "@/components/storefront/registry";
+
+/** Descrição de meta: texto puro, cortado em ~157 chars sem quebrar palavra. */
+function metaDescription(raw: string): string {
+  const clean = raw.replace(/\s+/g, " ").trim();
+  if (clean.length <= 160) return clean;
+  return clean.slice(0, 157).replace(/\s+\S*$/, "").trimEnd() + "…";
+}
 
 type SP = {
   q?: string;
@@ -24,24 +33,28 @@ export async function generateMetadata({
   if (!store) return { title: "Loja não encontrada" };
 
   const title = store.name;
-  // about pode ser HTML do editor — para SEO, sempre texto puro
-  const description =
+  // about pode ser HTML do editor — para SEO, sempre texto puro e truncado
+  const description = metaDescription(
     store.settings.slogan ??
-    (store.settings.about
-      ? richTextToPlain(store.settings.about)
-      : undefined) ??
-    `Confira o estoque de veículos da ${store.name}.`;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      (store.settings.about
+        ? richTextToPlain(store.settings.about)
+        : undefined) ??
+      `Confira o estoque de veículos da ${store.name}.`,
+  );
+  // canonical respeita domínio próprio (Pro) em vez de forçar o host da plataforma
+  const host = (await headers()).get("host");
+  const url = storefrontUrl(host, store.slug);
 
   return {
-    title,
+    // absoluto: vitrine white-label não herda "· estoque.autos"
+    title: { absolute: title },
     description,
-    alternates: { canonical: `${appUrl}/${store.slug}` },
+    alternates: { canonical: url },
     openGraph: {
       type: "website",
       title,
       description,
-      url: `${appUrl}/${store.slug}`,
+      url,
       siteName: store.name,
       images: store.logo_url ? [{ url: store.logo_url }] : undefined,
     },
@@ -78,13 +91,14 @@ export default async function StorefrontPage({
     maxPrice: parsePrice(sp.maxPrice),
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const host = (await headers()).get("host");
+  const url = storefrontUrl(host, store.slug);
   const a = store.address ?? {};
-  const jsonLd = {
-    "@context": "https://schema.org",
+  const dealer = {
     "@type": "AutoDealer",
+    "@id": `${url}#dealer`,
     name: store.name,
-    url: `${appUrl}/${store.slug}`,
+    url,
     telephone: store.phone ?? store.whatsapp ?? undefined,
     email: store.email ?? undefined,
     image: store.logo_url ?? undefined,
@@ -103,6 +117,28 @@ export default async function StorefrontPage({
           addressCountry: "BR",
         }
       : undefined,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${url}?q={query}`,
+      "query-input": "required name=query",
+    },
+  };
+  const itemList =
+    vehicles.length > 0
+      ? {
+          "@type": "ItemList",
+          name: `Estoque — ${store.name}`,
+          numberOfItems: vehicles.length,
+          itemListElement: vehicles.slice(0, 30).map((v, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            url: storefrontUrl(host, store.slug, `/carros/${v.id}`),
+          })),
+        }
+      : undefined;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [dealer, ...(itemList ? [itemList] : [])],
   };
 
   return (

@@ -2,7 +2,10 @@ import Link from "next/link";
 import { requireTenant } from "@/lib/auth";
 import { buttonVariants } from "@/components/ui/button";
 
-export const metadata = { title: "Sua loja está no ar" };
+export const metadata = {
+  title: "Sua loja está no ar",
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingDonePage() {
   const { tenant } = await requireTenant();

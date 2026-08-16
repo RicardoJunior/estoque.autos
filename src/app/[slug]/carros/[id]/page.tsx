@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { getStorefront, getPublicVehicle } from "@/lib/public";
 import { formatPrice, vehicleTitle } from "@/lib/format";
+import { storefrontUrl } from "@/lib/site-url";
 import { VehicleDetailView } from "@/components/storefront/registry";
 
 export async function generateMetadata({
@@ -20,25 +22,32 @@ export async function generateMetadata({
     vehicle.description?.slice(0, 160) ??
     `${vehicleTitle(vehicle)} à venda na ${store.name}.`;
   const cover = vehicle.photos?.[0]?.url;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const host = (await headers()).get("host");
+  const url = storefrontUrl(host, slug, `/carros/${id}`);
 
   return {
-    title,
+    // absoluto: anúncio white-label não herda "· estoque.autos"
+    title: { absolute: title },
     description,
-    alternates: { canonical: `${appUrl}/${slug}/carros/${id}` },
+    alternates: { canonical: url },
     openGraph: {
       type: "website",
       title,
       description,
-      url: `${appUrl}/${slug}/carros/${id}`,
+      url,
       siteName: store.name,
-      images: cover ? [{ url: cover, width: 1200, height: 900 }] : undefined,
+      images: cover ? [{ url: cover }] : undefined,
     },
     twitter: {
       card: cover ? "summary_large_image" : "summary",
       title,
       description,
       images: cover ? [cover] : undefined,
+    },
+    // reforça preço/moeda no Open Graph (coerente com o JSON-LD Car+Offer)
+    other: {
+      "product:price:amount": String(vehicle.price),
+      "product:price:currency": "BRL",
     },
   };
 }

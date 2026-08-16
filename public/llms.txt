@@ -16,8 +16,26 @@
   contato registrado no painel do lojista (tempo real).
 - Personalização: 6 templates (Clássico, Moderno, Premium, Minimal, Esportivo,
   Vitrine), cores, fonte e logo por loja.
-- Planos: Básico (R$ 19,90/mês, até 20 carros ativos) e Pro (R$ 49,90/mês,
-  até 60 carros ativos, domínio próprio, destaque na busca).
+- Planos: Básico (R$ 24,90/mês ou R$ 190/ano, até 20 carros ativos) e Pro
+  (R$ 49,90/mês ou R$ 490/ano, até 60 carros ativos, domínio próprio,
+  destaque na busca). Sem taxa de setup e sem fidelidade — cancele quando
+  quiser.
+
+## Preços
+
+- Básico: R$ 24,90/mês ou R$ 190/ano (equivale a ~R$ 15,83/mês). Até 20
+  carros ativos, os 6 templates, cores/fonte/logo, leads por proposta e
+  WhatsApp, cadastro pela FIPE.
+- Pro: R$ 49,90/mês ou R$ 490/ano (equivale a ~R$ 40,83/mês). Até 60 carros
+  ativos, tudo do Básico + domínio próprio e destaque na busca.
+- Sem taxa de setup, sem fidelidade, cancele quando quiser.
+
+## Definições
+
+- Carro ativo: veículo publicado na vitrine (status disponível ou reservado).
+  Veículos vendidos ou arquivados NÃO contam no limite do plano.
+- Lead: cada proposta enviada pelo formulário e cada clique em WhatsApp ou
+  telefone, registrados em tempo real no painel do lojista.
 
 ## Páginas principais
 

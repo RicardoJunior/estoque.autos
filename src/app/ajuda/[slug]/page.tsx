@@ -4,8 +4,14 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ContentShell } from "../../blog/_shell";
 import { AJUDA_SLUGS, getAjudaArticle } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-url";
+import {
+  organizationNode,
+  breadcrumbNode,
+  ORG_ID,
+} from "@/lib/platform-jsonld";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+const APP_URL = SITE_URL;
 
 export function generateStaticParams() {
   return AJUDA_SLUGS.map((slug) => ({ slug }));
@@ -46,15 +52,46 @@ export default async function AjudaArticle({ params }: Params) {
 
   const { default: Body, meta } = article;
 
+  const url = `${APP_URL}/ajuda/${meta.slug}`;
+  const image = meta.image
+    ? new URL(meta.image, APP_URL).toString()
+    : `${APP_URL}/og.png`;
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Article",
-    headline: meta.title,
-    description: meta.description,
-    articleSection: meta.category,
-    url: `${APP_URL}/ajuda/${meta.slug}`,
-    author: { "@type": "Organization", name: "estoque.autos" },
-    publisher: { "@type": "Organization", name: "estoque.autos" },
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: meta.title,
+        description: meta.description,
+        datePublished: meta.date,
+        dateModified: meta.updated ?? meta.date,
+        articleSection: meta.category,
+        image,
+        url,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        author: { "@id": ORG_ID },
+        publisher: { "@id": ORG_ID },
+      },
+      breadcrumbNode([
+        { name: "Início", url: `${APP_URL}/` },
+        { name: "Ajuda", url: `${APP_URL}/ajuda` },
+        { name: meta.title, url },
+      ]),
+      organizationNode,
+      ...(meta.faq?.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: meta.faq.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
+            },
+          ]
+        : []),
+    ],
   };
 
   return (

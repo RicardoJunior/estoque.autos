@@ -6,7 +6,10 @@ import {
 } from "@/lib/auth";
 import { OnboardingWizard } from "./OnboardingWizard";
 
-export const metadata = { title: "Criar minha loja" };
+export const metadata = {
+  title: "Criar minha loja",
+  robots: { index: false, follow: false },
+};
 
 export default async function OnboardingPage() {
   const session = await getSession();

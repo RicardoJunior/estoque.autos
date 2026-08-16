@@ -6,7 +6,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { AcceptInvite } from "./AcceptInvite";
 import { logoutToInviteAction } from "./actions";
 
-export const metadata = { title: "Convite para a equipe" };
+export const metadata = {
+  title: "Convite para a equipe",
+  robots: { index: false, follow: false },
+};
 
 /** linha devolvida pela RPC pública invite_preview */
 interface InvitePreview {

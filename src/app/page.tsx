@@ -14,18 +14,24 @@ import {
 import {
   BILLING_INTERVALS,
   PLANS as BILLING_PLANS,
+  PLAN_LIMITS,
   formatCents,
   formatPlanPrice,
 } from "@/lib/billing";
 import { PlanosSection } from "./PlanosSection";
 import { TEMPLATES } from "@/lib/templates";
+import { SITE_URL } from "@/lib/site-url";
+import { organizationNode, websiteNode, ORG_ID } from "@/lib/platform-jsonld";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+const APP_URL = SITE_URL;
 
 export const metadata: Metadata = {
-  title: "estoque.autos — o site da sua loja de carros, pronto em minutos",
+  // absoluto: não herda o template "%s · estoque.autos" (evita marca duplicada)
+  title: {
+    absolute: "estoque.autos — site da sua loja de carros em minutos",
+  },
   description:
-    "Crie a conta, cadastre o estoque e tenha uma vitrine profissional no ar. 6 templates, suas cores e seu logo — cada carro com proposta e WhatsApp que viram leads. Tabela FIPE no cadastro.",
+    "Crie a conta, cadastre o estoque e tenha uma vitrine profissional no ar em minutos: 6 templates, leads por WhatsApp e tabela FIPE no cadastro.",
   keywords: [
     "site para loja de carros",
     "site para revenda de veículos",
@@ -74,35 +80,44 @@ const FAQ: [string, string][] = [
   ["Como funciona o domínio próprio?", "No plano Pro você conecta o seu domínio (ex.: sualoja.com.br) com instruções claras de apontamento de DNS."],
   ["De onde vem o preço FIPE?", "Da tabela FIPE oficial, atualizada mensalmente. Você cadastra o carro por marca/modelo/versão/ano e vê o valor de referência."],
   ["O que conta como carro ativo?", "Veículos publicados na vitrine. Vendidos e arquivados não contam no limite."],
+  [
+    "Quanto custa o estoque.autos?",
+    `Plano Básico ${formatPlanPrice(BILLING_PLANS.basico, "mensal")} (ou ${formatCents(BILLING_PLANS.basico.priceCents.anual)}/ano), até ${PLAN_LIMITS.basico.activeVehicles} carros ativos; Pro ${formatPlanPrice(BILLING_PLANS.pro, "mensal")} (ou ${formatCents(BILLING_PLANS.pro.priceCents.anual)}/ano), até ${PLAN_LIMITS.pro.activeVehicles} carros, domínio próprio e destaque na busca. Sem taxa de setup e cancele quando quiser.`,
+  ],
 ];
 
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
-    {
-      "@type": "Organization",
-      name: "estoque.autos",
-      url: APP_URL,
-      description:
-        "Plataforma SaaS para lojas de veículos criarem um site profissional em minutos.",
-    },
+    organizationNode,
+    websiteNode,
     {
       "@type": "SoftwareApplication",
       name: "estoque.autos",
       applicationCategory: "BusinessApplication",
       operatingSystem: "Web",
       url: APP_URL,
+      publisher: { "@id": ORG_ID },
       description:
         "Site profissional para lojas de carros: 6 templates, cores e fonte da loja, cadastro pela tabela FIPE e leads por WhatsApp.",
-      offers: Object.values(BILLING_PLANS).flatMap((p) =>
-        BILLING_INTERVALS.map((interval) => ({
-          "@type": "Offer",
-          name: `Plano ${p.name} (${interval})`,
-          price: (p.priceCents[interval] / 100).toFixed(2),
-          priceCurrency: "BRL",
-          url: `${APP_URL}/cadastro?plano=${p.id}&intervalo=${interval}`,
-        })),
-      ),
+      offers: {
+        "@type": "AggregateOffer",
+        priceCurrency: "BRL",
+        lowPrice: (BILLING_PLANS.basico.priceCents.anual / 100).toFixed(2),
+        highPrice: (BILLING_PLANS.pro.priceCents.mensal / 100).toFixed(2),
+        offerCount: Object.keys(BILLING_PLANS).length * BILLING_INTERVALS.length,
+        offers: Object.values(BILLING_PLANS).flatMap((p) =>
+          BILLING_INTERVALS.map((interval) => ({
+            "@type": "Offer",
+            name: `Plano ${p.name} (${interval})`,
+            price: (p.priceCents[interval] / 100).toFixed(2),
+            priceCurrency: "BRL",
+            availability: "https://schema.org/InStock",
+            category: "subscription",
+            url: `${APP_URL}/cadastro?plano=${p.id}&intervalo=${interval}`,
+          })),
+        ),
+      },
     },
     {
       "@type": "FAQPage",

@@ -4,8 +4,14 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { ContentShell } from "../_shell";
 import { BLOG_SLUGS, getBlogPost, formatDate } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-url";
+import {
+  organizationNode,
+  breadcrumbNode,
+  ORG_ID,
+} from "@/lib/platform-jsonld";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+const APP_URL = SITE_URL;
 
 // Pré-renderiza todos os posts no build; rotas fora da lista → 404.
 export function generateStaticParams() {
@@ -48,16 +54,46 @@ export default async function BlogPost({ params }: Params) {
 
   const { default: Article, meta } = post;
 
+  const url = `${APP_URL}/blog/${meta.slug}`;
+  const image = meta.image
+    ? new URL(meta.image, APP_URL).toString()
+    : `${APP_URL}/og.png`;
+
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "BlogPosting",
-    headline: meta.title,
-    description: meta.description,
-    datePublished: meta.date,
-    articleSection: meta.category,
-    url: `${APP_URL}/blog/${meta.slug}`,
-    author: { "@type": "Organization", name: "estoque.autos" },
-    publisher: { "@type": "Organization", name: "estoque.autos" },
+    "@graph": [
+      {
+        "@type": "BlogPosting",
+        headline: meta.title,
+        description: meta.description,
+        datePublished: meta.date,
+        dateModified: meta.updated ?? meta.date,
+        articleSection: meta.category,
+        image,
+        url,
+        mainEntityOfPage: { "@type": "WebPage", "@id": url },
+        author: { "@id": ORG_ID },
+        publisher: { "@id": ORG_ID },
+      },
+      breadcrumbNode([
+        { name: "Início", url: `${APP_URL}/` },
+        { name: "Blog", url: `${APP_URL}/blog` },
+        { name: meta.title, url },
+      ]),
+      organizationNode,
+      ...(meta.faq?.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: meta.faq.map(({ q, a }) => ({
+                "@type": "Question",
+                name: q,
+                acceptedAnswer: { "@type": "Answer", text: a },
+              })),
+            },
+          ]
+        : []),
+    ],
   };
 
   return (

@@ -20,6 +20,12 @@ export type ContentMeta = {
   date: string; // ISO yyyy-mm-dd
   category: string;
   slug: string;
+  /** ISO da última revisão (dateModified). Opcional — cai em `date`. */
+  updated?: string;
+  /** Imagem própria do artigo (absoluta ou /public). Opcional — cai no OG padrão. */
+  image?: string;
+  /** Perguntas frequentes → vira FAQPage JSON-LD. Opcional. */
+  faq?: { q: string; a: string }[];
 };
 
 type MdxModule = {

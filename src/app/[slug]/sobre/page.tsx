@@ -1,9 +1,17 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { headers } from "next/headers";
 import { getStorefront } from "@/lib/public";
 import { richTextToPlain } from "@/lib/rich-text";
+import { storefrontUrl } from "@/lib/site-url";
 import { StoreAbout } from "@/components/storefront/StoreAbout";
 import { formatAddressShort } from "@/components/storefront/address";
+
+function metaDescription(raw: string): string {
+  const clean = raw.replace(/\s+/g, " ").trim();
+  if (clean.length <= 160) return clean;
+  return clean.slice(0, 157).replace(/\s+\S*$/, "").trimEnd() + "…";
+}
 
 export async function generateMetadata({
   params,
@@ -15,24 +23,26 @@ export async function generateMetadata({
   if (!store) return { title: "Loja não encontrada" };
 
   const title = `Sobre · ${store.name}`;
-  // about pode ser HTML do editor — para SEO, sempre texto puro
-  const description =
+  // about pode ser HTML do editor — para SEO, sempre texto puro e truncado
+  const description = metaDescription(
     (store.settings.about
       ? richTextToPlain(store.settings.about)
       : undefined) ??
-    formatAddressShort(store.address) ??
-    `Conheça a ${store.name}: localização, horário e contato.`;
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+      formatAddressShort(store.address) ??
+      `Conheça a ${store.name}: localização, horário e contato.`,
+  );
+  const host = (await headers()).get("host");
+  const url = storefrontUrl(host, slug, "/sobre");
 
   return {
-    title,
+    title: { absolute: title },
     description,
-    alternates: { canonical: `${appUrl}/${slug}/sobre` },
+    alternates: { canonical: url },
     openGraph: {
       type: "website",
       title,
       description,
-      url: `${appUrl}/${slug}/sobre`,
+      url,
       siteName: store.name,
       images: store.logo_url ? [{ url: store.logo_url }] : undefined,
     },

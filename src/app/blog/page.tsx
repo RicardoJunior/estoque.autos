@@ -3,8 +3,10 @@ import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
 import { ContentShell } from "./_shell";
 import { getBlogIndex, formatDate, type ContentMeta } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-url";
+import { organizationNode, breadcrumbNode, ORG_ID } from "@/lib/platform-jsonld";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+const APP_URL = SITE_URL;
 
 export const metadata: Metadata = {
   title: "Blog — dicas para vender mais carros",
@@ -32,16 +34,29 @@ export default async function BlogHub() {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "Blog",
-    name: "Blog do estoque.autos",
-    url: `${APP_URL}/blog`,
-    blogPost: posts.map((p) => ({
-      "@type": "BlogPosting",
-      headline: p.title,
-      description: p.description,
-      datePublished: p.date,
-      url: `${APP_URL}/blog/${p.slug}`,
-    })),
+    "@graph": [
+      {
+        "@type": "Blog",
+        "@id": `${APP_URL}/blog#blog`,
+        name: "Blog do estoque.autos",
+        url: `${APP_URL}/blog`,
+        inLanguage: "pt-BR",
+        publisher: { "@id": ORG_ID },
+        blogPost: posts.map((p) => ({
+          "@type": "BlogPosting",
+          headline: p.title,
+          description: p.description,
+          datePublished: p.date,
+          dateModified: p.updated ?? p.date,
+          url: `${APP_URL}/blog/${p.slug}`,
+        })),
+      },
+      breadcrumbNode([
+        { name: "Início", url: `${APP_URL}/` },
+        { name: "Blog", url: `${APP_URL}/blog` },
+      ]),
+      organizationNode,
+    ],
   };
 
   return (

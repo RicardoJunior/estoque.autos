@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
 import { createAnonClient } from "@/lib/supabase/server";
 import { AJUDA_SLUGS, BLOG_SLUGS } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-url";
 
 // Sitemap raiz: páginas do produto + artigos + vitrines das lojas.
 // Cada loja tem ainda o próprio /{slug}/sitemap.xml (com os carros).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+  const appUrl = SITE_URL;
 
   const entries: MetadataRoute.Sitemap = [
     { url: appUrl, changeFrequency: "weekly", priority: 1 },
@@ -21,6 +22,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "monthly" as const,
       priority: 0.6,
     })),
+    { url: `${appUrl}/termos`, changeFrequency: "yearly", priority: 0.3 },
+    { url: `${appUrl}/privacidade`, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   try {

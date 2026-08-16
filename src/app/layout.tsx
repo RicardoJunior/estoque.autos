@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Anton, Archivo } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -25,6 +25,14 @@ export const metadata: Metadata = {
   },
   description:
     "Crie a conta da sua loja, cadastre o estoque e tenha um site profissional pronto em minutos.",
+  applicationName: "estoque.autos",
+  // Next resolve app/icon.svg, app/favicon.ico e app/apple-icon.png sozinho;
+  // o manifest vem de app/manifest.ts.
+  appleWebApp: { capable: true, title: "estoque.autos", statusBarStyle: "black-translucent" },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#ff7a1a",
 };
 
 export default function RootLayout({

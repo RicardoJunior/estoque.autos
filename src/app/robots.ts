@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
+import { SITE_URL } from "@/lib/site-url";
 
 export default function robots(): MetadataRoute.Robots {
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const base = SITE_URL;
   return {
     rules: {
       userAgent: "*",
@@ -9,9 +10,7 @@ export default function robots(): MetadataRoute.Robots {
       disallow: ["/admin", "/api", "/auth"],
     },
     // O blog (Astro, servido em /blog) gera o próprio sitemap.
-    sitemap: base
-      ? [`${base}/sitemap.xml`, `${base}/blog/sitemap-index.xml`]
-      : undefined,
-    host: base || undefined,
+    sitemap: [`${base}/sitemap.xml`, `${base}/blog/sitemap-index.xml`],
+    host: base,
   };
 }

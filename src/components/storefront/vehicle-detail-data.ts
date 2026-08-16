@@ -5,6 +5,7 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/types";
 import { formatPrice, formatKm, vehicleTitle } from "@/lib/format";
+import { SITE_URL } from "@/lib/site-url";
 
 // ============================================================
 // Dados compartilhados da página de detalhe do veículo — os 6
@@ -50,25 +51,36 @@ export function vehicleJsonLd(
 ): string | null {
   if (demo) return null;
   const title = vehicleTitle(vehicle);
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const appUrl = SITE_URL;
+  const vehicleUrl = `${appUrl}/${slug}/carros/${vehicle.id}`;
   const graph = {
     "@context": "https://schema.org",
     "@graph": [
       {
         "@type": "Car",
         name: title,
-        brand: vehicle.brand,
+        brand: { "@type": "Brand", name: vehicle.brand },
         model: vehicle.model,
         vehicleModelDate: vehicle.year_model ?? undefined,
+        itemCondition: "https://schema.org/UsedCondition",
         mileageFromOdometer: vehicle.mileage
           ? { "@type": "QuantitativeValue", value: vehicle.mileage, unitCode: "KMT" }
           : undefined,
         fuelType: vehicle.fuel ? FUEL_LABELS[vehicle.fuel] : undefined,
+        vehicleTransmission: vehicle.transmission
+          ? TRANSMISSION_LABELS[vehicle.transmission]
+          : undefined,
+        color: vehicle.color ?? undefined,
+        numberOfDoors: vehicle.doors ?? undefined,
+        bodyType: CATEGORY_LABELS[vehicle.category] ?? undefined,
+        description: vehicle.description ?? undefined,
         image: vehicle.photos?.map((p) => p.url),
         offers: {
           "@type": "Offer",
           price: vehicle.price,
           priceCurrency: "BRL",
+          url: vehicleUrl,
+          itemCondition: "https://schema.org/UsedCondition",
           availability:
             vehicle.status === "available"
               ? "https://schema.org/InStock"
@@ -89,7 +101,7 @@ export function vehicleJsonLd(
             "@type": "ListItem",
             position: 2,
             name: title,
-            item: `${appUrl}/${slug}/carros/${vehicle.id}`,
+            item: vehicleUrl,
           },
         ],
       },

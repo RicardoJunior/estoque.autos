@@ -1,6 +1,7 @@
 import { getStorefront, listPublicVehicles } from "@/lib/public";
+import { SITE_URL } from "@/lib/site-url";
 
-/** Sitemap por loja: landing + cada veículo exposto. */
+/** Sitemap por loja: landing + página Sobre + cada veículo exposto. */
 export async function GET(
   _req: Request,
   { params }: { params: Promise<{ slug: string }> },
@@ -9,11 +10,12 @@ export async function GET(
   const store = await getStorefront(slug);
   if (!store) return new Response("Not found", { status: 404 });
 
-  const base = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const base = SITE_URL;
   const vehicles = await listPublicVehicles(store.id);
 
   const urls = [
     `<url><loc>${base}/${slug}</loc><changefreq>daily</changefreq></url>`,
+    `<url><loc>${base}/${slug}/sobre</loc><changefreq>monthly</changefreq></url>`,
     ...vehicles.map(
       (v) =>
         `<url><loc>${base}/${slug}/carros/${v.id}</loc><lastmod>${new Date(

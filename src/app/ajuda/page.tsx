@@ -3,13 +3,15 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import { ContentShell } from "../blog/_shell";
 import { getAjudaByCategory, type ContentMeta } from "@/lib/content";
+import { SITE_URL } from "@/lib/site-url";
+import { organizationNode, breadcrumbNode, ORG_ID } from "@/lib/platform-jsonld";
 
-const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://app.estoque.autos";
+const APP_URL = SITE_URL;
 
 export const metadata: Metadata = {
   title: "Central de ajuda",
   description:
-    "Tire suas dúvidas sobre o estoque.autos: conta e acesso, cadastro de veículos pela FIPE, fotos, personalização da vitrine, leads, equipe, domínio próprio e cobrança.",
+    "Dúvidas sobre o estoque.autos: conta, cadastro de veículos pela FIPE, fotos, personalização, leads, equipe, domínio próprio e cobrança.",
   alternates: { canonical: "/ajuda" },
   openGraph: {
     type: "website",
@@ -32,17 +34,30 @@ export default async function AjudaHub() {
 
   const jsonLd = {
     "@context": "https://schema.org",
-    "@type": "CollectionPage",
-    name: "Central de ajuda — estoque.autos",
-    url: `${APP_URL}/ajuda`,
-    hasPart: groups.flatMap((g) =>
-      g.articles.map((a) => ({
-        "@type": "Article",
-        headline: a.title,
-        description: a.description,
-        url: `${APP_URL}/ajuda/${a.slug}`,
-      })),
-    ),
+    "@graph": [
+      {
+        "@type": "CollectionPage",
+        "@id": `${APP_URL}/ajuda#collection`,
+        name: "Central de ajuda — estoque.autos",
+        url: `${APP_URL}/ajuda`,
+        inLanguage: "pt-BR",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        publisher: { "@id": ORG_ID },
+        hasPart: groups.flatMap((g) =>
+          g.articles.map((a) => ({
+            "@type": "Article",
+            headline: a.title,
+            description: a.description,
+            url: `${APP_URL}/ajuda/${a.slug}`,
+          })),
+        ),
+      },
+      breadcrumbNode([
+        { name: "Início", url: `${APP_URL}/` },
+        { name: "Ajuda", url: `${APP_URL}/ajuda` },
+      ]),
+      organizationNode,
+    ],
   };
 
   return (
