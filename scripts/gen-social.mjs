@@ -31,9 +31,31 @@ function wordmark(x, y, size, tone = "light") {
   return `<text x="${x}" y="${y}" font-family="${FONT}" font-size="${size}" font-weight="800" letter-spacing="-1" fill="${c}">estoque<tspan fill="${AMBER}">.autos</tspan></text>`;
 }
 
-/** Quebra `text` em linhas de no máx. `max` caracteres (aprox.). */
+/**
+ * Quebra `text` respeitando ~`max` caracteres, mas de forma BALANCEADA:
+ * - cabe numa linha? uma linha só.
+ * - senão, prefere 2 linhas equilibradas (menor diferença de tamanho),
+ *   o que evita órfãos feios como "(e / certo)".
+ * - só cai no greedy (3+ linhas) quando não couber em duas.
+ */
 function wrap(text, max) {
-  const words = String(text).split(/\s+/);
+  const clean = String(text).replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return [clean];
+
+  const words = clean.split(" ");
+  // tenta a melhor quebra em DUAS linhas (ambas <= max, mais equilibrada)
+  let best = null;
+  for (let i = 1; i < words.length; i++) {
+    const l1 = words.slice(0, i).join(" ");
+    const l2 = words.slice(i).join(" ");
+    if (l1.length <= max && l2.length <= max) {
+      const score = Math.abs(l1.length - l2.length);
+      if (best === null || score < best.score) best = { score, l1, l2 };
+    }
+  }
+  if (best) return [best.l1, best.l2];
+
+  // texto longo: greedy (3+ linhas)
   const lines = [];
   let cur = "";
   for (const w of words) {
@@ -78,7 +100,7 @@ function slideCover(post) {
 }
 
 function slideContent(n, heading, bullets) {
-  const hLines = wrap(heading, 24);
+  const hLines = wrap(heading, 26);
   let y = 470;
   const bulletSvg = bullets
     .map((b) => {
