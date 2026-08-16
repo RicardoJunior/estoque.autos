@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { PlatformAnalytics } from "@/components/PlatformAnalytics";
 
 // Display (títulos) + corpo — compartilhados por todo o produto (landing + app).
 const display = Anton({
@@ -38,6 +39,7 @@ export default function RootLayout({
       <body>
         <TooltipProvider>{children}</TooltipProvider>
         <Toaster richColors position="top-center" />
+        <PlatformAnalytics />
       </body>
     </html>
   );
