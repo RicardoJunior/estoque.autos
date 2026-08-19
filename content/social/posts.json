@@ -1,0 +1,333 @@
+{
+  "_doc": "Conteúdo dos criativos sociais. carousels[] = posts de swipe (capa+slides+CTA) e capa de reel/TikTok. singles[] = posts de imagem única (stat|myth|quote). Edite aqui e rode `node scripts/gen-social.mjs`.",
+  "carousels": [
+    {
+      "slug": "como-precificar-carros-usados",
+      "title": "Precificar usados",
+      "hook": "Precificar carro usado sem chutar",
+      "reelCta": "salva antes de precificar o próximo",
+      "pillar": "1 · Precificação",
+      "slides": [
+        ["FIPE é referência, não preço final", [
+          "A FIPE é a média — o mercado local manda no valor real.",
+          "Pesquise 5–10 anúncios do mesmo carro na sua região."
+        ]],
+        ["Precifique de fora para dentro", [
+          "Comece pelo teto que o mercado paga.",
+          "Desça até caber sua margem e o giro que você quer."
+        ]],
+        ["Reprecifique toda semana", [
+          "Carro parado perde valor: revise preços a cada 7 dias.",
+          "Encalhou 60 dias? Corte antes que vire prejuízo."
+        ]]
+      ]
+    },
+    {
+      "slug": "giro-de-estoque-carros-quantos-dias",
+      "title": "Giro de estoque",
+      "hook": "Quantos dias um carro pode ficar parado?",
+      "reelCta": "salva e confere seu pátio hoje",
+      "pillar": "2 · Gestão",
+      "slides": [
+        ["A régua dos 30 / 60 / 90 dias", [
+          "Até 30 dias: saudável.",
+          "60 dias: acenda o alerta e reveja o preço.",
+          "90 dias: encalhado — decida agir."
+        ]],
+        ["Carro parado custa caro", [
+          "Capital preso, pátio ocupado e depreciação correndo.",
+          "O prejuízo é invisível no papel, mas real no caixa."
+        ]],
+        ["Tenha uma régua de ação", [
+          "Defina gatilhos de preço por faixa de dias.",
+          "Meça o giro mensal e ataque os campeões de pátio."
+        ]]
+      ]
+    },
+    {
+      "slug": "como-vender-carros-pelo-whatsapp",
+      "title": "Vender no WhatsApp",
+      "hook": "O WhatsApp é seu maior vendedor",
+      "reelCta": "salva o roteiro de atendimento",
+      "pillar": "3 · Vendas",
+      "slides": [
+        ["Responda rápido (e certo)", [
+          "Lead que espera esfria: responda em minutos.",
+          "Tenha respostas rápidas prontas para as dúvidas comuns."
+        ]],
+        ["Conduza a conversa", [
+          "Faça perguntas, ofereça o próximo passo (foto, visita).",
+          "Use etiquetas para saber em que ponto cada lead está."
+        ]],
+        ["Follow-up é onde vende", [
+          "A maioria das vendas vem do 2º ao 5º contato.",
+          "Registre e volte — não deixe o lead morrer no vácuo."
+        ]]
+      ]
+    },
+    {
+      "slug": "carros-consignados-como-funciona",
+      "title": "Consignação",
+      "hook": "Consignação: como funciona de verdade",
+      "reelCta": "salva antes de aceitar o próximo",
+      "pillar": "4 · Segurança",
+      "slides": [
+        ["O carro não é seu", [
+          "Você vende em nome do dono — o veículo segue dele.",
+          "Isso muda risco, garantia e responsabilidade."
+        ]],
+        ["Contrato protege os dois lados", [
+          "Preço mínimo, comissão, prazo e devolução por escrito.",
+          "Sem contrato claro, a dor de cabeça é sua."
+        ]],
+        ["Quando recusar", [
+          "Documentação pendente, débito ou preço fora do mercado.",
+          "Consignado bom gira; consignado ruim ocupa vaga."
+        ]]
+      ]
+    },
+    {
+      "slug": "como-fotografar-carros-para-vender",
+      "title": "Fotografar carros",
+      "hook": "Fotos ruins afundam o anúncio",
+      "reelCta": "salva o passo a passo das fotos",
+      "pillar": "3 · Vendas",
+      "slides": [
+        ["Prepare antes de clicar", [
+          "Carro limpo, fundo neutro e sem bagunça atrás.",
+          "Luz da manhã ou fim de tarde — evite sol a pino."
+        ]],
+        ["Siga uma sequência", [
+          "3/4 da frente, laterais, traseira, rodas, interior, painel.",
+          "A mesma ordem em todo carro padroniza a sua vitrine."
+        ]],
+        ["Um vídeo de volta ao carro", [
+          "Walkaround de 20–30s no celular aumenta a confiança.",
+          "Mais cliques, menos 'ainda tá disponível?'."
+        ]]
+      ]
+    },
+    {
+      "slug": "margem-de-lucro-venda-de-carros-usados",
+      "title": "Margem de usados",
+      "hook": "Metade da margem some sem você ver",
+      "reelCta": "salva antes da próxima venda",
+      "pillar": "1 · Precificação",
+      "slides": [
+        ["Margem bruta não é o que sobra", [
+          "Bruta é preço menos compra, preparação e documento.",
+          "Líquida é o que sobra depois de todos os custos."
+        ]],
+        ["Feche o DRE de cada venda", [
+          "Lance cada gasto no carro certo, não numa conta geral.",
+          "Desconte comissão, imposto, rateio e custo financeiro."
+        ]],
+        ["Segurar preço não defende margem", [
+          "Carro parado derrete a margem líquida toda semana.",
+          "Vaga que gira em 45 dias rende o dobro da de 90."
+        ]]
+      ]
+    },
+    {
+      "slug": "como-avaliar-carro-na-compra",
+      "title": "Teto de compra",
+      "hook": "Pagou acima do teto? Já encalhou",
+      "reelCta": "salva antes da próxima avaliação",
+      "pillar": "1 · Precificação",
+      "slides": [
+        ["O lucro nasce na compra", [
+          "Carro bem comprado se vende quase sozinho.",
+          "Mal comprado, nenhum vendedor salva a margem."
+        ]],
+        ["A conta é de trás pra frente", [
+          "Comece pelo preço-alvo de venda na sua praça.",
+          "Tire preparação, documentação, custos e margem."
+        ]],
+        ["Não aceitou o teto? Não compre", [
+          "Todo carro pago acima da conta já entra encalhado.",
+          "E nenhum carro entra no estoque sem laudo cautelar."
+        ]]
+      ]
+    },
+    {
+      "slug": "tabela-fipe-precificacao-estoque",
+      "title": "FIPE na precificação",
+      "hook": "FIPE não é o preço que você cobra",
+      "reelCta": "salva antes de reprecificar",
+      "pillar": "1 · Precificação",
+      "slides": [
+        ["O que a FIPE é — e o que não é", [
+          "É o preço médio nacional por marca, modelo, versão e ano.",
+          "É referência de mercado — não o seu preço de venda."
+        ]],
+        ["Parta da FIPE e ajuste", [
+          "Pese estado, km, procedência, opcionais e demanda.",
+          "Só então feche o preço com a sua margem dentro."
+        ]],
+        ["O erro que apaga sua margem", [
+          "Usar a FIPE do mês passado: ela vira todo mês.",
+          "Esconder o preço: 'consulte o valor' mata contato."
+        ]]
+      ]
+    },
+    {
+      "slug": "gestao-de-estoque-loja-de-carros",
+      "title": "Gestão de estoque",
+      "hook": "3 custos escondidos do carro parado",
+      "reelCta": "salva antes de lotar o pátio",
+      "pillar": "2 · Gestão",
+      "slides": [
+        ["Carro parado custa em 3 frentes", [
+          "Capital preso, desvalorização e custo de pátio.",
+          "Seis meses parado come boa parte da sua margem."
+        ]],
+        ["Revise preço toda semana, dia fixo", [
+          "Liste do carro mais velho pro mais novo.",
+          "Sem contato? É preço ou foto. Corrija."
+        ]],
+        ["Não compre pelo seu gosto", [
+          "Compre o que já saiu rápido na sua região.",
+          "Prejuízo adiado é o hábito que quebra loja."
+        ]]
+      ]
+    },
+    {
+      "slug": "fluxo-de-caixa-loja-de-veiculos",
+      "title": "Fluxo de caixa",
+      "hook": "Vendeu o mês todo e o boleto não fecha?",
+      "reelCta": "salva pro fechamento de segunda",
+      "pillar": "2 · Gestão",
+      "slides": [
+        ["Lucro no papel não paga boleto", [
+          "Quase todo o capital fica preso em poucos carros.",
+          "Carro parado é dinheiro parado — não é lucro."
+        ]],
+        ["Feche o caixa toda segunda", [
+          "30 a 40 min: lance cada movimento por categoria.",
+          "Só é caixa quando o dinheiro cai na conta."
+        ]],
+        ["Não conte com venda que não caiu", [
+          "Financiamento em análise não é caixa — é a receber.",
+          "Projete 90 dias e aja na pior semana antes dela."
+        ]]
+      ]
+    },
+    {
+      "slug": "por-que-seu-carro-nao-vende",
+      "title": "Por que não vende",
+      "hook": "Carro parado tem causa — não é azar",
+      "reelCta": "salva antes de mexer no preço",
+      "pillar": "2 · Gestão",
+      "slides": [
+        ["Preço e fotos explicam a maioria", [
+          "Sem visualização, o problema é foto: ninguém clicou.",
+          "Muita view e zero contato: o preço está fora."
+        ]],
+        ["Aja pela régua de dias parado", [
+          "30–45 dias: refaça fotos e reescreva o anúncio.",
+          "45–60 dias: reposicione o preço pelos concorrentes."
+        ]],
+        ["Não baixe o preço no conta-gotas", [
+          "Descontos pequenos ensinam o cliente a esperar.",
+          "Faça um corte único que recoloque o carro no jogo."
+        ]]
+      ]
+    },
+    {
+      "slug": "como-vender-mais-carros-com-site-proprio",
+      "title": "Site próprio vende",
+      "hook": "Só marketplace? Dinheiro na mesa",
+      "reelCta": "salva antes de montar seu site",
+      "pillar": "3 · Vendas",
+      "slides": [
+        ["Marketplace dá alcance, não é sua casa", [
+          "No seu domínio, com seu logo, o cliente confia mais.",
+          "Você manda no estoque, no preço e no destaque."
+        ]],
+        ["Lead em cada carro, não só no rodapé", [
+          "Proposta e botão de WhatsApp em cada veículo.",
+          "Cada clique e proposta viram lead no painel."
+        ]],
+        ["O que faz o cliente pular seu carro", [
+          "Preço escondido: 'consulte valores' afasta.",
+          "Responda em minutos: converte muito mais."
+        ]]
+      ]
+    },
+    {
+      "slug": "seo-local-para-loja-de-carros",
+      "title": "SEO local pra loja",
+      "hook": "3 lojas no mapa. A sua está lá?",
+      "reelCta": "salva antes de sumir do Google",
+      "pillar": "3 · Vendas",
+      "slides": [
+        ["Você briga só com a sua cidade", [
+          "SEO local é disputa pequena: só as revendas da sua praça.",
+          "A maioria trata o Google com descaso. Aí está sua brecha."
+        ]],
+        ["Complete o Perfil da Empresa", [
+          "É grátis: categoria certa, fotos reais, horário, posts.",
+          "Peça avaliação na entrega das chaves — pico de satisfação."
+        ]],
+        ["Portal ranqueia o portal, não você", [
+          "No portal quem aparece é a Webmotors, não sua loja.",
+          "Tenha site com uma página indexável por carro."
+        ]]
+      ]
+    },
+    {
+      "slug": "garantia-de-carro-usado-cdc",
+      "title": "Garantia usado CDC",
+      "hook": "\"Vendido no estado\" não protege sua loja",
+      "reelCta": "salva antes de vender o próximo",
+      "pillar": "4 · Segurança",
+      "slides": [
+        ["90 dias valem por lei, sempre", [
+          "Garantia legal cobre vício oculto, não desgaste natural.",
+          "Vale mesmo sem termo — não dá pra reduzir no contrato."
+        ]],
+        ["Documente tudo na entrega", [
+          "Laudo, checklist e data provam o estado na venda.",
+          "Avaria descrita no anúncio deixa de ser vício oculto."
+        ]],
+        ["Provisione — não pague do mês", [
+          "Reserve um % do lucro de cada carro pra reparo.",
+          "Reparo no pátio custa fração do reparo pós-venda."
+        ]]
+      ]
+    },
+    {
+      "slug": "como-abrir-uma-loja-de-carros",
+      "title": "Abrir loja de carros",
+      "hook": "Loja de carros quebra por falta de caixa",
+      "reelCta": "salva o passo a passo pra abrir",
+      "pillar": "4 · Segurança",
+      "slides": [
+        ["Primeiro o contador, não o pátio", [
+          "CNPJ, CNAE certo e regime tributário definem sua conta.",
+          "MEI não serve: o comércio de usados estoura o limite."
+        ]],
+        ["Divida o capital em 3 caixas", [
+          "Estoque, capital de giro e estrutura da loja.",
+          "Guarde 20% a 40% pra giro e estrutura; o resto, estoque."
+        ]],
+        ["Não gaste tudo em carro", [
+          "Comece com 5 a 10 carros de giro mais consignados.",
+          "Abrir sem fôlego de caixa é o erro que devolve o ponto."
+        ]]
+      ]
+    }
+  ],
+  "singles": [
+    { "key": "stat-giro-60dias", "type": "stat", "big": "60 dias", "line": "É quando o alerta acende: carro parado começa a virar prejuízo." },
+    { "key": "stat-margem-50", "type": "stat", "big": "50%", "line": "da margem bruta some em custos fora da negociação." },
+    { "key": "stat-garantia-90dias", "type": "stat", "big": "90 dias", "line": "de garantia legal em todo usado vendido para consumidor." },
+    { "key": "stat-abrir-caixa", "type": "stat", "big": "20% a 40%", "line": "do caixa fica para giro e estrutura, não para estoque." },
+    { "key": "myth-fipe", "type": "myth", "mito": "FIPE é o preço de venda do carro.", "verdade": "FIPE é só a média; quem dita o preço é o mercado local." },
+    { "key": "myth-garantia-estado", "type": "myth", "mito": "\"Vendido no estado\" tira a garantia da loja.", "verdade": "A cláusula não vale; o que protege é transparência documentada." },
+    { "key": "myth-patio-cheio", "type": "myth", "mito": "Pátio cheio é sinal de loja forte.", "verdade": "Só é bom se os carros estiverem girando." },
+    { "key": "quote-carro-parado", "type": "quote", "quote": "Carro parado não dá prejuízo no papel. Dá no caixa." },
+    { "key": "quote-encalhe-processo", "type": "quote", "quote": "Encalhe se resolve com processo, não com esperança." },
+    { "key": "quote-site-alcance", "type": "quote", "quote": "Marketplace te dá alcance. O site é onde ele vira venda." }
+  ]
+}

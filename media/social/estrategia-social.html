@@ -1,10 +1,10 @@
-<title>estoque.autos · Estratégia orgânica de Instagram e TikTok</title>
+<title>estoque.autos · Plano de lançamento do Instagram e TikTok</title>
 <style>
   :root{
     --bg:#0a0b0d; --surface:#131109; --surface2:#17140d; --card:#16140f;
     --amber:#ff7a1a; --amber2:#ffb14d; --ink:#f4efe6; --mute:#9c9488;
     --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.05);
-    --good:#63c07a; --warn:#e0a63a;
+    --good:#63c07a; --warn:#e0a63a; --red:#e0663a;
     --display:"Arial Black","Helvetica Neue",Arial,sans-serif;
     --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
     --mono:"SF Mono",ui-monospace,Menlo,monospace;
@@ -12,33 +12,32 @@
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);
     line-height:1.6;-webkit-font-smoothing:antialiased;letter-spacing:-.003em}
-  .wrap{max-width:1000px;margin:0 auto;padding:0 22px}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 22px}
   a{color:var(--amber2);text-decoration:none}
   a:hover{text-decoration:underline}
 
-  /* grão + faróis no topo */
   .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line);
-    background:radial-gradient(closest-side at 70% 0%,rgba(255,122,26,.16),transparent 70%),var(--bg)}
-  .hero-in{padding:74px 0 52px}
-  .brand{display:inline-flex;align-items:center;gap:11px;margin-bottom:34px}
+    background:radial-gradient(closest-side at 72% -10%,rgba(255,122,26,.18),transparent 70%),var(--bg)}
+  .hero-in{padding:74px 0 54px}
+  .brand{display:inline-flex;align-items:center;gap:11px;margin-bottom:32px}
   .mark{width:38px;height:38px;border-radius:9px;background:var(--amber);position:relative;flex:none}
   .mark svg{position:absolute;inset:0}
   .brand b{font-weight:800;font-size:19px;letter-spacing:-.02em}
   .brand b i{color:var(--amber);font-style:normal}
   .eyebrow{font-size:12.5px;font-weight:800;letter-spacing:.24em;text-transform:uppercase;color:var(--amber)}
   h1{font-family:var(--display);font-weight:900;text-transform:uppercase;
-    font-size:clamp(38px,7vw,74px);line-height:.94;letter-spacing:-.02em;margin:16px 0 0;text-wrap:balance}
+    font-size:clamp(38px,7vw,72px);line-height:.94;letter-spacing:-.02em;margin:16px 0 0;text-wrap:balance}
   h1 .am{color:var(--amber)}
-  .lead{max-width:620px;margin:24px 0 0;font-size:18px;color:#d8d0c4;text-wrap:pretty}
+  .lead{max-width:640px;margin:24px 0 0;font-size:18px;color:#d8d0c4;text-wrap:pretty}
   .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:30px}
   .chip{font-size:12.5px;font-weight:600;color:var(--mute);border:1px solid var(--line);
     border-radius:999px;padding:7px 14px;background:rgba(255,255,255,.02)}
 
-  section{padding:60px 0;border-bottom:1px solid var(--line2)}
+  section{padding:58px 0;border-bottom:1px solid var(--line2)}
   .kick{font-size:12px;font-weight:800;letter-spacing:.22em;text-transform:uppercase;color:var(--amber);margin:0 0 4px}
   h2{font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:-.015em;
     font-size:clamp(26px,4vw,40px);line-height:1;margin:0 0 6px;text-wrap:balance}
-  h2+.sub{color:var(--mute);margin:0 0 30px;max-width:640px}
+  h2+.sub{color:var(--mute);margin:0 0 30px;max-width:660px}
   h3{font-size:19px;font-weight:800;margin:0 0 8px;letter-spacing:-.01em}
   p{text-wrap:pretty}
 
@@ -49,9 +48,7 @@
   @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
 
   .card{background:var(--card);border:1px solid var(--line);border-radius:15px;padding:24px}
-  .card.pill{position:relative;overflow:hidden}
   .pill-n{font-family:var(--display);font-size:44px;font-weight:900;color:var(--amber);opacity:.28;line-height:1}
-  .card h3 .dot{color:var(--amber)}
   .muted{color:var(--mute)}
   .card ul{margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:9px}
   .card ul li{position:relative;padding-left:20px;font-size:14.5px;color:#d8d0c4}
@@ -59,43 +56,57 @@
   .tag{display:inline-block;font-size:11.5px;font-weight:700;color:var(--amber2);
     background:rgba(255,122,26,.1);border:1px solid rgba(255,122,26,.22);border-radius:6px;padding:2px 8px;margin:2px 4px 2px 0}
 
-  /* tabela calendário */
+  .stat-row{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px}
+  .statbox{flex:1;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:18px 20px}
+  .statbox .k{font-family:var(--display);font-size:38px;font-weight:900;color:var(--amber);line-height:1}
+  .statbox .v{font-size:13px;color:var(--mute);margin-top:6px}
+
   .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-  table{border-collapse:collapse;width:100%;min-width:680px;font-size:14px}
+  table{border-collapse:collapse;width:100%;min-width:720px;font-size:14px}
   th,td{text-align:left;padding:12px 15px;border-bottom:1px solid var(--line2);vertical-align:top}
   thead th{position:sticky;top:0;background:var(--surface2);color:var(--mute);font-size:11.5px;
     font-weight:800;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
   tbody tr:last-child td{border-bottom:0}
-  td .fmt{font-weight:700;color:var(--ink);white-space:nowrap}
-  .badge{font-size:11px;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap}
+  td .fmt{font-weight:800;color:var(--ink);white-space:nowrap}
+  .badge{font-size:11px;font-weight:800;padding:2px 8px;border-radius:5px;white-space:nowrap;display:inline-block}
   .b-car{background:rgba(255,122,26,.14);color:var(--amber2)}
   .b-reel{background:rgba(99,192,122,.14);color:var(--good)}
-  .b-story{background:rgba(224,166,58,.14);color:var(--warn)}
+  .b-single{background:rgba(224,166,58,.14);color:var(--warn)}
+  .b-amber{background:rgba(255,122,26,.9);color:#160a02}
 
-  /* roteiro / script */
-  .script{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:24px;margin-top:16px}
-  .script .head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
-  .script .head h3{margin:0}
-  .script .file{font-family:var(--mono);font-size:12px;color:var(--mute)}
-  .beat{display:grid;grid-template-columns:64px 1fr;gap:14px;padding:11px 0;border-top:1px solid var(--line2)}
+  /* grid mockup 3x3 */
+  .ig{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:420px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--line)}
+  .ig .cell{aspect-ratio:1;background:var(--bg);color:var(--ink);display:flex;flex-direction:column;
+    justify-content:center;padding:12px;font-size:11px;font-weight:700;line-height:1.15;position:relative}
+  .ig .cell.amber{background:var(--amber);color:#160a02}
+  .ig .cell .t{font-size:9px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;opacity:.6;margin-bottom:5px}
+  .ig .cell.amber .t{opacity:.75}
+
+  .cap{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px}
+  .cap .h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+  .cap .h h3{margin:0}
+  .cap .file{font-family:var(--mono);font-size:11.5px;color:var(--mute)}
+  .cap p{margin:0;font-size:14.5px;white-space:pre-line;color:#e7e0d4}
+  .hashes{margin-top:10px;font-size:13px;color:var(--amber2)}
+
+  .script{background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:22px;margin-top:14px}
+  .beat{display:grid;grid-template-columns:60px 1fr;gap:14px;padding:10px 0;border-top:1px solid var(--line2)}
   .beat .t{font-family:var(--mono);font-size:12px;color:var(--amber);font-weight:700;padding-top:2px}
   .beat .x{font-size:14.5px;color:#e7e0d4}
   .beat .x b{color:var(--ink)}
-  .cap{margin-top:14px;background:var(--card);border:1px dashed var(--line);border-radius:11px;padding:15px 17px}
-  .cap .l{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-bottom:7px}
-  .cap p{margin:0;font-size:14.5px;white-space:pre-line}
-  .hashes{margin-top:9px;font-size:13px;color:var(--amber2)}
 
   .callout{background:linear-gradient(180deg,rgba(255,122,26,.09),rgba(255,122,26,.02));
     border:1px solid rgba(255,122,26,.25);border-radius:15px;padding:22px 24px}
   .callout h3{color:var(--amber2)}
   code{font-family:var(--mono);font-size:12.5px;background:rgba(255,255,255,.06);
-    padding:2px 7px;border-radius:5px;color:var(--amber2)}
-  .foot{padding:40px 0 70px;color:var(--mute);font-size:13.5px}
-  .num{font-family:var(--display);font-weight:900;color:var(--amber)}
-  .kv{display:flex;gap:10px;align-items:baseline}
-  .kv .k{font-family:var(--display);font-size:30px;font-weight:900;color:var(--amber);line-height:1}
-  .kv .v{font-size:13.5px;color:var(--mute)}
+    padding:2px 7px;border-radius:5px;color:var(--amber2);word-break:break-word}
+  .foot{padding:38px 0 70px;color:var(--mute);font-size:13.5px}
+  .divider-note{font-size:13.5px;color:var(--mute);margin-top:14px}
+  ol.steps{counter-reset:s;list-style:none;padding:0;margin:14px 0 0;display:flex;flex-direction:column;gap:12px}
+  ol.steps li{position:relative;padding-left:44px;font-size:15px;color:#e7e0d4}
+  ol.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:-2px;
+    width:30px;height:30px;border-radius:8px;background:rgba(255,122,26,.14);color:var(--amber2);
+    font-family:var(--display);font-weight:900;font-size:15px;display:grid;place-items:center}
 </style>
 
 <div class="hero">
@@ -104,279 +115,308 @@
       <span class="mark"><svg viewBox="0 0 32 32"><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg></span>
       <b>estoque<i>.autos</i></b>
     </span>
-    <div class="eyebrow">Playbook de conteúdo orgânico</div>
-    <h1>Instagram &amp; TikTok<br>para <span class="am">encher o pátio</span> de leads</h1>
-    <p class="lead">Uma estratégia orgânica completa para transformar o conhecimento do seu blog em conteúdo que lojista de carros salva, compartilha e lembra — e que leva gente pro <b>estoque.autos</b>.</p>
+    <div class="eyebrow">Playbook de lançamento · Instagram &amp; TikTok</div>
+    <h1>Kit pronto.<br>Hora de <span class="am">começar</span> o Instagram.</h1>
+    <p class="lead">A estratégia revisada + todos os criativos do primeiro mês já renderizados e on-brand. Este documento é o roteiro: o que postar, em que ordem, com qual legenda — do primeiro post ao primeiro lead.</p>
     <div class="meta-row">
-      <span class="chip">🎯 Público: donos e vendedores de loja de carros</span>
-      <span class="chip">🗂️ 35 pautas prontas em 4 pilares</span>
-      <span class="chip">📅 12 semanas de calendário</span>
-      <span class="chip">🎬 Roteiros + legendas + hashtags</span>
+      <span class="chip">🎨 15 carrosséis + 10 cards + 15 capas de reel</span>
+      <span class="chip">📅 Plano de 30 dias, post a post</span>
+      <span class="chip">🔲 Primeiro grid 3×3 desenhado</span>
+      <span class="chip">✍️ 15 legendas prontas pra colar</span>
     </div>
   </div>
 </div>
 
 <section><div class="wrap">
-  <p class="kick">Antes de tudo</p>
-  <h2>A tese</h2>
-  <p class="sub">Você não vai "postar sobre carro". Todo mundo posta carro. Você vai virar <b>a referência de gestão e vendas para quem tem loja</b> — o perfil que o lojista segue pra vender melhor. O produto entra como consequência natural do conteúdo, nunca como anúncio.</p>
+  <p class="kick">O que mudou nesta revisão</p>
+  <h2>De "estratégia" para "é só postar"</h2>
+  <p class="sub">A primeira versão definiu o rumo. Esta entrega o material. Três mudanças concretas:</p>
   <div class="grid g3">
-    <div class="card"><h3>Quem escuta</h3><p class="muted" style="font-size:14.5px;margin:0">Dono de revenda pequena/média, vendedor de pátio, quem está abrindo a primeira loja. Prático, ocupado, desconfiado de "marketing". Fala WhatsApp o dia inteiro.</p></div>
-    <div class="card"><h3>Tom de voz</h3><p class="muted" style="font-size:14.5px;margin:0">Direto, de quem entende do balcão. Sem jargão de agência. Frase curta. Número real. "Faz assim" &gt; "considere avaliar". Trata o seguidor como colega de profissão, não como aluno.</p></div>
-    <div class="card"><h3>O objetivo de cada post</h3><p class="muted" style="font-size:14.5px;margin:0">Gerar <b>save</b> (conteúdo útil) e <b>send</b> (manda pro sócio). Save e compartilhamento é o que o algoritmo premia em nicho B2B — muito mais que curtida.</p></div>
+    <div class="card"><div class="pill-n">01</div><h3>Do dobro de criativos</h3><p class="muted" style="font-size:14.5px;margin:0">Saímos de 5 para <b>15 carrosséis</b> prontos, cobrindo os 4 pilares — cada um escrito a partir do post real do blog, com número de verdade.</p></div>
+    <div class="card"><div class="pill-n">02</div><h3>Formatos novos</h3><p class="muted" style="font-size:14.5px;margin:0">Além do carrossel, agora há <b>3 tipos de post de imagem única</b> (número, mito×verdade e frase) — dão ritmo ao grid e são rápidos de postar.</p></div>
+    <div class="card"><div class="pill-n">03</div><h3>Um plano de lançamento</h3><p class="muted" style="font-size:14.5px;margin:0">Não é mais só um calendário genérico: é a <b>ordem exata dos primeiros posts</b>, com o grid montado e a legenda de cada um.</p></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
-  <p class="kick">A espinha dorsal</p>
+  <p class="kick">Inventário</p>
+  <h2>O que já está pronto pra subir</h2>
+  <p class="sub">Tudo renderizado on-brand (dark + âmbar), no tamanho certo, em <code>media/social/</code>. Nada aqui é maquete — são os arquivos finais.</p>
+  <div class="stat-row">
+    <div class="statbox"><div class="k">15</div><div class="v">carrosséis (capa + 3 slides + CTA = 75 imagens de feed)</div></div>
+    <div class="statbox"><div class="k">10</div><div class="v">posts de imagem única (número · mito × verdade · frase)</div></div>
+    <div class="statbox"><div class="k">15</div><div class="v">capas verticais de Reel / TikTok (1080×1920)</div></div>
+    <div class="statbox"><div class="k">4+1</div><div class="v">capas de destaque + post de apresentação</div></div>
+  </div>
+  <div class="grid g2" style="margin-top:16px">
+    <div class="card"><h3>Onde está cada coisa</h3><ul>
+      <li>Carrosséis: <code>media/social/instagram/&lt;pauta&gt;/</code></li>
+      <li>Imagem única: <code>media/social/instagram/singles/</code></li>
+      <li>Capas de reel/tiktok: <code>media/social/reels-tiktok/</code></li>
+      <li>Destaques: <code>media/social/highlights/</code></li>
+      <li>Apresentação: <code>media/social/instagram/00-capa-intro.png</code></li>
+    </ul></div>
+    <div class="card"><h3>Proporção &amp; qualidade</h3><p class="muted" style="font-size:14.5px;margin:0 0 8px">Feed em <b>1080×1350 (4:5)</b> — ocupa mais tela e rende mais alcance que o quadrado. Reels/TikTok em <b>1080×1920 (9:16)</b>.</p><p class="muted" style="font-size:14px;margin:0">No grid do perfil o Instagram corta tudo pra 1:1 no centro — os criativos foram compostos com o texto no miolo, então cortam bem.</p></div>
+  </div>
+  <p class="divider-note">Total pronto: <b>26 posts de feed + 15 reels</b> — runway de conteúdo pra ~2 meses postando 4×/semana, sem produzir nada novo.</p>
+</div></section>
+
+<section><div class="wrap">
+  <p class="kick">A espinha dorsal (mantida)</p>
   <h2>4 pilares de conteúdo</h2>
-  <p class="sub">Todo post nasce de um destes quatro temas. Rotacione os pilares na semana para o perfil não ficar monotemático — e para atrair tanto quem quer <b>ganhar mais</b> quanto quem quer <b>errar menos</b>.</p>
-  <div class="grid g2">
-    <div class="card pill"><div class="pill-n">01</div><h3>💰 Precificação &amp; Margem</h3><p class="muted" style="font-size:14.5px">O tema que mais dá dinheiro e mais dá medo. Precificar certo, FIPE vs. mercado, margem, avaliação na compra.</p><div><span class="tag">FIPE</span><span class="tag">margem</span><span class="tag">avaliação</span><span class="tag">0km vs usado</span></div></div>
-    <div class="card pill"><div class="pill-n">02</div><h3>📦 Gestão &amp; Estoque</h3><p class="muted" style="font-size:14.5px">A operação invisível que sangra o caixa: giro, mix, capital de giro, fluxo de caixa, KPIs, carro encalhado.</p><div><span class="tag">giro</span><span class="tag">fluxo de caixa</span><span class="tag">KPIs</span><span class="tag">mix</span></div></div>
-    <div class="card pill"><div class="pill-n">03</div><h3>🚀 Vendas &amp; Marketing</h3><p class="muted" style="font-size:14.5px">Como vender mais: WhatsApp, fotos, site próprio, SEO local, equipe, metas e comissão.</p><div><span class="tag">WhatsApp</span><span class="tag">fotos</span><span class="tag">site próprio</span><span class="tag">SEO local</span></div></div>
-    <div class="card pill"><div class="pill-n">04</div><h3>⚖️ Segurança &amp; Negócio</h3><p class="muted" style="font-size:14.5px">O que protege a loja: consignação, contratos, garantia (CDC), documentação, golpes, modelos de negócio.</p><div><span class="tag">consignação</span><span class="tag">garantia CDC</span><span class="tag">documentação</span><span class="tag">golpes</span></div></div>
+  <p class="sub">Todo post nasce de um destes quatro temas. A meta continua a mesma: virar <b>a referência de gestão e vendas para quem tem loja de carros</b> — e não "mais um perfil que posta carro". Save e compartilhamento &gt; curtida.</p>
+  <div class="grid g4">
+    <div class="card"><div class="pill-n">01</div><h3>💰 Precificação</h3><p class="muted" style="font-size:13.5px">FIPE, margem, avaliação na compra, 0km vs usado.</p><div><span class="tag">4 carrosséis</span></div></div>
+    <div class="card"><div class="pill-n">02</div><h3>📦 Gestão</h3><p class="muted" style="font-size:13.5px">Giro, fluxo de caixa, custo do carro parado, KPIs.</p><div><span class="tag">4 carrosséis</span></div></div>
+    <div class="card"><div class="pill-n">03</div><h3>🚀 Vendas</h3><p class="muted" style="font-size:13.5px">WhatsApp, fotos, site próprio, SEO local.</p><div><span class="tag">4 carrosséis</span></div></div>
+    <div class="card"><div class="pill-n">04</div><h3>⚖️ Segurança</h3><p class="muted" style="font-size:13.5px">Consignação, garantia (CDC), abrir a loja.</p><div><span class="tag">3 carrosséis</span></div></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
-  <p class="kick">Instagram</p>
-  <h2>Montando o perfil</h2>
-  <p class="sub">Antes do primeiro post, o perfil precisa converter o visitante em seguidor em 3 segundos. Isso é o que arruma isso.</p>
+  <p class="kick">Novidade</p>
+  <h2>3 formatos de imagem única</h2>
+  <p class="sub">Carrossel dá profundidade, mas cansa se for tudo igual. Estes três posts de imagem única são rápidos de postar, fáceis de salvar e dão textura ao feed — em especial a <b>frase em âmbar</b>, que quebra o mar de posts escuros.</p>
+  <div class="grid g3">
+    <div class="card"><h3>🔢 Número <span class="badge b-single">dado</span></h3><p class="muted" style="font-size:14px;margin:0 0 8px">Um dado marcante gigante (ex.: <b>“60 dias”</b>) + uma linha de contexto. Autoridade em 1 imagem.</p><p class="muted" style="font-size:13px;margin:0">4 prontos: 60 dias · 50% · 90 dias · 20% a 40%</p></div>
+    <div class="card"><h3>⚖️ Mito × Verdade <span class="badge b-single">salva</span></h3><p class="muted" style="font-size:14px;margin:0 0 8px">Uma crença errada comum (MITO) e a correção (VERDADE). Formato campeão de save e de comentário.</p><p class="muted" style="font-size:13px;margin:0">3 prontos: FIPE · garantia · pátio cheio</p></div>
+    <div class="card"><h3>💬 Frase <span class="badge b-amber">âmbar</span></h3><p class="muted" style="font-size:14px;margin:0 0 8px">Frase de efeito sobre fundo âmbar. É o acento visual do grid e o post mais compartilhável.</p><p class="muted" style="font-size:13px;margin:0">3 prontos: carro parado · encalhe · site</p></div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <p class="kick">O lançamento</p>
+  <h2>Primeiros 30 dias, post a post</h2>
+  <p class="sub">4 posts de feed por semana + reels no meio, rotacionando pilares e formatos. É só seguir a ordem — todos os arquivos já existem. Poste entre 12h–13h ou 19h–21h (lojista fora do balcão).</p>
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>#</th><th>Dia</th><th>Formato</th><th>Post</th><th>Arquivo</th></tr></thead>
+      <tbody>
+        <tr><td class="fmt">1</td><td>Seg</td><td><span class="badge b-single">apresentação</span></td><td>Quem é a estoque.autos <b>(fixar no topo)</b></td><td><code>instagram/00-capa-intro.png</code></td></tr>
+        <tr><td class="fmt">2</td><td>Qua</td><td><span class="badge b-car">carrossel</span></td><td>Precificar carro usado sem chutar</td><td><code>…/como-precificar-carros-usados/</code></td></tr>
+        <tr><td class="fmt">3</td><td>Sex</td><td><span class="badge b-amber">frase</span></td><td>“Carro parado não dá prejuízo no papel. Dá no caixa.”</td><td><code>singles/quote-carro-parado.png</code></td></tr>
+        <tr><td class="fmt">4</td><td>Sáb</td><td><span class="badge b-reel">reel</span></td><td>O WhatsApp é seu maior vendedor</td><td><code>reels-tiktok/…whatsapp-capa.png</code></td></tr>
+        <tr><td class="fmt">5</td><td>Seg</td><td><span class="badge b-car">carrossel</span></td><td>O WhatsApp é seu maior vendedor</td><td><code>…/como-vender-carros-pelo-whatsapp/</code></td></tr>
+        <tr><td class="fmt">6</td><td>Qua</td><td><span class="badge b-single">mito×verdade</span></td><td>“FIPE é o preço de venda?”</td><td><code>singles/myth-fipe.png</code></td></tr>
+        <tr><td class="fmt">7</td><td>Sex</td><td><span class="badge b-car">carrossel</span></td><td>Giro de estoque: 30/60/90</td><td><code>…/giro-de-estoque-carros-quantos-dias/</code></td></tr>
+        <tr><td class="fmt">8</td><td>Sáb</td><td><span class="badge b-reel">reel</span></td><td>Precificar sem chutar</td><td><code>reels-tiktok/…precificar-capa.png</code></td></tr>
+        <tr><td class="fmt">9</td><td>Seg</td><td><span class="badge b-single">número</span></td><td>“60 dias” — o alerta do carro parado</td><td><code>singles/stat-giro-60dias.png</code></td></tr>
+        <tr><td class="fmt">10</td><td>Qua</td><td><span class="badge b-car">carrossel</span></td><td>Consignação: como funciona de verdade</td><td><code>…/carros-consignados-como-funciona/</code></td></tr>
+        <tr><td class="fmt">11</td><td>Sex</td><td><span class="badge b-amber">frase</span></td><td>“Encalhe se resolve com processo, não esperança.”</td><td><code>singles/quote-encalhe-processo.png</code></td></tr>
+        <tr><td class="fmt">12</td><td>Sáb</td><td><span class="badge b-reel">reel</span></td><td>Giro de estoque</td><td><code>reels-tiktok/…giro…-capa.png</code></td></tr>
+        <tr><td class="fmt">13</td><td>Seg</td><td><span class="badge b-car">carrossel</span></td><td>Por que seu carro não vende</td><td><code>…/por-que-seu-carro-nao-vende/</code></td></tr>
+        <tr><td class="fmt">14</td><td>Qua</td><td><span class="badge b-single">mito×verdade</span></td><td>“Pátio cheio = loja forte?”</td><td><code>singles/myth-patio-cheio.png</code></td></tr>
+        <tr><td class="fmt">15</td><td>Sex</td><td><span class="badge b-car">carrossel</span></td><td>Só marketplace? Dinheiro na mesa</td><td><code>…/como-vender-mais-carros-com-site-proprio/</code></td></tr>
+        <tr><td class="fmt">16</td><td>Sáb</td><td><span class="badge b-reel">reel</span></td><td>Consignação</td><td><code>reels-tiktok/…consignados-capa.png</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="divider-note">💡 Cada carrossel também vira reel (você narra os slides em 30s) e 1–2 stories. Sobram 9 carrosséis + 4 cards pra manter o mês 2 sem produzir nada.</p>
+</div></section>
+
+<section><div class="wrap">
+  <p class="kick">Primeira impressão</p>
+  <h2>O grid 3×3 de abertura</h2>
+  <p class="sub">Quando alguém abre o perfil, vê os 9 primeiros como um bloco. Postando na ordem acima, os 9 primeiros formam este mosaico — carrosséis escuros com dois acentos âmbar (frase) e cards intercalados. Cai bem e parece intencional.</p>
+  <div style="display:flex;gap:26px;flex-wrap:wrap;align-items:flex-start">
+    <div class="ig">
+      <div class="cell"><span class="t">carrossel</span>Site na mesa</div>
+      <div class="cell"><span class="t">mito×verd.</span>Pátio cheio?</div>
+      <div class="cell"><span class="t">carrossel</span>Por que não vende</div>
+      <div class="cell amber"><span class="t">frase</span>Encalhe é processo</div>
+      <div class="cell"><span class="t">carrossel</span>Consignação</div>
+      <div class="cell"><span class="t">número</span>60 dias</div>
+      <div class="cell"><span class="t">carrossel</span>Giro 30/60/90</div>
+      <div class="cell"><span class="t">mito×verd.</span>FIPE é preço?</div>
+      <div class="cell"><span class="t">carrossel</span>WhatsApp vende</div>
+    </div>
+    <div style="flex:1;min-width:260px">
+      <div class="card"><h3>Por que funciona</h3><ul>
+        <li>Os <b>carrosséis escuros</b> dão a base séria e consistente.</li>
+        <li>Os <b>2 tiles âmbar</b> (frase) criam pontos de respiro e viram “âncoras” visuais.</li>
+        <li>Número e mito×verdade <b>intercalam</b> sem quebrar a paleta.</li>
+        <li>O post de apresentação fica <b>fixado</b> — não conta no ritmo do grid.</li>
+      </ul>
+      <p class="divider-note">Regra pra não errar: nunca dois âmbar colados. Deixe pelo menos 2 posts escuros entre eles.</p></div>
+    </div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <p class="kick">Antes do primeiro post</p>
+  <h2>Setup do perfil (10 minutos)</h2>
   <div class="grid g2">
     <div class="card">
       <h3>Bio (copie e ajuste)</h3>
       <div class="cap" style="margin-top:6px"><p>O site da sua loja de carros, pronto em minutos 🚗
 Dicas de gestão, precificação e vendas pra revenda
-Estoque pela FIPE · leads no WhatsApp · domínio próprio
+FIPE no cadastro · leads no WhatsApp · domínio próprio
 👇 Crie o site da sua loja</p></div>
       <ul>
-        <li><b>Nome</b> (o campo pesquisável): <code>estoque.autos · site pra loja de carros</code></li>
-        <li><b>@ handle sugerido:</b> <code>@estoque.autos</code> (o mesmo no TikTok)</li>
+        <li><b>Nome</b> (campo pesquisável): <code>estoque.autos · site pra loja de carros</code></li>
+        <li><b>@ do perfil:</b> <code>@estoque.autos</code> (o mesmo no TikTok)</li>
         <li><b>Categoria:</b> Software / Serviço de internet</li>
-        <li><b>Botão:</b> "Saiba mais" apontando pra <code>estoque.autos</code></li>
+        <li><b>Link:</b> <code>estoque.autos/?utm_source=instagram&amp;utm_medium=bio</code></li>
       </ul>
     </div>
     <div class="card">
-      <h3>Link na bio</h3>
-      <p class="muted" style="font-size:14.5px">Um só destino, sem "linktree" genérico: <code>estoque.autos</code>. Se quiser segmentar, use UTM por canal para medir no Analytics (já instalado):</p>
-      <ul>
-        <li><code>estoque.autos/?utm_source=instagram&amp;utm_medium=bio</code></li>
-        <li><code>?utm_source=tiktok&amp;utm_medium=bio</code></li>
-      </ul>
-      <h3 style="margin-top:18px">Capas de destaque</h3>
-      <p class="muted" style="font-size:14.5px;margin:0">Já geradas em <code>media/social/highlights/</code>: <b>Dicas</b>, <b>Ajuda</b>, <b>Planos</b>, <b>Loja</b>. Fixe os melhores carrosséis em cada uma.</p>
+      <h3>Foto, destaques &amp; fixado</h3>
+      <ol class="steps">
+        <li>Foto de perfil: <code>public/brand/logo-mark-512.png</code> (o tile âmbar fica ótimo no círculo).</li>
+        <li>Suba os 4 destaques de <code>media/social/highlights/</code>: Dicas, Ajuda, Planos, Loja.</li>
+        <li>Poste o card de apresentação e <b>fixe no topo</b>.</li>
+        <li>Ative conta comercial (libera insights de save/alcance).</li>
+      </ol>
     </div>
   </div>
-  <div class="callout" style="margin-top:16px">
-    <h3>Foto de perfil &amp; “capa”</h3>
-    <p style="margin:0;font-size:14.5px" class="muted">O Instagram não tem “foto de capa” como o Facebook — a primeira impressão é a <b>foto de perfil</b> (use <code>public/brand/logo-mark-512.png</code>: o tile âmbar, que fica ótimo no círculo) e o <b>post fixado de apresentação</b>. Para isso geramos <code>media/social/instagram/00-capa-intro.png</code> — fixe-o no topo do feed como boas-vindas.</p>
-  </div>
 </div></section>
 
 <section><div class="wrap">
-  <p class="kick">Instagram</p>
-  <h2>Formatos &amp; cadência</h2>
-  <p class="sub">Ritmo realista para uma equipe enxuta: <b>4 posts no feed + stories quase diários</b>. Qualidade e constância batem volume.</p>
-  <div class="grid g3">
-    <div class="card"><h3>🎠 Carrossel <span class="badge b-car">salvar</span></h3><p class="muted" style="font-size:14px">2×/semana. O formato-rei do save. Capa com gancho forte → 3 slides de conteúdo → CTA. É o "post informativo pra guardar".</p></div>
-    <div class="card"><h3>🎬 Reels <span class="badge b-reel">alcance</span></h3><p class="muted" style="font-size:14px">2×/semana. Você fala 20–40s pra câmera com o mesmo conteúdo do carrossel. Traz gente nova. A capa já está pronta.</p></div>
-    <div class="card"><h3>📲 Stories <span class="badge b-story">relação</span></h3><p class="muted" style="font-size:14px">3–5×/semana. Bastidor do pátio, enquete ("preço justo nesse aqui?"), caixa de perguntas, repost dos carrosséis.</p></div>
-  </div>
-  <div class="card" style="margin-top:16px">
-    <h3>Semana-modelo</h3>
-    <div class="tbl-scroll" style="border:0;margin-top:8px">
-      <table>
-        <thead><tr><th>Seg</th><th>Ter</th><th>Qua</th><th>Qui</th><th>Sex</th><th>Sáb</th></tr></thead>
-        <tbody><tr>
-          <td><span class="badge b-car">Carrossel</span><br><span class="muted">Pilar 1 ou 2</span></td>
-          <td><span class="badge b-story">Stories</span><br><span class="muted">enquete/pátio</span></td>
-          <td><span class="badge b-reel">Reel</span><br><span class="muted">Pilar 3</span></td>
-          <td><span class="badge b-story">Stories</span><br><span class="muted">caixa de perguntas</span></td>
-          <td><span class="badge b-car">Carrossel</span><br><span class="muted">Pilar 4</span></td>
-          <td><span class="badge b-reel">Reel</span><br><span class="muted">recorte do carrossel</span></td>
-        </tr></tbody>
-      </table>
-    </div>
-    <p class="muted" style="font-size:13.5px;margin:14px 0 0">💡 Reaproveite: cada carrossel vira um reel (você narra os slides) e 1–2 stories. 1 pauta = 3 peças. É assim que 35 pautas viram ~100 posts.</p>
-  </div>
-</div></section>
+  <p class="kick">É só colar</p>
+  <h2>Legendas prontas — lote novo</h2>
+  <p class="sub">Uma legenda por carrossel novo, na voz da marca, terminando em CTA de save/send. Os 5 primeiros carrosséis já têm legenda no material anterior. Troque o conjunto de hashtags a cada post (banco na seção seguinte).</p>
 
-<section><div class="wrap">
-  <p class="kick">Instagram + TikTok</p>
-  <h2>Calendário de 12 semanas</h2>
-  <p class="sub">As 35 pautas do blog distribuídas. Cada linha é uma semana: 1 carrossel + 1 reel (rotacionando pilares). O reel e o carrossel podem ser da mesma pauta ou de pautas diferentes — abaixo estão pareados por afinidade. Tudo isso também alimenta o TikTok.</p>
-  <div class="tbl-scroll">
-    <table>
-      <thead><tr><th>Sem.</th><th>Carrossel (salvar)</th><th>Reel / TikTok (alcance)</th><th>Pilar</th></tr></thead>
-      <tbody>
-        <tr><td class="fmt">1</td><td>Como precificar carros usados: FIPE, mercado e margem</td><td>Fotos que vendem o carro mais rápido</td><td><span class="badge b-car">1 · 3</span></td></tr>
-        <tr><td class="fmt">2</td><td>Giro de estoque: quantos dias um carro pode ficar parado?</td><td>Por que um carro não vende: 8 causas</td><td><span class="badge b-car">2</span></td></tr>
-        <tr><td class="fmt">3</td><td>Como vender carros pelo WhatsApp</td><td>Site próprio ou marketplace: onde anunciar?</td><td><span class="badge b-car">3</span></td></tr>
-        <tr><td class="fmt">4</td><td>Carros consignados: como funciona</td><td>Quanto cobrar na consignação: % ou fixo?</td><td><span class="badge b-car">4</span></td></tr>
-        <tr><td class="fmt">5</td><td>Margem de lucro na venda de usados: qual a média?</td><td>Como avaliar um carro antes de comprar</td><td><span class="badge b-car">1</span></td></tr>
-        <tr><td class="fmt">6</td><td>Gestão de estoque: o guia completo</td><td>Mix de estoque: os carros mais procurados</td><td><span class="badge b-car">2</span></td></tr>
-        <tr><td class="fmt">7</td><td>SEO local: como aparecer no Google</td><td>Como vender mais com um site próprio</td><td><span class="badge b-car">3</span></td></tr>
-        <tr><td class="fmt">8</td><td>Garantia de carro usado: o que o CDC exige</td><td>Golpes na compra e venda: proteja a loja</td><td><span class="badge b-car">4</span></td></tr>
-        <tr><td class="fmt">9</td><td>Fluxo de caixa para loja de veículos</td><td>Capital de giro: quanto você precisa</td><td><span class="badge b-car">2</span></td></tr>
-        <tr><td class="fmt">10</td><td>Tabela FIPE na precificação do estoque</td><td>Preço do 0km caiu: o que muda pra você</td><td><span class="badge b-car">1</span></td></tr>
-        <tr><td class="fmt">11</td><td>10 indicadores (KPIs) que toda loja deveria acompanhar</td><td>Metas de vendas para vendedores</td><td><span class="badge b-car">2 · 3</span></td></tr>
-        <tr><td class="fmt">12</td><td>Como abrir uma loja de carros: passo a passo</td><td>Troca com troco: como estruturar</td><td><span class="badge b-car">4</span></td></tr>
-      </tbody>
-    </table>
-  </div>
-  <p class="muted" style="font-size:13.5px;margin-top:14px">Reserva de pauta (próximos ciclos): leilão para revenda · comissão &amp; bonificação · como montar equipe de vendas · vender com juros altos · consórcio · retorno de financiamento · carro elétrico/híbrido usado · carro por assinatura · contrato de consignação · IPVA e débitos · documentação e transferência · capital de giro.</p>
-</div></section>
-
-<section><div class="wrap">
-  <p class="kick">A parte que faz parar o dedo</p>
-  <h2>Fórmulas de gancho</h2>
-  <p class="sub">O primeiro slide / os 3 primeiros segundos decidem tudo. Nunca comece com "Você sabia que…". Use uma destas estruturas:</p>
   <div class="grid g2">
-    <div class="card"><h3>O erro que custa caro <span class="dot">•</span></h3><p class="muted" style="font-size:14.5px;margin:0">"Precificar carro no chute tá te custando margem todo mês." Nomeia uma dor concreta e cara.</p></div>
-    <div class="card"><h3>A pergunta que incomoda <span class="dot">•</span></h3><p class="muted" style="font-size:14.5px;margin:0">"Esse carro tá há quantos dias no seu pátio?" Faz o lojista olhar pro próprio negócio.</p></div>
-    <div class="card"><h3>O número contra-intuitivo <span class="dot">•</span></h3><p class="muted" style="font-size:14.5px;margin:0">"A maioria das vendas vem do 2º ao 5º contato — não do primeiro." Dado que quebra a crença.</p></div>
-    <div class="card"><h3>A régua simples <span class="dot">•</span></h3><p class="muted" style="font-size:14.5px;margin:0">"30, 60, 90: a régua pra saber quando um carro encalhou." Promete um critério fácil de aplicar.</p></div>
+    <div class="cap"><div class="h"><h3>Margem de lucro</h3><span class="file">margem-de-lucro…</span></div>
+      <p>Você fecha a venda achando que lucrou — e metade da margem já foi embora em custo que ninguém lançou. 💸
+
+Margem bruta não é o que sobra. Feche o DRE de cada carro: comissão, imposto, preparação, documento e o custo do dinheiro parado. Só o que sobra depois disso é lucro de verdade.
+
+Salva e revê a conta da tua última venda. 👇</p>
+      <div class="hashes">#estoqueautos #lojadecarros #margemdelucro #precificacao #gestaoautomotiva</div></div>
+
+    <div class="cap"><div class="h"><h3>Teto de compra</h3><span class="file">como-avaliar-carro…</span></div>
+      <p>O lucro do usado nasce na compra, não na venda. 🎯
+
+Monte a conta de trás pra frente: parta do preço que o carro vende na sua praça, tire preparação, documento, custos e a sua margem. O que sobra é o teto que dá pra pagar. Passou disso, já entrou encalhado.
+
+Salva pra próxima avaliação. 👇</p>
+      <div class="hashes">#estoqueautos #compraevendadecarros #avaliacaoveicular #lojadecarros #carrosusados</div></div>
+
+    <div class="cap"><div class="h"><h3>FIPE na precificação</h3><span class="file">tabela-fipe…</span></div>
+      <p>FIPE é âncora, não é etiqueta. 🏷️
+
+Ela é a média nacional — ponto de partida. O preço final é seu: ajuste por estado, km, procedência, opcionais e demanda da sua região. E cuidado com a FIPE do mês passado: ela vira todo mês.
+
+Salva antes da próxima reprecificação. 👇</p>
+      <div class="hashes">#estoqueautos #tabelafipe #precificacao #revendadecarros #mercadoautomotivo</div></div>
+
+    <div class="cap"><div class="h"><h3>Gestão de estoque</h3><span class="file">gestao-de-estoque…</span></div>
+      <p>Carro parado não só ocupa vaga — ele custa em três frentes: capital preso, desvalorização e custo de pátio. 📉
+
+Meia hora por semana revisando preço, do carro mais velho pro mais novo, vale mais que promoção no desespero. E compre o que gira na sua região, não o que você gosta.
+
+Salva e revisa teu pátio hoje. 👇</p>
+      <div class="hashes">#estoqueautos #gestaodeestoque #girodeestoque #gestaoautomotiva #lojadecarros</div></div>
+
+    <div class="cap"><div class="h"><h3>Fluxo de caixa</h3><span class="file">fluxo-de-caixa…</span></div>
+      <p>Lucro no papel não paga boleto. 🧾
+
+Dá pra ter DRE positivo e caixa no vermelho — porque o lucro virou carro no pátio. Feche o caixa toda segunda, 30 minutos, lançando cada movimento. E não conte com venda que ainda não caiu na conta.
+
+Salva pro próximo fechamento. 👇</p>
+      <div class="hashes">#estoqueautos #fluxodecaixa #gestaofinanceira #lojadecarros #revendadecarros</div></div>
+
+    <div class="cap"><div class="h"><h3>Por que não vende</h3><span class="file">por-que-seu-carro…</span></div>
+      <p>Encalhe não é azar: é sintoma. 🔎
+
+Sem visualização, o problema é a foto. Muita view e nenhum contato, o problema é o preço. Aja pela régua de dias parado e fuja do desconto no conta-gotas — ele só ensina o cliente a esperar. Um corte único recoloca o carro no jogo.
+
+Salva antes de mexer no preço. 👇</p>
+      <div class="hashes">#estoqueautos #vendasdecarros #girodeestoque #lojadecarros #anunciodecarro</div></div>
+
+    <div class="cap"><div class="h"><h3>Site próprio</h3><span class="file">…site-proprio</span></div>
+      <p>Marketplace te dá alcance. Site próprio é onde o alcance vira venda. 🚀
+
+No seu domínio, com o seu logo, o cliente confia mais — e você manda no preço e no destaque. Com proposta e botão de WhatsApp em cada carro, todo clique vira lead no seu painel.
+
+Salva e manda pro sócio. 👇</p>
+      <div class="hashes">#estoqueautos #sitedeloja #marketingautomotivo #comovendercarros #vendasdecarros</div></div>
+
+    <div class="cap"><div class="h"><h3>SEO local</h3><span class="file">seo-local…</span></div>
+      <p>Alguém busca “carros usados + sua cidade” e aparecem 3 lojas no mapa. A sua é uma delas? 📍
+
+SEO local é disputa pequena: você briga só com as revendas da sua praça — e a maioria trata o Google com descaso. Complete o Perfil da Empresa (é grátis), peça avaliação na entrega das chaves e tenha um site com página por carro.
+
+Salva antes de sumir do Google. 👇</p>
+      <div class="hashes">#estoqueautos #seolocal #googlemeunegocio #marketingautomotivo #lojadecarros</div></div>
+
+    <div class="cap"><div class="h"><h3>Garantia (CDC)</h3><span class="file">garantia-de-carro…</span></div>
+      <p>“Vendido no estado” não tira a garantia legal — ela vale 90 dias por lei, sempre. ⚖️
+
+O que protege a loja não é cláusula: é transparência documentada. Laudo, checklist e avarias descritas no anúncio. E provisione um % do lucro de cada carro pra reparo, em vez de pagar do mês.
+
+Salva e compartilha com quem vende usado. 👇</p>
+      <div class="hashes">#estoqueautos #garantialegal #cdc #direitodoconsumidor #lojadecarros</div></div>
+
+    <div class="cap"><div class="h"><h3>Abrir loja de carros</h3><span class="file">como-abrir-uma-loja…</span></div>
+      <p>Loja de carros raramente quebra por falta de cliente. Quebra por falta de caixa. 💰
+
+Antes do pátio, o contador: CNPJ, CNAE certo, regime tributário (MEI não serve). Divida o capital em três — estoque, giro e estrutura — e guarde 20 a 40% fora do estoque. Comece enxuto, com giro e consignados.
+
+Salva o passo a passo. 👇</p>
+      <div class="hashes">#estoqueautos #comoabrirlojadecarros #empreendedorismo #revendadecarros #mercadoautomotivo</div></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
   <p class="kick">Distribuição</p>
-  <h2>Hashtags que fazem sentido</h2>
-  <p class="sub">8–12 por post, misturando nicho (menos disputa, público certo) e tema. Evite as gigantes genéricas (#carros, #instacar) que só trazem curtida vazia.</p>
+  <h2>Banco de hashtags</h2>
+  <p class="sub">8–12 por post, misturando a base da marca + o conjunto do pilar. Troque a combinação a cada post (repetir as mesmas 12 sempre derruba alcance).</p>
   <div class="grid g2">
-    <div class="card"><h3>Base da marca (todo post)</h3><p class="hashes">#estoqueautos #lojadecarros #revendadecarros #lojistadecarros #revendedordecarros #mercadoautomotivo</p></div>
-    <div class="card"><h3>Pilar 1 — Precificação</h3><p class="hashes">#tabelafipe #precificacao #carrosusados #avaliacaoveicular #compraevendadecarros</p></div>
+    <div class="card"><h3>Base (todo post)</h3><p class="hashes">#estoqueautos #lojadecarros #revendadecarros #lojistadecarros #revendedordecarros #mercadoautomotivo</p></div>
+    <div class="card"><h3>Pilar 1 — Precificação</h3><p class="hashes">#tabelafipe #precificacao #carrosusados #avaliacaoveicular #margemdelucro</p></div>
     <div class="card"><h3>Pilar 2 — Gestão</h3><p class="hashes">#gestaodeestoque #gestaoautomotiva #girodeestoque #fluxodecaixa #gestaodeloja</p></div>
-    <div class="card"><h3>Pilar 3 — Vendas</h3><p class="hashes">#vendasdecarros #comovendercarros #vendedordecarros #marketingautomotivo #seminovos</p></div>
-    <div class="card"><h3>Pilar 4 — Segurança/Negócio</h3><p class="hashes">#consignacaodeveiculos #garantialegal #documentacaoveicular #comoabrirlojadecarros #despachante</p></div>
-    <div class="card"><h3>Regra de ouro</h3><p class="muted" style="font-size:14.5px;margin:0">Some intenção local quando fizer sentido (<span class="hashes" style="display:inline">#lojadecarrosSP</span> etc.). Troque o conjunto a cada post — repetir as mesmas 12 sempre reduz alcance.</p></div>
+    <div class="card"><h3>Pilar 3 — Vendas</h3><p class="hashes">#vendasdecarros #comovendercarros #vendedordecarros #marketingautomotivo #seolocal</p></div>
+    <div class="card"><h3>Pilar 4 — Segurança/Negócio</h3><p class="hashes">#consignacaodeveiculos #garantialegal #documentacaoveicular #comoabrirlojadecarros #cdc</p></div>
+    <div class="card"><h3>Local (quando fizer sentido)</h3><p class="muted" style="font-size:14px;margin:0">Some a sua praça: <span class="hashes" style="display:inline">#lojadecarrosSP #carrosusadosBH</span> etc. Atrai o público certo e ainda ajuda o SEO local.</p></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
   <p class="kick">TikTok</p>
-  <h2>O mesmo cérebro, outra pegada</h2>
-  <p class="sub">O conteúdo é o mesmo; a embalagem muda. TikTok premia autenticidade crua e retenção. Menos "design", mais "olho no olho".</p>
+  <h2>Mesmo cérebro, pegada mais crua</h2>
+  <p class="sub">O conteúdo é o mesmo; a embalagem muda. TikTok premia autenticidade e retenção. As 15 capas verticais já servem — regrave o gancho mais solto, olho na câmera.</p>
   <div class="grid g3">
-    <div class="card"><h3>Formato</h3><ul><li>Vertical 9:16, você falando pra câmera</li><li>Legenda queimada no vídeo (muita gente vê sem som)</li><li>15–45s. Gancho nos <b>2 primeiros segundos</b></li><li>Capa já pronta em <code>media/social/reels-tiktok/</code></li></ul></div>
-    <div class="card"><h3>O que funciona aqui</h3><ul><li>Bastidor real: "o dia que quase comprei um carro batido"</li><li>Opinião com sangue no olho ("consignação sem contrato é cilada")</li><li>Séries: "Erros de lojista #1, #2, #3…"</li><li>Responder comentário com um novo vídeo</li></ul></div>
-    <div class="card"><h3>Cadência</h3><ul><li>3–5 vídeos/semana (volume conta mais que no IG)</li><li>Reposte os Reels aqui, mas regrave o gancho mais solto</li><li>Poste 18h–21h (lojista fora do balcão)</li><li>Mesmo @ e mesma bio do Instagram</li></ul></div>
+    <div class="card"><h3>Formato</h3><ul><li>Vertical 9:16, você falando pra câmera</li><li>Legenda queimada no vídeo (muitos veem sem som)</li><li>15–45s, gancho nos 2 primeiros segundos</li></ul></div>
+    <div class="card"><h3>O que cola aqui</h3><ul><li>Bastidor real do pátio</li><li>Opinião com sangue no olho (“consignação sem contrato é cilada”)</li><li>Séries: “Erros de lojista #1, #2…”</li></ul></div>
+    <div class="card"><h3>Cadência</h3><ul><li>3–5 vídeos/semana</li><li>Reposte os Reels aqui</li><li>Áudio em alta baixinho ao fundo aumenta o alcance</li></ul></div>
   </div>
-  <div class="callout" style="margin-top:16px"><h3>Áudio &amp; trend</h3><p style="margin:0;font-size:14.5px" class="muted">No TikTok, use um <b>áudio em alta</b> baixinho ao fundo (mesmo em vídeo de fala) — o algoritmo dá mais alcance. Adapte 1 trend por semana ao seu nicho: "coisas que todo lojista fala", "expectativa vs. realidade da consignação", etc.</p></div>
-</div></section>
-
-<section><div class="wrap">
-  <p class="kick">Executado — lote 1</p>
-  <h2>Roteiros dos vídeos + legendas</h2>
-  <p class="sub">5 pautas já viraram <b>carrossel (5 slides)</b> + <b>capa de reel/TikTok</b> — arquivos em <code>media/social/</code>. Abaixo o roteiro de fala de cada vídeo (você grava) e a legenda pronta pra colar. As capas de carrossel e reel já estão no drive de mídias.</p>
-
   <div class="script">
-    <div class="head"><h3>1 · Precificar carro usado sem chutar</h3><span class="file">instagram/como-precificar-carros-usados/ · reels-tiktok/…-capa.png</span></div>
-    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> "Você ainda precifica carro no chute? Isso tá te custando margem todo mês."</div></div>
-    <div class="beat"><div class="t">3–12s</div><div class="x">"A FIPE é só a <b>média</b> — não é o preço que o mercado da sua cidade paga. Antes de anunciar, pesquisa de 5 a 10 anúncios do mesmo carro, mesma região."</div></div>
-    <div class="beat"><div class="t">12–25s</div><div class="x">"Precifica <b>de fora pra dentro</b>: começa pelo teto que o mercado paga e desce até caber a sua margem e o giro que você quer."</div></div>
-    <div class="beat"><div class="t">25–33s</div><div class="x">"E reprecifica <b>toda semana</b>. Carro parado perde valor todo dia."</div></div>
-    <div class="beat"><div class="t">CTA</div><div class="x">"Salva e manda pro teu sócio. No site do perfil, a FIPE já aparece na hora do cadastro."</div></div>
-    <div class="cap"><div class="l">Legenda</div><p>Precificar no chute é o jeito mais silencioso de perder margem. 💸
-
-A FIPE é referência, não preço final. Quem manda no valor é o mercado da SUA região — então pesquise, precifique de fora pra dentro e reveja o preço toda semana.
-
-Salva esse post e manda pra quem decide preço na sua loja. 👇</p><p class="hashes">#estoqueautos #lojadecarros #tabelafipe #precificacao #carrosusados #revendadecarros #gestaoautomotiva #mercadoautomotivo</p></div>
-  </div>
-
-  <div class="script">
-    <div class="head"><h3>2 · Giro de estoque — quantos dias?</h3><span class="file">instagram/giro-de-estoque-carros-quantos-dias/</span></div>
-    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> "Esse carro aí atrás tá há quantos dias no seu pátio?"</div></div>
-    <div class="beat"><div class="t">3–14s</div><div class="x">"A régua é simples. Até <b>30 dias</b>, saudável. <b>60 dias</b>, acende o alerta e revê o preço. <b>90 dias</b>, o carro encalhou — decide agora."</div></div>
-    <div class="beat"><div class="t">14–26s</div><div class="x">"Carro parado é capital preso, vaga ocupada e depreciação correndo. O prejuízo não aparece no papel — mas some do teu caixa."</div></div>
-    <div class="beat"><div class="t">CTA</div><div class="x">"Vai no teu pátio agora e olha as datas. Salva pra não esquecer a régua 30/60/90."</div></div>
-    <div class="cap"><div class="l">Legenda</div><p>Carro parado não dá prejuízo no papel — dá no caixa. 📉
-
-A régua pra não deixar encalhar: 30 dias saudável · 60 alerta · 90 encalhou. Depois de 60, mexa no preço antes que ele coma sua margem.
-
-Qual o carro mais “grudado” no seu pátio hoje? Conta aí. 👇</p><p class="hashes">#estoqueautos #girodeestoque #gestaodeestoque #lojadecarros #revendadecarros #fluxodecaixa #gestaoautomotiva</p></div>
-  </div>
-
-  <div class="script">
-    <div class="head"><h3>3 · O WhatsApp é seu maior vendedor</h3><span class="file">instagram/como-vender-carros-pelo-whatsapp/</span></div>
-    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> "Seu maior vendedor não é uma pessoa. É o teu WhatsApp — se você usar direito."</div></div>
-    <div class="beat"><div class="t">3–14s</div><div class="x">"Lead que espera, esfria. Responde em <b>minutos</b> e deixa respostas rápidas prontas pras dúvidas de sempre."</div></div>
-    <div class="beat"><div class="t">14–24s</div><div class="x">"Conduz a conversa: pergunta, oferece foto, chama pra visita. E o segredo — <b>follow-up</b>. A maioria das vendas vem do 2º ao 5º contato."</div></div>
-    <div class="beat"><div class="t">CTA</div><div class="x">"Salva o roteiro. No site do perfil, cada clique no WhatsApp já vira lead registrado no painel."</div></div>
-    <div class="cap"><div class="l">Legenda</div><p>Seu WhatsApp vende mais que qualquer vitrine — se você não deixar o lead no vácuo. 📲
-
-Responda rápido, conduza a conversa e faça follow-up: a venda quase nunca sai no primeiro “tá disponível?”.
-
-Salva esse roteiro de atendimento e usa hoje. 👇</p><p class="hashes">#estoqueautos #vendasdecarros #comovendercarros #whatsappbusiness #lojadecarros #vendedordecarros #revendadecarros</p></div>
-  </div>
-
-  <div class="script">
-    <div class="head"><h3>4 · Consignação: como funciona de verdade</h3><span class="file">instagram/carros-consignados-como-funciona/</span></div>
-    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> "Antes de aceitar mais um carro em consignação, presta atenção nisso."</div></div>
-    <div class="beat"><div class="t">3–13s</div><div class="x">"O carro <b>não é seu</b>. Você vende em nome do dono — e isso muda risco, garantia e responsabilidade."</div></div>
-    <div class="beat"><div class="t">13–26s</div><div class="x">"Sem contrato claro, a dor de cabeça é sua. Preço mínimo, comissão, prazo e devolução: <b>tudo por escrito</b>. E recusa consignado com documentação pendente, débito ou preço fora do mercado."</div></div>
-    <div class="beat"><div class="t">CTA</div><div class="x">"Consignado bom gira; ruim só ocupa vaga. Salva e manda pra quem trabalha com consignação."</div></div>
-    <div class="cap"><div class="l">Legenda</div><p>Consignação é ótima — até virar dor de cabeça por falta de contrato. ⚖️
-
-O carro não é seu: preço mínimo, comissão, prazo e devolução precisam estar no papel. E consignado com débito/documento pendente? Recusa sem dó.
-
-Salva e compartilha com quem pega carro em consignação. 👇</p><p class="hashes">#estoqueautos #consignacaodeveiculos #lojadecarros #revendadecarros #compraevendadecarros #mercadoautomotivo #despachante</p></div>
-  </div>
-
-  <div class="script">
-    <div class="head"><h3>5 · Fotos ruins afundam o anúncio</h3><span class="file">instagram/como-fotografar-carros-para-vender/</span></div>
-    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> "É a foto que vende o carro — antes de você abrir a boca."</div></div>
-    <div class="beat"><div class="t">3–14s</div><div class="x">"Prepara antes: carro limpo, fundo neutro, sem bagunça atrás. Luz de manhã ou fim de tarde — foge do sol a pino."</div></div>
-    <div class="beat"><div class="t">14–26s</div><div class="x">"Segue sempre a <b>mesma sequência</b>: 3/4 da frente, laterais, traseira, rodas, interior, painel. Isso padroniza a tua vitrine."</div></div>
-    <div class="beat"><div class="t">CTA</div><div class="x">"E grava um vídeo dando a volta no carro: 20 segundos que cortam o ‘ainda tá disponível?’. Salva o passo a passo."</div></div>
-    <div class="cap"><div class="l">Legenda</div><p>O cliente compra a foto antes de comprar o carro. 📸
-
-Carro limpo, fundo neutro, luz boa e sempre a mesma sequência de ângulos. Fecha com um vídeo de 20s dando a volta no carro — confiança lá em cima, pergunta boba lá embaixo.
-
-Salva pro próximo carro que entrar. 👇</p><p class="hashes">#estoqueautos #fotografiaautomotiva #comovendercarros #lojadecarros #anunciodecarro #vendasdecarros #seminovos</p></div>
+    <h3 style="margin:0 0 6px">Roteiro-modelo (reaproveita qualquer carrossel)</h3>
+    <div class="beat"><div class="t">0–3s</div><div class="x"><b>Gancho:</b> a manchete da capa, dita em voz alta (“Você ainda precifica carro no chute?”).</div></div>
+    <div class="beat"><div class="t">3–30s</div><div class="x">Os 3 slides, um a um, em frase curta. Um respiro entre eles.</div></div>
+    <div class="beat"><div class="t">CTA</div><div class="x">A chamada do reel (campo <code>reelCta</code>) + “no site do perfil isso já vem pronto”.</div></div>
   </div>
 </div></section>
 
 <section><div class="wrap">
-  <p class="kick">Como saber se está funcionando</p>
-  <h2>Métricas &amp; metas</h2>
-  <p class="sub">Ignore curtida. Em nicho B2B, os sinais que importam são estes — e todos aparecem no Analytics (já instalado) + insights nativos.</p>
+  <p class="kick">Termômetro</p>
+  <h2>O que medir nas primeiras semanas</h2>
+  <p class="sub">Ignore curtida. Em nicho de lojista, o que importa aparece nos insights nativos + no Analytics (já instalado, com UTM na bio).</p>
   <div class="grid g4">
-    <div class="card"><div class="kv"><span class="k">Saves</span></div><p class="muted" style="font-size:13.5px;margin:8px 0 0">O voto de "isso é útil". Meta: crescer save/alcance mês a mês.</p></div>
-    <div class="card"><div class="kv"><span class="k">Sends</span></div><p class="muted" style="font-size:13.5px;margin:8px 0 0">Compartilhar no direct = indicação. O melhor sinal de todos.</p></div>
-    <div class="card"><div class="kv"><span class="k">Perfil→link</span></div><p class="muted" style="font-size:13.5px;margin:8px 0 0">Cliques no link da bio (veja por UTM no Analytics).</p></div>
-    <div class="card"><div class="kv"><span class="k">Seguidores</span></div><p class="muted" style="font-size:13.5px;margin:8px 0 0">Só importa se forem lojistas. Qualidade &gt; número.</p></div>
+    <div class="statbox"><div class="k">Saves</div><div class="v">“isso é útil”. Meta: subir save/alcance mês a mês.</div></div>
+    <div class="statbox"><div class="k">Sends</div><div class="v">mandar no direct = indicação. O melhor sinal.</div></div>
+    <div class="statbox"><div class="k">Perfil→link</div><div class="v">cliques na bio (veja por utm_source=instagram).</div></div>
+    <div class="statbox"><div class="k">Seguidor certo</div><div class="v">lojista &gt; número. Qualidade acima de vaidade.</div></div>
   </div>
-  <p class="muted" style="font-size:14px;margin-top:18px">Meta dos primeiros 90 dias: constância (0 semanas em branco), 5–10 saves médios por carrossel e os primeiros cadastros com origem <code>utm_source=instagram</code>. Dobre o que salvar mais; corte o formato que ninguém guarda.</p>
+  <p class="divider-note">Meta dos 90 dias: 0 semanas em branco, 5–10 saves médios por carrossel, e os primeiros cadastros com origem <code>instagram</code>. Dobre o formato que mais salva; corte o que ninguém guarda.</p>
 </div></section>
 
 <section><div class="wrap">
-  <p class="kick">Para escalar</p>
-  <h2>Gerando mais mídias</h2>
+  <p class="kick">Pra escalar</p>
+  <h2>Como sai a próxima leva</h2>
   <div class="grid g2">
-    <div class="card">
-      <h3>Os geradores já existem</h3>
-      <ul>
-        <li><code>scripts/gen-social.mjs</code> — carrosséis (5 slides) + capas de reel/TikTok, na identidade da marca</li>
-        <li><code>scripts/gen-og.mjs</code> — imagem OG/Twitter do site</li>
-        <li><code>scripts/gen-favicons.mjs</code> — logo em PNG/SVG + todos os favicons</li>
-      </ul>
-      <p class="muted" style="font-size:13.5px;margin:12px 0 0">Rode <code>node scripts/gen-social.mjs</code> após adicionar pautas ao array <code>POSTS</code> e o lote inteiro sai pronto em segundos.</p>
-    </div>
-    <div class="card">
-      <h3>O fluxo por pauta</h3>
-      <ul>
-        <li>1 post do blog → 1 carrossel + 1 reel + 2 stories</li>
-        <li>Copie o gancho e os 3 bullets do próprio artigo</li>
-        <li>Grave o reel lendo os slides (30s)</li>
-        <li>Poste no IG e no TikTok com o gancho adaptado</li>
-      </ul>
-      <p class="muted" style="font-size:13.5px;margin:12px 0 0">35 pautas × 3 peças ≈ <b>100+ posts</b> sem inventar conteúdo novo — só reembalando o que o blog já responde.</p>
-    </div>
+    <div class="card"><h3>Fluxo de produção</h3><ol class="steps">
+      <li>Escolha a próxima pauta no <code>content/social/posts.json</code>.</li>
+      <li>Escreva <code>hook</code>, 3 slides e um <code>stat/myth/quote</code> a partir do post do blog.</li>
+      <li>Rode <code>node scripts/gen-social.mjs</code> — sai capa, slides, CTA, capa de reel e cards.</li>
+      <li>Grave o reel lendo os slides e poste no IG + TikTok.</li>
+    </ol></div>
+    <div class="card"><h3>Ainda no banco (20 pautas)</h3><p class="muted" style="font-size:14px;margin:0">leilão pra revenda · comissão e bonificação · montar equipe de vendas · vender com juros altos · consórcio · retorno de financiamento · elétrico/híbrido usado · carro por assinatura · contrato de consignação · IPVA e débitos · documentação e transferência · capital de giro · mix de estoque · troca com troco · golpes na compra e venda · KPIs · metas de vendas…</p><p class="divider-note">35 pautas × 3 peças ≈ <b>100+ posts</b> reembalando só o que o blog já responde.</p></div>
   </div>
 </div></section>
 
 <div class="wrap foot">
-  <b style="color:var(--ink)">estoque.autos</b> · playbook de conteúdo orgânico — Instagram &amp; TikTok. Todas as mídias do lote 1 estão em <code>media/social/</code>. Atualize o array <code>POSTS</code> em <code>scripts/gen-social.mjs</code> para produzir as próximas.
+  <b style="color:var(--ink)">estoque.autos</b> · playbook de lançamento — Instagram &amp; TikTok. Criativos em <code>media/social/</code>; conteúdo editável em <code>content/social/posts.json</code>; gerador em <code>scripts/gen-social.mjs</code>.
 </div>

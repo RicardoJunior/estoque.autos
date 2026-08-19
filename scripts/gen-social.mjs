@@ -1,49 +1,45 @@
-// Gera as mídias sociais on-brand (Instagram/TikTok) a partir dos posts
-// do blog. Saída: media/social/** (PNGs prontos para subir).
+// Gera as mídias sociais on-brand (Instagram/TikTok) a partir do conteúdo
+// em content/social/posts.json. Saída: media/social/** (PNGs prontos).
 //   node scripts/gen-social.mjs
+//
+// carousels[] → capa + slides + CTA (1080×1350) + capa de reel/TikTok (1080×1920)
+// singles[]   → post de imagem única: "stat" | "myth" | "quote" (1080×1350)
 import sharp from "sharp";
-import { writeFile, mkdir } from "node:fs/promises";
+import { mkdir } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 
 // ── paleta da marca ──
 const BG = "#0a0b0d";
 const AMBER = "#ff7a1a";
+const AMBER2 = "#ffb14d";
 const DARK = "#160a02";
 const INK = "#f4efe6";
 const MUTE = "#9c9488";
-const CARD = "#16140f";
+const RED = "#e0663a"; // rótulo "MITO"
 const FONT = "Arial, Helvetica, sans-serif";
 
 const esc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
 /** Marca (tile âmbar + chevrons) como grupo SVG posicionável. */
-function mark(x, y, size) {
+function mark(x, y, size, bg = AMBER) {
   const k = size / 32;
   return `<g transform="translate(${x} ${y}) scale(${k})">
-    <rect width="32" height="32" rx="8" fill="${AMBER}"/>
+    <rect width="32" height="32" rx="8" fill="${bg}"/>
     <path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="${DARK}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
   </g>`;
 }
 
-/** wordmark "estoque.autos" em texto. */
-function wordmark(x, y, size, tone = "light") {
-  const c = tone === "light" ? INK : DARK;
-  return `<text x="${x}" y="${y}" font-family="${FONT}" font-size="${size}" font-weight="800" letter-spacing="-1" fill="${c}">estoque<tspan fill="${AMBER}">.autos</tspan></text>`;
-}
-
 /**
  * Quebra `text` respeitando ~`max` caracteres, mas de forma BALANCEADA:
- * - cabe numa linha? uma linha só.
- * - senão, prefere 2 linhas equilibradas (menor diferença de tamanho),
- *   o que evita órfãos feios como "(e / certo)".
- * - só cai no greedy (3+ linhas) quando não couber em duas.
+ * cabe numa linha → uma linha; senão, prefere 2 linhas equilibradas
+ * (evita órfãos feios); só cai no greedy (3+ linhas) quando não couber em 2.
  */
 function wrap(text, max) {
   const clean = String(text).replace(/\s+/g, " ").trim();
   if (clean.length <= max) return [clean];
 
   const words = clean.split(" ");
-  // tenta a melhor quebra em DUAS linhas (ambas <= max, mais equilibrada)
   let best = null;
   for (let i = 1; i < words.length; i++) {
     const l1 = words.slice(0, i).join(" ");
@@ -55,7 +51,6 @@ function wrap(text, max) {
   }
   if (best) return [best.l1, best.l2];
 
-  // texto longo: greedy (3+ linhas)
   const lines = [];
   let cur = "";
   for (const w of words) {
@@ -70,21 +65,36 @@ function wrap(text, max) {
 
 function tspans(lines, x, size, lh) {
   return lines
-    .map(
-      (l, i) =>
-        `<tspan x="${x}" dy="${i === 0 ? 0 : lh}">${esc(l)}</tspan>`,
-    )
+    .map((l, i) => `<tspan x="${x}" dy="${i === 0 ? 0 : lh}">${esc(l)}</tspan>`)
     .join("");
 }
 
 const render = (svg, w, h, path) =>
-  sharp(Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${svg}</svg>`))
+  sharp(
+    Buffer.from(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${svg}</svg>`,
+    ),
+  )
     .png()
     .toFile(path);
 
 // ── Instagram feed (1080×1350) ──
 const FW = 1080,
   FH = 1350;
+
+/** eyebrow padrão (marca + rótulo) no topo esquerdo. */
+function eyebrow(label = "ESTOQUE.AUTOS", markBg = AMBER) {
+  return `${mark(80, 92, 56, markBg)}
+    <text x="152" y="130" font-family="${FONT}" font-size="28" font-weight="800" letter-spacing="4" fill="${MUTE}">${esc(label)}</text>`;
+}
+
+/** rodapé com wordmark. tone light=texto claro / dark=texto escuro. */
+function footerWordmark(tone = "light") {
+  const c = tone === "light" ? MUTE : DARK;
+  const dot = tone === "light" ? AMBER : DARK;
+  return `${mark(80, 1228, 44, tone === "light" ? AMBER : DARK)}
+    <text x="140" y="1260" font-family="${FONT}" font-size="30" font-weight="800" fill="${c}">estoque<tspan fill="${dot}">.autos</tspan></text>`;
+}
 
 function slideCover(post) {
   const titleLines = wrap(post.hook ?? post.title, 20);
@@ -105,7 +115,8 @@ function slideContent(n, heading, bullets) {
   const bulletSvg = bullets
     .map((b) => {
       const lines = wrap(b, 34);
-      const block = `<circle cx="98" cy="${y - 12}" r="9" fill="${AMBER}"/>` +
+      const block =
+        `<circle cx="98" cy="${y - 12}" r="9" fill="${AMBER}"/>` +
         `<text x="140" y="${y}" font-family="${FONT}" font-size="40" font-weight="600" fill="${INK}">${tspans(lines, 140, 40, 50)}</text>`;
       y += 60 + (lines.length - 1) * 50;
       return block;
@@ -116,19 +127,66 @@ function slideContent(n, heading, bullets) {
     <text x="80" y="150" font-family="${FONT}" font-size="120" font-weight="800" fill="${AMBER}" opacity="0.25">${String(n).padStart(2, "0")}</text>
     <text x="80" y="300" font-family="${FONT}" font-size="60" font-weight="800" fill="${INK}" letter-spacing="-1">${tspans(hLines, 80, 60, 66)}</text>
     ${bulletSvg}
-    ${mark(80, 1230, 44)}
-    <text x="140" y="1262" font-family="${FONT}" font-size="30" font-weight="800" fill="${MUTE}">estoque<tspan fill="${AMBER}">.autos</tspan></text>`;
+    ${footerWordmark("light")}`;
 }
 
 function slideCta() {
   return `
     <rect width="${FW}" height="${FH}" fill="${AMBER}"/>
-    ${mark(80, 96, 72)}
+    ${mark(80, 96, 72, "#ffffff")}
     <text x="80" y="540" font-family="${FONT}" font-size="92" font-weight="800" fill="${DARK}" letter-spacing="-2">${tspans(["Salve este post", "e compartilhe", "com quem tem", "loja de carros."], 80, 92, 104)}</text>
     <text x="80" y="1080" font-family="${FONT}" font-size="40" font-weight="700" fill="${DARK}">O site da sua loja, pronto em minutos.</text>
     <text x="80" y="1150" font-family="${FONT}" font-size="44" font-weight="800" fill="${DARK}">estoque.autos</text>
     <text x="80" y="1250" font-family="${FONT}" font-size="34" font-weight="700" fill="#5a3410">@estoque.autos</text>`;
 }
+
+// ── SINGLES (imagem única) ──────────────────────────────────────────────
+
+/** Card de número/dado marcante. */
+function statCard({ big, line }) {
+  const bigFs = String(big).length > 8 ? 120 : 168;
+  const lineLines = wrap(line, 30);
+  return `
+    <rect width="${FW}" height="${FH}" fill="${BG}"/>
+    <rect x="0" y="0" width="${FW}" height="10" fill="${AMBER}"/>
+    ${eyebrow("ESTOQUE.AUTOS · DADO")}
+    <text x="80" y="640" font-family="${FONT}" font-size="${bigFs}" font-weight="800" fill="${AMBER}" letter-spacing="-4">${esc(big)}</text>
+    <rect x="84" y="700" width="120" height="8" rx="4" fill="${AMBER}"/>
+    <text x="80" y="820" font-family="${FONT}" font-size="52" font-weight="700" fill="${INK}" letter-spacing="-1">${tspans(lineLines, 80, 52, 62)}</text>
+    ${footerWordmark("light")}`;
+}
+
+/** Card mito × verdade. */
+function mythCard({ mito, verdade }) {
+  const mLines = wrap(mito, 28);
+  const vLines = wrap(verdade, 28);
+  const vStart = 720;
+  return `
+    <rect width="${FW}" height="${FH}" fill="${BG}"/>
+    <rect x="0" y="0" width="${FW}" height="10" fill="${AMBER}"/>
+    ${eyebrow("ESTOQUE.AUTOS · MITO × VERDADE")}
+    <text x="80" y="360" font-family="${FONT}" font-size="34" font-weight="800" letter-spacing="3" fill="${RED}">MITO</text>
+    <text x="80" y="430" font-family="${FONT}" font-size="50" font-weight="700" fill="${MUTE}" letter-spacing="-1">${tspans(mLines, 80, 50, 60)}</text>
+    <rect x="80" y="${vStart - 100}" width="920" height="2" fill="rgba(255,255,255,0.10)"/>
+    <text x="80" y="${vStart}" font-family="${FONT}" font-size="34" font-weight="800" letter-spacing="3" fill="${AMBER}">VERDADE</text>
+    <text x="80" y="${vStart + 70}" font-family="${FONT}" font-size="50" font-weight="800" fill="${INK}" letter-spacing="-1">${tspans(vLines, 80, 50, 60)}</text>
+    ${footerWordmark("light")}`;
+}
+
+/** Card de frase de efeito (fundo âmbar — dá ritmo ao grid). */
+function quoteCard({ quote }) {
+  const qLines = wrap(quote, 20);
+  const fs = qLines.length > 4 ? 74 : 88;
+  const startY = 560 - (qLines.length - 1) * (fs * 0.55);
+  return `
+    <rect width="${FW}" height="${FH}" fill="${AMBER}"/>
+    <text x="72" y="330" font-family="Georgia, serif" font-size="260" font-weight="700" fill="${DARK}" opacity="0.22">&#8220;</text>
+    <text x="80" y="${startY}" font-family="${FONT}" font-size="${fs}" font-weight="800" fill="${DARK}" letter-spacing="-2">${tspans(qLines, 80, fs, fs * 1.08)}</text>
+    ${mark(80, 1224, 48, "#ffffff")}
+    <text x="146" y="1260" font-family="${FONT}" font-size="34" font-weight="800" fill="${DARK}">estoque.autos</text>`;
+}
+
+const SINGLE_RENDERERS = { stat: statCard, myth: mythCard, quote: quoteCard };
 
 // ── Reel / TikTok cover (1080×1920) ──
 const VW = 1080,
@@ -177,114 +235,15 @@ function highlightCover(label, icon) {
     <text x="${S / 2}" y="${S - 44}" text-anchor="middle" font-family="${FONT}" font-size="36" font-weight="800" fill="${INK}" letter-spacing="1">${esc(label)}</text>`;
 }
 
-// ── conteúdo do primeiro lote (fatos dos posts do blog) ──
-const POSTS = [
-  {
-    slug: "como-precificar-carros-usados",
-    title: "Como precificar carros usados",
-    hook: "Precificar carro usado sem chutar",
-    reelCta: "salva antes de precificar o próximo",
-    slides: [
-      ["FIPE é referência, não preço final", [
-        "A FIPE é a média — o mercado local manda no valor real.",
-        "Pesquise 5–10 anúncios do mesmo carro na sua região.",
-      ]],
-      ["Precifique de fora para dentro", [
-        "Comece pelo teto que o mercado paga.",
-        "Desça até caber sua margem e o giro que você quer.",
-      ]],
-      ["Reprecifique toda semana", [
-        "Carro parado perde valor: revise preços a cada 7 dias.",
-        "Encalhou 60 dias? Corte antes que vire prejuízo.",
-      ]],
-    ],
-  },
-  {
-    slug: "giro-de-estoque-carros-quantos-dias",
-    title: "Giro de estoque",
-    hook: "Quantos dias um carro pode ficar parado?",
-    reelCta: "salva e confere seu pátio hoje",
-    slides: [
-      ["A régua dos 30 / 60 / 90 dias", [
-        "Até 30 dias: saudável.",
-        "60 dias: acenda o alerta e reveja o preço.",
-        "90 dias: encalhado — decida agir.",
-      ]],
-      ["Carro parado custa caro", [
-        "Capital preso, pátio ocupado e depreciação correndo.",
-        "O prejuízo é invisível no papel, mas real no caixa.",
-      ]],
-      ["Tenha uma régua de ação", [
-        "Defina gatilhos de preço por faixa de dias.",
-        "Meça o giro mensal e ataque os campeões de pátio.",
-      ]],
-    ],
-  },
-  {
-    slug: "como-vender-carros-pelo-whatsapp",
-    title: "Vender pelo WhatsApp",
-    hook: "O WhatsApp é seu maior vendedor",
-    reelCta: "salva o roteiro de atendimento",
-    slides: [
-      ["Responda rápido (e certo)", [
-        "Lead que espera esfria: responda em minutos.",
-        "Tenha respostas rápidas prontas para as dúvidas comuns.",
-      ]],
-      ["Conduza a conversa", [
-        "Faça perguntas, ofereça o próximo passo (foto, visita).",
-        "Use etiquetas para saber em que ponto cada lead está.",
-      ]],
-      ["Follow-up é onde vende", [
-        "A maioria das vendas vem do 2º ao 5º contato.",
-        "Registre e volte — não deixe o lead morrer no vácuo.",
-      ]],
-    ],
-  },
-  {
-    slug: "carros-consignados-como-funciona",
-    title: "Carros consignados",
-    hook: "Consignação: como funciona de verdade",
-    reelCta: "salva antes de aceitar o próximo",
-    slides: [
-      ["O carro não é seu", [
-        "Você vende em nome do dono — o veículo segue dele.",
-        "Isso muda risco, garantia e responsabilidade.",
-      ]],
-      ["Contrato protege os dois lados", [
-        "Preço mínimo, comissão, prazo e devolução por escrito.",
-        "Sem contrato claro, a dor de cabeça é sua.",
-      ]],
-      ["Quando recusar", [
-        "Documentação pendente, débito ou preço fora do mercado.",
-        "Consignado bom gira; consignado ruim ocupa vaga.",
-      ]],
-    ],
-  },
-  {
-    slug: "como-fotografar-carros-para-vender",
-    title: "Fotografar carros",
-    hook: "Fotos ruins afundam o anúncio",
-    reelCta: "salva o passo a passo das fotos",
-    slides: [
-      ["Prepare antes de clicar", [
-        "Carro limpo, fundo neutro e sem bagunça atrás.",
-        "Luz da manhã ou fim de tarde — evite sol a pino.",
-      ]],
-      ["Siga uma sequência", [
-        "3/4 da frente, laterais, traseira, rodas, interior, painel.",
-        "A mesma ordem em todo carro padroniza a sua vitrine.",
-      ]],
-      ["Um vídeo de volta ao carro", [
-        "Walkaround de 20–30s no celular aumenta a confiança.",
-        "Mais cliques, menos 'ainda tá disponível?'.",
-      ]],
-    ],
-  },
-];
+// ── conteúdo (fonte única: content/social/posts.json) ──
+const DATA = JSON.parse(
+  readFileSync(new URL("../content/social/posts.json", import.meta.url), "utf8"),
+);
 
 async function main() {
   const OUT = "media/social";
   await mkdir(`${OUT}/instagram`, { recursive: true });
+  await mkdir(`${OUT}/instagram/singles`, { recursive: true });
   await mkdir(`${OUT}/reels-tiktok`, { recursive: true });
   await mkdir(`${OUT}/highlights`, { recursive: true });
 
@@ -301,7 +260,7 @@ async function main() {
   }
 
   // carrosséis + capas verticais por post
-  for (const post of POSTS) {
+  for (const post of DATA.carousels) {
     const dir = `${OUT}/instagram/${post.slug}`;
     await mkdir(dir, { recursive: true });
     await render(slideCover(post), FW, FH, `${dir}/1-capa.png`);
@@ -311,11 +270,22 @@ async function main() {
       await render(slideContent(n - 1, heading, bullets), FW, FH, `${dir}/${n}-slide.png`);
     }
     await render(slideCta(), FW, FH, `${dir}/${post.slides.length + 2}-cta.png`);
-    // capa vertical (reel/tiktok)
     await render(verticalCover(post), VW, VH, `${OUT}/reels-tiktok/${post.slug}-capa.png`);
   }
 
-  console.log("mídias sociais geradas em media/social/");
+  // posts de imagem única (stat / myth / quote)
+  for (const s of DATA.singles ?? []) {
+    const fn = SINGLE_RENDERERS[s.type];
+    if (!fn) {
+      console.warn(`tipo de single desconhecido: ${s.type} (${s.key})`);
+      continue;
+    }
+    await render(fn(s), FW, FH, `${OUT}/instagram/singles/${s.key}.png`);
+  }
+
+  console.log(
+    `mídias geradas: ${DATA.carousels.length} carrosséis + ${(DATA.singles ?? []).length} singles em ${OUT}/`,
+  );
 }
 
 main().catch((e) => {
