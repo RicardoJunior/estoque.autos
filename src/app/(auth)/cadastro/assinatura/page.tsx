@@ -17,9 +17,10 @@ import {
   type BillingInterval,
 } from "@/lib/billing";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { FunnelEvent } from "@/components/FunnelEvent";
 import { cn } from "@/lib/utils";
 import { startCheckoutAction } from "./actions";
+import { CheckoutForm } from "./CheckoutForm";
 
 export const metadata = { title: "Escolha seu plano" };
 
@@ -66,6 +67,8 @@ export default async function AssinaturaPage({
 
   return (
     <>
+      {/* conta confirmada = sign_up / CompleteRegistration (1x por sessão) */}
+      <FunnelEvent name="sign_up" dedupeKey={session.userId} />
       <h1 className="text-xl font-bold">Quase lá — escolha seu plano</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Sua conta está criada. Ative a assinatura para montar sua loja.
@@ -144,13 +147,12 @@ export default async function AssinaturaPage({
         })}
       </div>
 
-      <form action={startCheckoutAction} className="mt-6">
-        <input type="hidden" name="plano" value={selected} />
-        <input type="hidden" name="intervalo" value={interval} />
-        <Button type="submit" className="w-full">
-          Continuar para o pagamento
-        </Button>
-      </form>
+      <CheckoutForm
+        action={startCheckoutAction}
+        plano={selected}
+        intervalo={interval}
+        valueCents={PLANS[selected].priceCents[interval]}
+      />
       <p className="mt-3 text-center text-xs text-muted-foreground">
         Pagamento seguro via Stripe. Cancele quando quiser.
       </p>

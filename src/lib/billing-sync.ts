@@ -9,15 +9,28 @@ import type { PlanId } from "./types";
 // síncrono da página de sucesso (dev sem `stripe listen`).
 // ============================================================
 
-/** Plano a partir do lookup_key do price (plano_basico_mensal,
- *  plano_pro_anual, ou os legados plano_basico/plano_pro) ou do
- *  metadata da assinatura. */
+/**
+ * Plano a partir do price da assinatura — SÓ os nossos: price id igual ao
+ * STRIPE_PRICE_* do env, ou lookup_key exato plano_{basico|pro}[_{mensal|anual}]
+ * (legados só-mensais inclusos). A conta Stripe (Bytewell) é COMPARTILHADA com
+ * imoveis.plus/simplenutri: o webhook recebe as assinaturas deles também, e um
+ * fallback por metadata.plan ("pro" colide) tentaria gravar user_id estranho →
+ * FK falha → 500 → Stripe reenvia em loop. Evento de outro produto retorna
+ * null e é ignorado com 200.
+ */
 function planFromSubscription(sub: Stripe.Subscription): PlanId | null {
-  const lookup = sub.items.data[0]?.price?.lookup_key ?? "";
-  const fromLookup = lookup.match(/^plano_(basico|pro)/)?.[1];
-  if (isPlanId(fromLookup)) return fromLookup;
-  const fromMeta = sub.metadata?.plan;
-  return isPlanId(fromMeta) ? fromMeta : null;
+  const price = sub.items.data[0]?.price;
+  if (!price) return null;
+  for (const plan of ["basico", "pro"] as const) {
+    for (const interval of ["MENSAL", "ANUAL"]) {
+      const id = process.env[`STRIPE_PRICE_${plan.toUpperCase()}_${interval}`];
+      if (id && id === price.id) return plan;
+    }
+  }
+  const fromLookup = (price.lookup_key ?? "").match(
+    /^plano_(basico|pro)(?:_(?:mensal|anual))?$/,
+  )?.[1];
+  return isPlanId(fromLookup) ? fromLookup : null;
 }
 
 /**
@@ -48,9 +61,12 @@ export async function syncStripeSubscription(
       .maybeSingle();
     uid = data?.user_id;
   }
-  if (!uid || !plan) {
-    // sem user_id/plan não há como atribuir — evento de outra origem
-    console.warn("billing-sync: assinatura sem user_id/plan", sub.id);
+  if (!plan) {
+    // price de outro produto da conta compartilhada — não é nosso
+    return;
+  }
+  if (!uid) {
+    console.warn("billing-sync: assinatura sem user_id", sub.id);
     return;
   }
 

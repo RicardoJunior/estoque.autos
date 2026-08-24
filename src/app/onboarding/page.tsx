@@ -4,6 +4,8 @@ import {
   getUnlinkedSubscription,
   isSubscriptionActive,
 } from "@/lib/auth";
+import { PLANS } from "@/lib/billing";
+import { FunnelEvent } from "@/components/FunnelEvent";
 import { OnboardingWizard } from "./OnboardingWizard";
 
 export const metadata = {
@@ -11,7 +13,11 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function OnboardingPage() {
+export default async function OnboardingPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ assinatura?: string }>;
+}) {
   const session = await getSession();
   if (!session) redirect("/login");
 
@@ -22,5 +28,23 @@ export default async function OnboardingPage() {
     redirect(session.memberships.length > 0 ? "/admin" : "/cadastro/assinatura");
   }
 
-  return <OnboardingWizard />;
+  const { assinatura } = await searchParams;
+  const interval = sub!.billing_interval === "year" ? "anual" : "mensal";
+  return (
+    <>
+      {assinatura === "ok" && (
+        <FunnelEvent
+          name="purchase"
+          dedupeKey={sub!.stripe_subscription_id}
+          params={{
+            value: PLANS[sub!.plan].priceCents[interval] / 100,
+            plan: sub!.plan,
+            interval,
+            transaction_id: sub!.stripe_subscription_id,
+          }}
+        />
+      )}
+      <OnboardingWizard />
+    </>
+  );
 }

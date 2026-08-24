@@ -36,7 +36,8 @@ export default async function SucessoPage({
   // a assinatura recém-paga ainda não tem loja — o onboarding a consome
   const sub = await getUnlinkedSubscription();
   if (isSubscriptionActive(sub)) {
-    redirect("/onboarding");
+    // ?assinatura=ok → o onboarding dispara purchase (GA4/Meta) 1x
+    redirect("/onboarding?assinatura=ok");
   }
 
   // pagamento ainda processando (atraso de confirmação)
