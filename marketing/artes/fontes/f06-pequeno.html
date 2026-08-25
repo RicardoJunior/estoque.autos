@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  /* A6 · pequeno lojista — quebra a crença "site é coisa de concessionária" */
+  .art { padding: 78px; align-items: flex-start; }
+  .h1 { font-size: 84px; margin-top: 34px; }
+  .list { width: 100%; margin-top: 46px; display: flex; flex-direction: column; gap: 16px; position: relative; z-index: 2; }
+  .row { display: flex; align-items: center; gap: 22px; background: var(--card); border: 1.5px solid var(--line); border-radius: 20px; padding: 24px 30px; }
+  .row .ck { flex: none; width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 122, 26, 0.14); border: 1.5px solid rgba(255, 122, 26, 0.5); color: var(--amber); display: grid; place-items: center; font-size: 27px; font-weight: 700; }
+  .row .t { font-size: 30px; font-weight: 600; line-height: 1.25; }
+  .row .t em { font-style: normal; color: var(--amber); }
+  .row .t span { display: block; font-size: 24px; font-weight: 400; color: var(--muted); margin-top: 4px; }
+  .foot { display: flex; justify-content: space-between; align-items: flex-end; width: 100%; margin-top: auto; padding-top: 44px; }
+  .price .lbl { display: block; font-size: 25px; color: var(--muted); margin-bottom: 6px; }
+  .price .val { font-family: "Anton", sans-serif; font-size: 62px; line-height: 1; }
+  .price .val i { font-style: normal; font-size: 30px; color: var(--muted); }
+  .cta { padding: 24px 42px; font-size: 31px; }
+  .logo { font-size: 27px; margin-top: 20px; }
+  .foot-r { display: flex; flex-direction: column; align-items: flex-end; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:660px;height:660px;right:-250px;top:-270px"></div>
+  <div class="glow" style="width:520px;height:520px;left:-240px;bottom:-200px;opacity:.3"></div>
+
+  <span class="eyebrow"><span class="dot"></span>Para lojas de 5 a 20 carros</span>
+
+  <div class="h h1">
+    <span>Não precisa ser</span>
+    <span>concessionária</span>
+    <span class="am">pra ter site.</span>
+  </div>
+
+  <div class="list">
+    <div class="row">
+      <span class="ck">✓</span>
+      <span class="t">Até <em>20 carros ativos</em> no plano Básico<span>O tamanho do pátio da sua loja, não o da revenda gigante</span></span>
+    </div>
+    <div class="row">
+      <span class="ck">✓</span>
+      <span class="t">Cadastro pela <em>tabela FIPE</em><span>Marca, modelo, ano — o valor de referência já vem junto</span></span>
+    </div>
+    <div class="row">
+      <span class="ck">✓</span>
+      <span class="t">Proposta e <em>WhatsApp</em> em cada carro<span>O contato cai no seu celular e fica registrado no painel</span></span>
+    </div>
+  </div>
+
+  <div class="foot">
+    <span class="price">
+      <span class="lbl">a partir de</span>
+      <span class="val">R$ 24,90<i>/mês</i></span>
+    </span>
+    <span class="foot-r">
+      <span class="cta">Criar meu site →</span>
+      <span class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span class="word">estoque<i>.autos</i></span>
+      </span>
+    </span>
+  </div>
+</div>
+</body>
+</html>

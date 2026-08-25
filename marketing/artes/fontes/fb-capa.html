@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* Capa da página do Facebook — 820x312 @2x = 1640x624.
+     Desktop mostra os 820 inteiros; MOBILE recorta para 16:9, deixando visível só
+     a faixa central de ~555px (68%). Além disso a foto de perfil sobrepõe o canto
+     inferior esquerdo no desktop. Por isso: tudo centralizado dentro de .safe. */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root { --bg: #07080a; --ink: #f4f1ea; --muted: #9a9d97; --amber: #ff7a1a; --amber-ink: #160a02; --line: rgba(255,255,255,.09); --card: #15171c; }
+  html, body { background: var(--bg); }
+  body { font-family: "Archivo", sans-serif; color: var(--ink); -webkit-font-smoothing: antialiased; }
+  .cover { position: relative; width: 820px; height: 312px; background: var(--bg); overflow: hidden; display: grid; place-items: center; }
+  /* motivo de farol da landing */
+  .glow { position: absolute; pointer-events: none; filter: blur(60px); border-radius: 50%;
+          background: radial-gradient(circle, rgba(255,122,26,.55), rgba(255,122,26,0) 70%); }
+  .safe { position: relative; z-index: 2; width: 555px; display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .lockup { display: inline-flex; align-items: center; gap: 13px; }
+  .lockup svg { display: block; }
+  .word { font-size: 42px; font-weight: 700; letter-spacing: -.02em; }
+  .word i { font-style: normal; color: var(--amber); }
+  .tag { margin-top: 13px; font-size: 17px; line-height: 1.35; color: var(--muted); }
+  .tag strong { color: var(--ink); font-weight: 600; }
+  .chips { display: flex; gap: 7px; margin-top: 18px; }
+  .chip { font-size: 12px; font-weight: 600; color: var(--muted); background: var(--card);
+          border: 1px solid var(--line); border-radius: 999px; padding: 7px 13px; white-space: nowrap; }
+  .chip b { color: var(--amber); font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <div class="glow" style="width:520px;height:520px;left:50%;top:-230px;transform:translateX(-50%);opacity:.5"></div>
+  <div class="glow" style="width:360px;height:360px;right:-120px;bottom:-180px;opacity:.3"></div>
+
+  <div class="safe">
+    <span class="lockup">
+      <svg width="44" height="44" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+
+    <div class="tag">O site da sua loja de carros, <strong>pronto em minutos.</strong></div>
+
+    <div class="chips">
+      <span class="chip">6 templates</span>
+      <span class="chip">Tabela FIPE</span>
+      <span class="chip">Leads no WhatsApp</span>
+      <span class="chip"><b>R$ 24,90/mês</b></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

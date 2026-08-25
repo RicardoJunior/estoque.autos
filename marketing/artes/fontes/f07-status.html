@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="base.css" />
+<style>
+  /* A6b · pequeno lojista — o estoque que vive no status/grupo e some */
+  .art { padding: 78px; align-items: flex-start; }
+  .h1 { font-size: 86px; margin-top: 32px; }
+  .sub2 { font-size: 30px; color: var(--muted); line-height: 1.4; margin-top: 26px; }
+  .sub2 span { display: block; }
+  .sub2 strong { color: var(--ink); font-weight: 600; }
+  .cols { display: flex; gap: 22px; width: 100%; margin-top: 50px; position: relative; z-index: 2; }
+  .col { flex: 1; border-radius: 26px; padding: 40px 34px; }
+  .col .lbl { font-size: 23px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 700; }
+  .col ul { list-style: none; margin-top: 26px; display: flex; flex-direction: column; gap: 22px; }
+  .col li { font-size: 27px; line-height: 1.3; display: flex; gap: 13px; align-items: flex-start; }
+  .col li b { flex: none; font-weight: 700; }
+  .hoje { background: var(--card); border: 1.5px solid var(--line); }
+  .hoje .lbl { color: var(--muted); }
+  .hoje li { color: var(--muted); }
+  .hoje li b { color: #6c7069; }
+  .depois { background: linear-gradient(135deg, rgba(255, 122, 26, 0.16), rgba(255, 122, 26, 0.04)); border: 2px solid rgba(255, 122, 26, 0.55); box-shadow: 0 24px 90px rgba(255, 122, 26, 0.15); }
+  .depois .lbl { color: var(--amber); }
+  .depois li { color: var(--ink); }
+  .depois li b { color: var(--amber); }
+  .price-row { display: flex; align-items: baseline; gap: 14px; margin-top: auto; padding-top: 46px; }
+  .price-row .lbl { font-size: 27px; color: var(--muted); }
+  .price-row .val { font-family: "Anton", sans-serif; font-size: 56px; line-height: 1; }
+  .price-row .per { font-size: 28px; color: var(--muted); }
+  .foot { display: flex; justify-content: space-between; align-items: center; width: 100%; padding-top: 34px; }
+  .cta { padding: 24px 42px; font-size: 31px; }
+  .logo { font-size: 28px; }
+</style>
+</head>
+<body>
+<div class="art sq">
+  <div class="glow" style="width:680px;height:680px;right:-260px;bottom:-250px"></div>
+
+  <div class="h h1">
+    <span>Seu estoque</span>
+    <span class="am">some em 24h?</span>
+  </div>
+
+  <div class="sub2"><span>Status do WhatsApp expira. Post no grupo desce.</span><span><strong>Site próprio fica.</strong></span></div>
+
+  <div class="cols">
+    <div class="col hoje">
+      <span class="lbl">Status e grupo</span>
+      <ul>
+        <li><b>×</b><span>Some em 24 horas</span></li>
+        <li><b>×</b><span>Só quem já te segue vê</span></li>
+        <li><b>×</b><span>Ninguém acha no Google</span></li>
+        <li><b>×</b><span>Preço perdido na conversa</span></li>
+      </ul>
+    </div>
+    <div class="col depois">
+      <span class="lbl">Site da sua loja</span>
+      <ul>
+        <li><b>✓</b><span>No ar 24h, todo dia</span></li>
+        <li><b>✓</b><span>Um link fixo pra mandar</span></li>
+        <li><b>✓</b><span>Achável no Google</span></li>
+        <li><b>✓</b><span>Preço e FIPE em cada carro</span></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="price-row">
+    <span class="lbl">planos a partir de</span>
+    <span class="val">R$ 24,90</span>
+    <span class="per">/mês · sem taxa de setup</span>
+  </div>
+
+  <div class="foot">
+    <span class="cta">Criar meu site →</span>
+    <span class="logo">
+      <svg width="34" height="34" viewBox="0 0 32 32" fill="none"><rect width="32" height="32" rx="8" fill="#ff7a1a"/><path d="M9.5 10 15 16l-5.5 6M16 10l5.5 6L16 22" stroke="#160a02" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span class="word">estoque<i>.autos</i></span>
+    </span>
+  </div>
+</div>
+</body>
+</html>
