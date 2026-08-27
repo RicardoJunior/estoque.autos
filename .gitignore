@@ -56,3 +56,9 @@ next-env.d.ts
 /blog/.astro/
 /blog/.cloudflare/
 /blog/.wrangler/
+
+# Prospecção: dados pessoais (e-mails, CPF de sócio, dossiê do parceiro).
+# Nunca versionar — ver marketing/prospeccao/README.md.
+marketing/prospeccao/*.csv
+marketing/prospeccao/.cache/
+loja-carros.csv

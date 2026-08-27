@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="supported-color-schemes" content="dark" />
+    <title>estoque.autos</title>
+  </head>
+  <!--
+    Mesmos tokens do e-mail transacional do produto (src/lib/email.ts):
+    fundo #0a0b0d · card #101216 / borda #1d2026 · destaque #17130d / #3a2a17
+    âmbar #ff7a1a sobre #160a02 · texto #a8adb7 · link #ff9a4d · rodapé #6b7079.
+    A única diferença é a largura: 600px em vez de 480px, porque os dois planos
+    ficam lado a lado. O logo é montado em CSS de propósito — imagem remota vem
+    bloqueada por padrão na maioria dos clientes.
+  -->
+  <body style="margin:0;padding:0;background-color:#0a0b0d;">
+    <!-- preheader: o que o Gmail mostra na lista, depois do assunto -->
+    <div style="display:none;max-height:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#0a0b0d;">
+      Vitrine com os seus carros, tabela FIPE no cadastro e o lead caindo no seu WhatsApp. A partir de R$ 24,90/mês.
+    </div>
+
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0a0b0d;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:600px;max-width:100%;background-color:#101216;border:1px solid #1d2026;border-radius:16px;overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,system-ui,sans-serif;">
+
+            <!-- marca -->
+            <tr>
+              <td style="padding:32px 40px 8px 40px;">
+                <span style="display:inline-block;vertical-align:middle;width:28px;height:28px;background-color:#ff7a1a;border-radius:7px;text-align:center;line-height:28px;color:#160a02;font-weight:800;font-size:15px;">&#187;</span>
+                <span style="display:inline-block;vertical-align:middle;margin-left:10px;font-size:18px;font-weight:800;letter-spacing:-0.03em;color:#ffffff;">estoque<span style="color:#ff7a1a;">.autos</span></span>
+              </td>
+            </tr>
+
+            <!-- chamada -->
+            <tr>
+              <td style="padding:24px 40px 0 40px;">
+                <h1 style="margin:0 0 14px 0;font-size:26px;line-height:1.22;font-weight:800;letter-spacing:-0.02em;color:#ffffff;">
+                  Pesquisaram sua loja no Google.<br />O que eles acharam?
+                </h1>
+                <p style="margin:0 0 16px 0;font-size:15px;line-height:1.65;color:#a8adb7;">
+                  {{{FIRST_NAME|Olá}}}, o comprador vê seu carro num portal, gosta — e procura o nome
+                  da sua loja antes de chamar. Se não encontra nada, a confiança cai e a venda esfria.
+                </p>
+                <p style="margin:0 0 24px 0;font-size:15px;line-height:1.65;color:#a8adb7;">
+                  O <strong style="color:#ffffff;">estoque.autos</strong> resolve isso em minutos: uma vitrine
+                  profissional com todos os seus carros, no seu endereço, e o lead caindo direto no seu
+                  WhatsApp — sem ser dividido com o concorrente do lado.
+                </p>
+              </td>
+            </tr>
+
+            <!-- três passos -->
+            <tr>
+              <td style="padding:0 40px 4px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td width="26" valign="top" style="padding:0 0 12px 0;font-size:15px;line-height:1.6;font-weight:800;color:#ff7a1a;">1</td>
+                    <td valign="top" style="padding:0 0 12px 0;font-size:15px;line-height:1.6;color:#a8adb7;">Escolha um dos <strong style="color:#ffffff;">6 modelos</strong> e ponha sua cor e seu logo</td>
+                  </tr>
+                  <tr>
+                    <td width="26" valign="top" style="padding:0 0 12px 0;font-size:15px;line-height:1.6;font-weight:800;color:#ff7a1a;">2</td>
+                    <td valign="top" style="padding:0 0 12px 0;font-size:15px;line-height:1.6;color:#a8adb7;">Cadastre os carros puxando marca, modelo e ano da <strong style="color:#ffffff;">tabela FIPE</strong></td>
+                  </tr>
+                  <tr>
+                    <td width="26" valign="top" style="padding:0 0 22px 0;font-size:15px;line-height:1.6;font-weight:800;color:#ff7a1a;">3</td>
+                    <td valign="top" style="padding:0 0 22px 0;font-size:15px;line-height:1.6;color:#a8adb7;">Publique — e cada proposta vira um <strong style="color:#ffffff;">lead registrado</strong> no painel</td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+
+            <!-- planos -->
+            <tr>
+              <td style="padding:0 40px 0 40px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <!-- Básico -->
+                    <td width="50%" valign="top" style="padding:0 6px 0 0;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#0d0f13;border:1px solid #1d2026;border-radius:12px;">
+                        <tr>
+                          <td style="padding:18px 18px 20px 18px;">
+                            <p style="margin:0 0 10px 0;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#6b7079;">Básico</p>
+                            <p style="margin:0 0 3px 0;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#ffffff;">R$ 24,90<span style="font-size:14px;font-weight:600;color:#6b7079;">/mês</span></p>
+                            <p style="margin:0 0 14px 0;font-size:12.5px;line-height:1.5;color:#6b7079;">ou R$ 190/ano<br /><span style="color:#ff9a4d;font-weight:600;">R$ 15,83/mês &middot; 36% off</span></p>
+                            <p style="margin:0;font-size:13.5px;line-height:1.75;color:#a8adb7;">
+                              Até <strong style="color:#ffffff;">20 carros</strong> ativos<br />
+                              6 modelos de site<br />
+                              Cadastro pela tabela FIPE<br />
+                              Leads por WhatsApp
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                    <!-- Pro (destaque, mesmo tratamento do bloco em destaque do transacional) -->
+                    <td width="50%" valign="top" style="padding:0 0 0 6px;">
+                      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#17130d;border:1px solid #3a2a17;border-radius:12px;">
+                        <tr>
+                          <td style="padding:18px 18px 20px 18px;">
+                            <p style="margin:0 0 10px 0;font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#ff9a4d;">Pro</p>
+                            <p style="margin:0 0 3px 0;font-size:26px;font-weight:800;letter-spacing:-0.02em;color:#ffffff;">R$ 49,90<span style="font-size:14px;font-weight:600;color:#6b7079;">/mês</span></p>
+                            <p style="margin:0 0 14px 0;font-size:12.5px;line-height:1.5;color:#6b7079;">ou R$ 490/ano<br /><span style="color:#ff9a4d;font-weight:600;">R$ 40,83/mês &middot; 18% off</span></p>
+                            <p style="margin:0;font-size:13.5px;line-height:1.75;color:#a8adb7;">
+                              Até <strong style="color:#ffffff;">60 carros</strong> ativos<br />
+                              Tudo do Básico<br />
+                              <strong style="color:#ffffff;">Domínio próprio</strong><br />
+                              Destaque na busca
+                            </p>
+                          </td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:14px 0 0 0;font-size:12.5px;line-height:1.6;color:#6b7079;text-align:center;">
+                  Sem taxa de setup &middot; cancele quando quiser &middot; carro vendido não ocupa vaga
+                </p>
+              </td>
+            </tr>
+
+            <!-- ação -->
+            <tr>
+              <td style="padding:24px 40px 8px 40px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td align="center" bgcolor="#ff7a1a" style="border-radius:10px;">
+                      <a href="{{{CTA_URL}}}" target="_blank" style="display:block;padding:14px 24px;font-size:15px;font-weight:700;color:#160a02;text-decoration:none;border-radius:10px;">Criar a vitrine da minha loja</a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:16px 0 0 0;font-size:13.5px;line-height:1.6;color:#6b7079;text-align:center;">
+                  Prefere ver antes? Tem <a href="{{{DEMO_URL}}}" target="_blank" style="color:#ff9a4d;font-weight:600;text-decoration:none;">6 lojas de exemplo no ar</a> para navegar.
+                </p>
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:28px 40px 0 40px;">
+                <hr style="border:0;border-top:1px solid #1d2026;margin:0;" />
+              </td>
+            </tr>
+
+            <!-- rodapé: identificação do remetente + descadastro (LGPD) -->
+            <tr>
+              <td style="padding:20px 40px 32px 40px;">
+                <p style="margin:0;font-size:12px;line-height:1.6;color:#6b7079;">
+                  Você recebeu este e-mail porque sua loja consta no cadastro público de empresas do
+                  comércio de veículos. Se não quiser mais receber,
+                  <a href="{{{RESEND_UNSUBSCRIBE_URL}}}" style="color:#6b7079;text-decoration:underline;">cancele aqui</a> — não mandamos de novo.
+                </p>
+                <p style="margin:16px 0 0 0;font-size:12px;line-height:1.6;color:#4f545d;">
+                  estoque.autos é um produto da Bytewell Nutrição e Tecnologia Ltda, CNPJ 59.843.506/0001-05.<br />
+                  Calçada das Anêmonas 20, sala 21, Alphaville, Barueri/SP, CEP 06453-005.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
