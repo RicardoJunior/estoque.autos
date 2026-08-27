@@ -70,6 +70,10 @@ SECRETS=(
   # token da API FIPE (grátis em https://fipe.api.br) — sem ele o
   # Worker divide a cota anônima por IP com outros apps e vive em 429
   FIPE_API_TOKEN
+  # API de Conversões da Meta (dataset 1124618420524857) — token de acesso do
+  # dataset, gerado no Gerenciador de Eventos. Sem ele os eventos de servidor
+  # simplesmente não são enviados (o código vira no-op).
+  META_CAPI_TOKEN
   # integração Cloudflare for SaaS (domínio próprio) — token zone-scoped
   # SEM filtro de IP (o Worker chama a API da CF em runtime)
   CLOUDFLARE_API_TOKEN

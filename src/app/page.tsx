@@ -41,6 +41,12 @@ export const metadata: Metadata = {
     "tabela fipe",
   ],
   alternates: { canonical: "/" },
+  // Verificação de domínio do Business Manager da Meta (necessária para a
+  // Configuração de Eventos Agregados do pixel). Fica só aqui, na landing da
+  // plataforma, e não no layout raiz: o layout também serve as vitrines dos
+  // lojistas, e a tag num domínio próprio de cliente deixaria nosso BM
+  // reivindicar o domínio dele.
+  other: { "facebook-domain-verification": "yo7e8ovducipzibxys7928lcst779o" },
   openGraph: {
     type: "website",
     url: "/",
