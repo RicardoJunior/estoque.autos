@@ -54,6 +54,7 @@ export async function getSession(): Promise<SessionContext | null> {
       .insert({
         id: user.id,
         name: (user.user_metadata?.name as string | undefined) ?? "",
+        phone: (user.user_metadata?.phone as string | undefined) ?? null,
       })
       .select("*")
       .single();

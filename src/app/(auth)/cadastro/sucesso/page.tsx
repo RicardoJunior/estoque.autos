@@ -7,6 +7,8 @@ import {
 } from "@/lib/auth";
 import { syncFromCheckoutSession } from "@/lib/billing-sync";
 import { buttonVariants } from "@/components/ui/button";
+import { FunnelEvent } from "@/components/FunnelEvent";
+import { AnalyticsUser } from "@/components/AnalyticsUser";
 
 export const metadata = { title: "Pagamento" };
 
@@ -43,6 +45,13 @@ export default async function SucessoPage({
   // pagamento ainda processando (atraso de confirmação)
   return (
     <>
+      <AnalyticsUser id={session.userId} />
+      {/* voltou do Stripe sem assinatura ativa: purchase pode nunca disparar */}
+      <FunnelEvent
+        name="purchase_pending"
+        dedupeKey={session_id ?? session.userId}
+        params={{ error_type: session_id ? "sync_pending" : "no_session_id" }}
+      />
       <h1 className="text-xl font-bold">Processando seu pagamento…</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Isso costuma levar só alguns segundos. Atualize a página — assim

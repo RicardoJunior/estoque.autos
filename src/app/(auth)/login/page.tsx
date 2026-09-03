@@ -5,6 +5,9 @@ import { use } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import { loginAction, type AuthFormState } from "../actions";
+import { trackFunnel } from "@/lib/funnel";
+import { useTrackFormErrors } from "@/hooks/use-track-form-errors";
+import { FunnelEvent } from "@/components/FunnelEvent";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,14 +44,28 @@ export default function LoginPage({
   const [state, action] = useActionState<AuthFormState, FormData>(loginAction, {});
   const urlError = error ? URL_ERRORS[error] : undefined;
 
+  useTrackFormErrors(state, "login_error", { method: "password" });
+
   return (
     <>
+      {/* link de e-mail expirado/inválido (/auth/confirm, /auth/callback) */}
+      {urlError && (
+        <FunnelEvent
+          name="login_error"
+          params={{ method: "link", error_type: error }}
+          dedupeKey={`link:${error}`}
+        />
+      )}
       <h1 className="text-xl font-bold">Entrar na sua conta</h1>
       <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
         Acesse o painel da sua loja.
       </p>
 
-      <form action={action} className="mt-6 space-y-4">
+      <form
+        action={action}
+        className="mt-6 space-y-4"
+        onSubmit={() => trackFunnel("login_submit", { method: "password" })}
+      >
         {next && <input type="hidden" name="next" value={next} />}
         {!state.error && urlError && (
           <Alert
@@ -73,10 +90,12 @@ export default function LoginPage({
         <div className="grid gap-2">
           <Label htmlFor="email">E-mail</Label>
           <Input
+            key={state.values?.email ?? ""}
             id="email"
             name="email"
             type="email"
             autoComplete="email"
+            defaultValue={state.values?.email}
             required
           />
           {state.fieldErrors?.email && (

@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { requireTenant } from "@/lib/auth";
 import { buttonVariants } from "@/components/ui/button";
+import { FunnelEvent } from "@/components/FunnelEvent";
+import { AnalyticsUser } from "@/components/AnalyticsUser";
 
 export const metadata = {
   title: "Sua loja está no ar",
@@ -8,10 +10,17 @@ export const metadata = {
 };
 
 export default async function OnboardingDonePage() {
-  const { tenant } = await requireTenant();
+  const { tenant, userId } = await requireTenant();
 
   return (
     <div className="mx-auto flex min-h-dvh max-w-xl flex-col items-center justify-center px-4 py-12 text-center">
+      <AnalyticsUser id={userId} />
+      {/* loja publicada = ativação real (1x por loja na sessão) */}
+      <FunnelEvent
+        name="onboarding_complete"
+        dedupeKey={tenant.id}
+        params={{ step_name: tenant.template_id }}
+      />
       <div className="mb-6 text-lg font-bold tracking-tight">
         estoque<span className="text-[var(--color-brand)]">.autos</span>
       </div>

@@ -6,6 +6,7 @@ import {
 } from "@/lib/auth";
 import { PLANS } from "@/lib/billing";
 import { FunnelEvent } from "@/components/FunnelEvent";
+import { AnalyticsUser } from "@/components/AnalyticsUser";
 import { OnboardingWizard } from "./OnboardingWizard";
 
 export const metadata = {
@@ -32,6 +33,7 @@ export default async function OnboardingPage({
   const interval = sub!.billing_interval === "year" ? "anual" : "mensal";
   return (
     <>
+      <AnalyticsUser id={session.userId} />
       {assinatura === "ok" && (
         <FunnelEvent
           name="purchase"

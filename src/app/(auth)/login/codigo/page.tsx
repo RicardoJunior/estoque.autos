@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, use } from "react";
+import { useActionState, useEffect, useState, use } from "react";
 import { useFormStatus } from "react-dom";
 import Link from "next/link";
 import {
@@ -8,6 +8,9 @@ import {
   verifyLoginCodeAction,
   type CodeFormState,
 } from "../../actions";
+import { trackFunnel } from "@/lib/funnel";
+import { useTrackFormErrors } from "@/hooks/use-track-form-errors";
+import { ResendCode } from "@/components/auth/ResendCode";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -43,19 +46,39 @@ export default function LoginCodePage({
     {},
   );
 
+  // "corrigir e-mail": volta à etapa do e-mail até um novo envio
+  const [fixing, setFixing] = useState(false);
+  const [seenSend, setSeenSend] = useState(sendState);
+  if (sendState !== seenSend) {
+    setSeenSend(sendState);
+    setFixing(false);
+  }
+
+  useTrackFormErrors(sendState, "login_code_request_error", { method: "code" });
+  useTrackFormErrors(verifyState, "login_code_error", { method: "code" });
+  useEffect(() => {
+    if (sendState.sent) trackFunnel("login_code_sent", { method: "code" });
+    // cada resultado da action é um objeto novo → 1 disparo por envio
+  }, [sendState]);
+
   const email = verifyState.email ?? sendState.email;
-  const sent = sendState.sent || verifyState.sent;
+  const sent = (sendState.sent || verifyState.sent) && !fixing;
 
   if (sent && email) {
     return (
       <>
         <h1 className="text-xl font-bold">Digite o código</h1>
         <p className="mt-1 text-sm text-[var(--color-ink-soft)]">
-          Enviamos um código de 6 dígitos para <strong>{email}</strong>. Você
-          também pode clicar no link do e-mail — funciona em qualquer aparelho.
+          Enviamos um código de 6 dígitos para{" "}
+          <strong className="text-foreground">{email}</strong>. Você também
+          pode clicar no link do e-mail — funciona em qualquer aparelho.
         </p>
 
-        <form action={verifyAction} className="mt-6 space-y-4">
+        <form
+          action={verifyAction}
+          className="mt-6 space-y-4"
+          onSubmit={() => trackFunnel("login_code_submit", { method: "code" })}
+        >
           <input type="hidden" name="email" value={email} />
           {next && <input type="hidden" name="next" value={next} />}
           {verifyState.error && (
@@ -90,12 +113,22 @@ export default function LoginCodePage({
           <SubmitButton pendingLabel="Verificando…">Entrar</SubmitButton>
         </form>
 
-        <form action={sendAction} className="mt-4">
-          <input type="hidden" name="email" value={email} />
-          <Button type="submit" variant="link" className="w-full">
-            Reenviar código
-          </Button>
-        </form>
+        <ResendCode
+          email={email}
+          action={sendLoginCodeAction}
+          prefix="login_code"
+          onFixEmail={() => setFixing(true)}
+        >
+          <p className="mt-2 text-xs text-muted-foreground">
+            Ainda não tem conta?{" "}
+            <Link
+              href="/cadastro"
+              className="font-semibold text-primary underline-offset-2 hover:underline"
+            >
+              Criar minha loja
+            </Link>
+          </p>
+        </ResendCode>
       </>
     );
   }
@@ -107,7 +140,11 @@ export default function LoginCodePage({
         Sem senha: enviamos um código de acesso para o seu e-mail.
       </p>
 
-      <form action={sendAction} className="mt-6 space-y-4">
+      <form
+        action={sendAction}
+        className="mt-6 space-y-4"
+        onSubmit={() => trackFunnel("login_code_request", { method: "code" })}
+      >
         {sendState.error && (
           <Alert
             variant="destructive"
@@ -121,11 +158,13 @@ export default function LoginCodePage({
         <div className="grid gap-2">
           <Label htmlFor="email">E-mail</Label>
           <Input
+            key={email ?? ""}
             id="email"
             name="email"
             type="email"
             autoComplete="email"
-            defaultValue={sendState.email}
+            defaultValue={email}
+            autoFocus={fixing}
             required
           />
           {sendState.fieldErrors?.email && (

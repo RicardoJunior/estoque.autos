@@ -18,6 +18,7 @@ import {
 } from "@/lib/billing";
 import { Badge } from "@/components/ui/badge";
 import { FunnelEvent } from "@/components/FunnelEvent";
+import { AnalyticsUser } from "@/components/AnalyticsUser";
 import { cn } from "@/lib/utils";
 import { startCheckoutAction } from "./actions";
 import { CheckoutForm } from "./CheckoutForm";
@@ -46,7 +47,7 @@ const INTERVAL_LABELS: Record<BillingInterval, string> = {
 export default async function AssinaturaPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plano?: string; intervalo?: string }>;
+  searchParams: Promise<{ plano?: string; intervalo?: string; via?: string }>;
 }) {
   const session = await getSession();
   if (!session) redirect("/login?next=/cadastro/assinatura");
@@ -58,17 +59,27 @@ export default async function AssinaturaPage({
     redirect("/onboarding");
   }
 
-  const { plano, intervalo } = await searchParams;
+  const { plano, intervalo, via } = await searchParams;
   const selected = isPlanId(plano) ? plano : "basico";
   const interval = isBillingInterval(intervalo) ? intervalo : "mensal";
+  // via=codigo|link|direto: acabou de confirmar o e-mail. Sem `via` é
+  // alguém voltando (login) — não é um cadastro novo, não conta sign_up.
+  const confirmedVia = via === "codigo" || via === "link" || via === "direto" ? via : null;
   const maxSavings = Math.max(
     ...Object.values(PLANS).map((p) => annualSavingsPct(p)),
   );
 
   return (
     <>
-      {/* conta confirmada = sign_up / CompleteRegistration (1x por sessão) */}
-      <FunnelEvent name="sign_up" dedupeKey={session.userId} />
+      <AnalyticsUser id={session.userId} />
+      {/* conta confirmada = sign_up / CompleteRegistration (1x por usuário na sessão) */}
+      {confirmedVia && (
+        <FunnelEvent
+          name="sign_up"
+          dedupeKey={session.userId}
+          params={{ method: confirmedVia, plan: selected, interval }}
+        />
+      )}
       <h1 className="text-xl font-bold">Quase lá — escolha seu plano</h1>
       <p className="mt-1 text-sm text-muted-foreground">
         Sua conta está criada. Ative a assinatura para montar sua loja.

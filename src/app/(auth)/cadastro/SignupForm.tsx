@@ -6,10 +6,13 @@ import Link from "next/link";
 import { signupAction, type AuthFormState } from "../actions";
 import { PLANS, formatPlanPrice, type BillingInterval } from "@/lib/billing";
 import type { PlanId } from "@/lib/types";
+import { trackFunnel } from "@/lib/funnel";
+import { useTrackFormErrors } from "@/hooks/use-track-form-errors";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PhoneInput } from "@/components/admin/masked-inputs";
 
 function SubmitButton({
   children,
@@ -30,11 +33,14 @@ export function SignupForm({
   plano,
   intervalo,
   next,
+  defaultEmail,
 }: {
   plano: PlanId;
   intervalo: BillingInterval;
   /** destino pós-cadastro (ex.: /convite/{token}) — pula o checkout */
   next?: string;
+  /** e-mail pré-preenchido (volta do "corrigir e-mail" da tela de código) */
+  defaultEmail?: string;
 }) {
   const [state, action] = useActionState<AuthFormState, FormData>(
     signupAction,
@@ -42,6 +48,9 @@ export function SignupForm({
   );
   const plan = PLANS[plano];
   const invited = !!next;
+  const funnel = { plan: plano, interval: intervalo, invited };
+
+  useTrackFormErrors(state, "sign_up_error", funnel);
 
   return (
     <>
@@ -73,7 +82,17 @@ export function SignupForm({
         </Link>
       </div>
 
-      <form action={action} className="mt-5 space-y-4">
+      <form
+        action={action}
+        className="mt-5 space-y-4"
+        onSubmit={(ev) => {
+          const fd = new FormData(ev.currentTarget);
+          trackFunnel("sign_up_submit", {
+            ...funnel,
+            has_phone: String(fd.get("phone") || "").length > 0,
+          });
+        }}
+      >
         <input type="hidden" name="plano" value={plano} />
         <input type="hidden" name="intervalo" value={intervalo} />
         {next && <input type="hidden" name="next" value={next} />}
@@ -84,12 +103,27 @@ export function SignupForm({
           >
             <AlertDescription className="text-destructive">
               {state.error}
+              {state.code === "email_exists" && (
+                <>
+                  {" "}
+                  <Link href="/login" className="font-semibold underline">
+                    Entrar
+                  </Link>
+                </>
+              )}
             </AlertDescription>
           </Alert>
         )}
         <div className="grid gap-2">
           <Label htmlFor="name">Seu nome</Label>
-          <Input id="name" name="name" autoComplete="name" required />
+          <Input
+            key={state.values?.name ?? ""}
+            id="name"
+            name="name"
+            autoComplete="name"
+            defaultValue={state.values?.name}
+            required
+          />
           {state.fieldErrors?.name && (
             <p className="text-xs text-destructive">{state.fieldErrors.name}</p>
           )}
@@ -97,14 +131,33 @@ export function SignupForm({
         <div className="grid gap-2">
           <Label htmlFor="email">E-mail</Label>
           <Input
+            key={state.values?.email ?? defaultEmail ?? ""}
             id="email"
             name="email"
             type="email"
             autoComplete="email"
+            defaultValue={state.values?.email ?? defaultEmail}
             required
           />
           {state.fieldErrors?.email && (
             <p className="text-xs text-destructive">{state.fieldErrors.email}</p>
+          )}
+        </div>
+        <div className="grid gap-2">
+          <Label htmlFor="phone">Celular (WhatsApp)</Label>
+          <PhoneInput
+            id="phone"
+            name="phone"
+            autoComplete="tel"
+            defaultValue={state.values?.phone}
+            required
+          />
+          {state.fieldErrors?.phone ? (
+            <p className="text-xs text-destructive">{state.fieldErrors.phone}</p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Só para te ajudar a colocar a loja no ar. Sem spam.
+            </p>
           )}
         </div>
         <div className="grid gap-2">

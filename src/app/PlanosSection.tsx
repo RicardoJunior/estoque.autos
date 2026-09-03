@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { trackFunnel } from "@/lib/funnel";
 import {
   BILLING_INTERVALS,
   PLANS,
@@ -131,6 +132,13 @@ export function PlanosSection() {
               </ul>
               <Link
                 href={`/cadastro?plano=${card.id}&intervalo=${interval}`}
+                onClick={() =>
+                  trackFunnel("select_plan", {
+                    plan: card.id,
+                    interval,
+                    value: plan.priceCents[interval] / 100,
+                  })
+                }
                 className={cn(
                   buttonVariants({
                     size: "lg",

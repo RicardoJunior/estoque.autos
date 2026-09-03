@@ -152,6 +152,8 @@ async function main() {
     userId: string;
     email: string;
     name: string;
+    /** só dígitos (DDD + número) ou null — cadastros antigos não têm */
+    phone: string | null;
     stage: SignupRecoveryStage;
     /** quando o cadastro efetivamente travou (base da janela de tempo) */
     since: Date;
@@ -177,7 +179,7 @@ async function main() {
 
   const [users, profilesRes, subsRes, sentRes] = await Promise.all([
     listAllUsers(),
-    supabase.from("profiles").select("id, tenant_id, name"),
+    supabase.from("profiles").select("id, tenant_id, name, phone"),
     supabase.from("subscriptions").select("user_id, status, created_at"),
     supabase.from("signup_recovery_emails").select("user_id, stage"),
   ]);
@@ -202,7 +204,10 @@ async function main() {
   }
 
   const profiles = new Map(
-    (profilesRes.data ?? []).map((p) => [p.id as string, p as { tenant_id: string | null; name: string }]),
+    (profilesRes.data ?? []).map((p) => [
+      p.id as string,
+      p as { tenant_id: string | null; name: string; phone: string | null },
+    ]),
   );
   const subs = new Map(
     (subsRes.data ?? []).map((s) => [s.user_id as string, s as { status: string; created_at: string }]),
@@ -263,6 +268,9 @@ async function main() {
       userId: u.id,
       email: u.email,
       name: (profile?.name || String(meta.name ?? "")).trim(),
+      // telefone do cadastro (profiles.phone): quem não confirmou o
+      // e-mail ainda pode ser chamado no WhatsApp
+      phone: (profile?.phone || String(meta.phone ?? "")).replace(/\D/g, "") || null,
       stage,
       since,
       plan: isPlanId(meta.plano as string) ? (meta.plano as PlanId) : "basico",
@@ -299,7 +307,9 @@ async function main() {
   );
   console.log(`\n→ ${alvo.length} e-mail(s) a enviar${ENVIAR ? "" : "  (simulação — use --enviar)"}\n`);
   for (const c of alvo.slice(0, ENVIAR ? alvo.length : 40)) {
-    console.log(`  ${c.stage.padEnd(15)} ${c.email.padEnd(38)} há ${dias(c.since)}d`);
+    console.log(
+      `  ${c.stage.padEnd(15)} ${c.email.padEnd(38)} ${(c.phone ?? "—").padEnd(12)} há ${dias(c.since)}d`,
+    );
   }
 
   if (!ENVIAR || alvo.length === 0) process.exit(0);

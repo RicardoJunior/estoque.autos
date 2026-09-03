@@ -40,9 +40,27 @@ export const slugSchema = z
     "Use apenas letras minúsculas, números e hífens",
   );
 
+/**
+ * Telefone BR: DDD + número (10–11 dígitos). Aceita máscara e o +55
+ * na frente; o que fica salvo são só os dígitos (mesmo formato de
+ * tenants.phone/whatsapp).
+ */
+export const phoneBRSchema = z
+  .string("Informe seu celular")
+  .min(1, "Informe seu celular")
+  .transform((v) => v.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, ""))
+  .pipe(
+    z
+      .string()
+      .regex(/^[1-9][1-9]\d{8,9}$/, "Informe DDD + número (ex.: 11 98765-4321)"),
+  );
+
 export const signupSchema = z.object({
   name: z.string().min(2, "Informe seu nome").max(80),
   email: z.email("E-mail inválido"),
+  // lead com telefone desde o 1º passo: quem trava no e-mail de
+  // confirmação ainda pode ser contatado (vai para profiles.phone)
+  phone: phoneBRSchema,
   password: z.string().min(8, "Mínimo de 8 caracteres").max(72),
 });
 

@@ -3,10 +3,11 @@
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useSyncExternalStore } from "react";
+import { GA_ID } from "@/lib/funnel";
 
 // ============================================================
-// Google Analytics + Pixel Meta da PLATAFORMA (estoque.autos): landing, blog,
-// ajuda, cadastro, admin. NÃO dispara nas vitrines dos clientes —
+// Google Analytics + Pixel Meta + Microsoft Clarity da PLATAFORMA
+// (estoque.autos): landing, blog, ajuda, cadastro, admin. NÃO dispara nas vitrines dos clientes —
 // elas têm o próprio tracking (TrackingPixels, plano Pro) e o
 // lojista é o controlador dos dados dos visitantes (LGPD).
 //
@@ -15,10 +16,13 @@ import { useEffect, useSyncExternalStore } from "react";
 // vitrines automaticamente.
 // ============================================================
 
-const GA_ID = "G-486H5Q09DP";
 // Pixel da Meta da plataforma — inlined no build (NEXT_PUBLIC_*). Vazio =
 // pixel desligado (dev). Em prod vem do .env.local via scripts/deploy-prod.sh.
 const META_PIXEL_ID = process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "";
+// Microsoft Clarity (gravação de sessão/heatmaps). Os eventos do funil e o
+// User-ID também vão para cá (lib/funnel.ts) — dá para filtrar gravações
+// por "sign_up_error", "confirm_code_not_received" etc.
+const CLARITY_ID = "ycks79ybzk";
 
 const APP_HOSTS = new Set([
   "estoque.autos",
@@ -102,6 +106,9 @@ export function PlatformAnalytics() {
       />
       <Script id="ga-init" strategy="afterInteractive">
         {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}');`}
+      </Script>
+      <Script id="ms-clarity" strategy="afterInteractive">
+        {`(function(c,l,a,r,i,t,y){c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);})(window,document,"clarity","script","${CLARITY_ID}");`}
       </Script>
       {META_PIXEL_ID && (
         <>

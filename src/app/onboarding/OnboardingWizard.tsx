@@ -26,6 +26,8 @@ import { DEFAULT_STORE_FONTS, FONT_PAIRINGS } from "@/lib/fonts";
 import { getFontCatalog, type GoogleFont } from "@/lib/google-fonts";
 import { injectFontCss } from "@/lib/font-css";
 import { slugify } from "@/lib/format";
+import { trackFunnel } from "@/lib/funnel";
+import { useTrackFormErrors } from "@/hooks/use-track-form-errors";
 import { DemoPreview } from "@/components/brand/DemoPreview";
 import { ColorField } from "@/components/brand/ColorField";
 import { FontPairings } from "@/components/brand/FontPairings";
@@ -255,6 +257,12 @@ export function OnboardingWizard() {
   const step1Valid =
     name.trim().length >= 2 && slug.length >= 3 && slugCheck?.available === true;
 
+  // GA4: cada passo visto (mede onde o wizard é abandonado) + erros do publish
+  useEffect(() => {
+    trackFunnel("onboarding_step", { step: step + 1, step_name: STEPS[step] });
+  }, [step]);
+  useTrackFormErrors(state, "onboarding_error", { step: step + 1, step_name: STEPS[step] });
+
   // erro de validação com o usuário em outro passo: leva ao passo do
   // campo com problema (senão o publish parece não fazer nada)
   const [lastState, setLastState] = useState(state);
@@ -314,7 +322,11 @@ export function OnboardingWizard() {
           ))}
         </ol>
 
-        <form action={formAction} className="flex flex-1 flex-col">
+        <form
+          action={formAction}
+          className="flex flex-1 flex-col"
+          onSubmit={() => trackFunnel("onboarding_submit", { step_name: template })}
+        >
           {/* hidden inputs com o estado dos widgets (presentes sempre) */}
           <input type="hidden" name="slug" value={slug} />
           <input type="hidden" name="template_id" value={template} />

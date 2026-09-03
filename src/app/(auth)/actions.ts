@@ -11,20 +11,35 @@ import {
 
 export interface AuthFormState {
   error?: string;
+  /**
+   * Código estável do erro para o tracking (GA4 `error_type`): o client
+   * nunca manda a mensagem em PT nem o e-mail para o analytics.
+   */
+  code?: string;
   fieldErrors?: Record<string, string>;
+  /**
+   * Valores digitados, devolvidos junto com o erro: o React 19 reseta o
+   * form depois da action e apagaria o que o usuário já preencheu.
+   * Nunca inclui senha.
+   */
+  values?: { name?: string; email?: string; phone?: string };
 }
 
 export async function signupAction(
   _prev: AuthFormState,
   formData: FormData,
 ): Promise<AuthFormState> {
+  const values = {
+    name: String(formData.get("name") || ""),
+    email: String(formData.get("email") || ""),
+    phone: String(formData.get("phone") || ""),
+  };
   const parsed = signupSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
+    ...values,
     password: formData.get("password"),
   });
   if (!parsed.success) {
-    return { fieldErrors: fieldErrorsFromZod(parsed.error) };
+    return { code: "validation", fieldErrors: fieldErrorsFromZod(parsed.error), values };
   }
 
   // plano-primeiro: plano + intervalo escolhidos na landing acompanham
@@ -50,8 +65,11 @@ export async function signupAction(
     options: {
       // plano/intervalo/invite_next no metadata: /auth/confirm e o código
       // de confirmação recuperam o destino sem estado na URL do e-mail
+      // phone → trigger handle_new_user grava em profiles.phone no ato
+      // do cadastro (o lead fica contatável mesmo sem confirmar o e-mail)
       data: {
         name: parsed.data.name,
+        phone: parsed.data.phone,
         plano,
         intervalo,
         ...(inviteNext ? { invite_next: inviteNext } : {}),
@@ -63,24 +81,42 @@ export async function signupAction(
   if (error) {
     console.error("signupAction:", error.code, error.status, error.message);
     if (error.code === "user_already_exists" || error.status === 422) {
-      return { error: "Já existe uma conta com este e-mail." };
+      return { code: "email_exists", error: "Já existe uma conta com este e-mail.", values };
     }
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
       return {
+        code: "rate_limit",
         error:
           "Muitas tentativas no momento. Aguarde alguns minutos e tente de novo.",
+        values,
       };
     }
-    return { error: "Não foi possível criar a conta. Tente novamente." };
+    return {
+      code: "unknown",
+      error: "Não foi possível criar a conta. Tente novamente.",
+      values,
+    };
   }
 
   // Trigger handle_new_user cria o profile.
   // Com confirmação de e-mail desligada (dev), a sessão já vem ativa.
   // Com confirmação ligada (prod), session é null → checar o e-mail.
   if (data.session) {
-    redirect(afterAuthPath);
+    redirect(
+      inviteNext ? afterAuthPath : `${checkoutPath}&via=direto`,
+    );
   }
-  redirect("/cadastro/confirme?email=" + encodeURIComponent(parsed.data.email));
+  // enviado=1: a tela de código inicia o cooldown de reenvio e dispara
+  // sign_up_submitted; plano/intervalo seguem para o evento e para o
+  // link "corrigir e-mail" (volta ao cadastro com o mesmo plano)
+  const confirmParams = new URLSearchParams({
+    email: parsed.data.email,
+    plano,
+    intervalo,
+    enviado: "1",
+  });
+  if (inviteNext) confirmParams.set("next", inviteNext);
+  redirect(`/cadastro/confirme?${confirmParams.toString()}`);
 }
 
 export async function loginAction(
@@ -91,8 +127,9 @@ export async function loginAction(
     email: formData.get("email"),
     password: formData.get("password"),
   });
+  const values = { email: String(formData.get("email") || "") };
   if (!parsed.success) {
-    return { fieldErrors: fieldErrorsFromZod(parsed.error) };
+    return { code: "validation", fieldErrors: fieldErrorsFromZod(parsed.error), values };
   }
 
   const supabase = await createClient();
@@ -100,14 +137,20 @@ export async function loginAction(
   if (error) {
     if (error.code === "email_not_confirmed") {
       return {
+        code: "email_not_confirmed",
         error:
           "Seu e-mail ainda não foi confirmado. Procure o link de confirmação na sua caixa de entrada.",
+        values,
       };
     }
     if (error.code !== "invalid_credentials") {
       console.error("loginAction:", error.code, error.status, error.message);
     }
-    return { error: "E-mail ou senha incorretos." };
+    return {
+      code: error.code === "invalid_credentials" ? "invalid_credentials" : "unknown",
+      error: "E-mail ou senha incorretos.",
+      values,
+    };
   }
 
   // só caminhos internos: bloqueia open redirect (ex.: //evil.com)
@@ -166,7 +209,7 @@ export async function sendLoginCodeAction(
 ): Promise<CodeFormState> {
   const email = String(formData.get("email") || "").trim();
   if (!email.includes("@")) {
-    return { fieldErrors: { email: "E-mail inválido" } };
+    return { code: "validation", fieldErrors: { email: "E-mail inválido" } };
   }
 
   const supabase = await createClient();
@@ -178,6 +221,7 @@ export async function sendLoginCodeAction(
   if (error) {
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
       return {
+        code: "rate_limit",
         error: "Muitas tentativas. Aguarde um minuto e tente de novo.",
         email,
       };
@@ -199,7 +243,12 @@ export async function verifyLoginCodeAction(
   const email = String(formData.get("email") || "").trim();
   const code = parseCode(formData);
   if (code.length !== 6) {
-    return { sent: true, email, fieldErrors: { code: "Digite o código de 6 dígitos" } };
+    return {
+      sent: true,
+      email,
+      code: "code_format",
+      fieldErrors: { code: "Digite o código de 6 dígitos" },
+    };
   }
 
   const supabase = await createClient();
@@ -209,7 +258,12 @@ export async function verifyLoginCodeAction(
     type: "email",
   });
   if (error) {
-    return { sent: true, email, error: "Código inválido ou expirado. Peça um novo." };
+    return {
+      sent: true,
+      email,
+      code: "code_invalid",
+      error: "Código inválido ou expirado. Peça um novo.",
+    };
   }
 
   redirect(safeInternalPath(formData.get("next"), "/admin"));
@@ -223,7 +277,12 @@ export async function verifySignupCodeAction(
   const email = String(formData.get("email") || "").trim();
   const code = parseCode(formData);
   if (code.length !== 6) {
-    return { sent: true, email, fieldErrors: { code: "Digite o código de 6 dígitos" } };
+    return {
+      sent: true,
+      email,
+      code: "code_format",
+      fieldErrors: { code: "Digite o código de 6 dígitos" },
+    };
   }
 
   const supabase = await createClient();
@@ -233,7 +292,13 @@ export async function verifySignupCodeAction(
     type: "signup",
   });
   if (error) {
-    return { sent: true, email, error: "Código inválido ou expirado. Reenvie o e-mail e tente de novo." };
+    return {
+      sent: true,
+      email,
+      code: "code_invalid",
+      error:
+        "Código inválido ou expirado. Confira se usou o código mais recente ou peça um novo abaixo.",
+    };
   }
 
   const meta = data.user?.user_metadata ?? {};
@@ -246,7 +311,8 @@ export async function verifySignupCodeAction(
   if (inviteNext) redirect(inviteNext);
   const plano = isPlanId(meta.plano) ? meta.plano : "basico";
   const intervalo = isBillingInterval(meta.intervalo) ? meta.intervalo : "mensal";
-  redirect(`/cadastro/assinatura?plano=${plano}&intervalo=${intervalo}`);
+  // via=codigo → a página dispara sign_up (GA4) com method=codigo
+  redirect(`/cadastro/assinatura?plano=${plano}&intervalo=${intervalo}&via=codigo`);
 }
 
 /** Reenvia o e-mail de confirmação de cadastro. */
@@ -256,16 +322,24 @@ export async function resendConfirmationAction(
 ): Promise<CodeFormState> {
   const email = String(formData.get("email") || "").trim();
   if (!email.includes("@")) {
-    return { fieldErrors: { email: "E-mail inválido" } };
+    return { code: "validation", fieldErrors: { email: "E-mail inválido" } };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resend({ type: "signup", email });
   if (error) {
     if (error.code === "over_email_send_rate_limit" || error.status === 429) {
-      return { email, error: "Aguarde um minuto antes de reenviar." };
+      return { email, code: "rate_limit", error: "Aguarde um minuto antes de reenviar." };
     }
     console.error("resendConfirmationAction:", error.code, error.status, error.message);
+    // e-mail já confirmado / sem cadastro: o Supabase não reenvia. Não
+    // revela qual dos dois, mas o usuário precisa de um caminho.
+    return {
+      email,
+      code: "unknown",
+      error:
+        "Não foi possível reenviar. Se você já confirmou este e-mail, entre pelo login.",
+    };
   }
   return { sent: true, email };
 }
@@ -278,7 +352,12 @@ export async function verifyRecoveryCodeAction(
   const email = String(formData.get("email") || "").trim();
   const code = parseCode(formData);
   if (code.length !== 6) {
-    return { sent: true, email, fieldErrors: { code: "Digite o código de 6 dígitos" } };
+    return {
+      sent: true,
+      email,
+      code: "code_format",
+      fieldErrors: { code: "Digite o código de 6 dígitos" },
+    };
   }
 
   const supabase = await createClient();
@@ -288,7 +367,12 @@ export async function verifyRecoveryCodeAction(
     type: "recovery",
   });
   if (error) {
-    return { sent: true, email, error: "Código inválido ou expirado. Peça um novo." };
+    return {
+      sent: true,
+      email,
+      code: "code_invalid",
+      error: "Código inválido ou expirado. Peça um novo.",
+    };
   }
 
   redirect("/redefinir-senha");

@@ -54,8 +54,9 @@ export async function GET(request: NextRequest) {
         const intervalo = isBillingInterval(meta.intervalo)
           ? meta.intervalo
           : "mensal";
+        // via=link → a página dispara sign_up (GA4) com method=link
         return NextResponse.redirect(
-          `${origin}/cadastro/assinatura?plano=${plano}&intervalo=${intervalo}`,
+          `${origin}/cadastro/assinatura?plano=${plano}&intervalo=${intervalo}&via=link`,
         );
       }
       return NextResponse.redirect(`${origin}${safeNext ?? "/admin"}`);

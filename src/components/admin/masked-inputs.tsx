@@ -81,12 +81,14 @@ export function PhoneInput({
   defaultValue,
   placeholder = "(11) 98765-4321",
   autoComplete = "tel",
+  required,
 }: {
   name: string;
   id?: string;
   defaultValue?: string | null;
   placeholder?: string;
   autoComplete?: string;
+  required?: boolean;
 }) {
   const [digits, setDigits] = useState(
     defaultValue ? defaultValue.replace(/\D/g, "").slice(0, 11) : "",
@@ -98,6 +100,7 @@ export function PhoneInput({
         inputMode="tel"
         autoComplete={autoComplete}
         placeholder={placeholder}
+        required={required}
         value={formatPhoneBR(digits)}
         onChange={(ev) => setDigits(ev.target.value.replace(/\D/g, "").slice(0, 11))}
       />
