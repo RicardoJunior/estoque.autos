@@ -1,0 +1,34 @@
+# Sincronização semanal dos catálogos dos portais (marcas, modelos,
+# versões e atributos do Mercado Livre e da OLX). São milhares de
+# requisições — não cabe no Worker; roda aqui como o FIPE.
+# Secrets necessários no repo: SUPABASE_URL, SUPABASE_SECRET_KEY,
+# INTEGRATIONS_KMS_KEY (a OLX usa o token de uma conta conectada).
+name: portal-taxonomy
+
+on:
+  schedule:
+    # domingos 06:00 UTC (03:00 BRT)
+    - cron: "0 6 * * 0"
+  workflow_dispatch:
+    inputs:
+      portal:
+        description: "Portal (mercadolivre | olx | vazio = todos)"
+        required: false
+        default: ""
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/portal-taxonomy-sync.ts ${{ inputs.portal && format('--portal={0}', inputs.portal) || '' }}
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+          INTEGRATIONS_KMS_KEY: ${{ secrets.INTEGRATIONS_KMS_KEY }}

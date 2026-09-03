@@ -1,10 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { Mail, MessageCircle, Phone } from "lucide-react";
+import { ExternalLink, Mail, MessageCircle, Phone } from "lucide-react";
 import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { LEAD_TYPE_LABELS, type Lead } from "@/lib/types";
+import { LEAD_SOURCE_LABELS, LEAD_TYPE_LABELS, type Lead } from "@/lib/types";
 import {
   formatDateTime,
   formatPrice,
@@ -22,6 +22,21 @@ import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 
 export const metadata = { title: "Lead" };
+
+/** contact_type/source cru dos portais → rótulo curto */
+const CHANNEL_LABELS: Record<string, string> = {
+  whatsapp: "WhatsApp",
+  call: "Ligação",
+  telefone: "Telefone",
+  question: "Pergunta",
+  visit_request: "Visita",
+  contact_request: "Contato",
+  reservation: "Reserva",
+  quotations: "Cotação",
+  chat: "Chat",
+  financing: "Financiamento",
+  olx: "Formulário",
+};
 
 function initials(name: string | null): string {
   if (!name) return "?";
@@ -79,6 +94,12 @@ export default async function LeadDetailPage({
                   <Badge variant="outline" className="text-muted-foreground">
                     {LEAD_TYPE_LABELS[lead.type]}
                   </Badge>
+                  {lead.source && lead.source !== "site" && (
+                    <Badge className="rounded-full bg-violet-500/15 text-violet-700 dark:text-violet-300">
+                      {LEAD_SOURCE_LABELS[lead.source]}
+                      {lead.channel ? ` · ${CHANNEL_LABELS[lead.channel] ?? lead.channel}` : ""}
+                    </Badge>
+                  )}
                   <LeadStatusPill status={lead.status} />
                 </div>
                 <p
@@ -132,6 +153,18 @@ export default async function LeadDetailPage({
                 <p className="mb-1 text-xs text-muted-foreground">Mensagem</p>
                 {lead.message}
               </blockquote>
+            )}
+
+            {lead.external_url && (
+              <a
+                href={lead.external_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline"
+              >
+                Ver o anúncio no {LEAD_SOURCE_LABELS[lead.source] ?? "portal"}
+                <ExternalLink className="size-3.5" aria-hidden />
+              </a>
             )}
 
             {(lead.phone || lead.email) && (

@@ -2,6 +2,7 @@ import { requireStaff } from "@/lib/auth";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { VehicleForm } from "../VehicleForm";
 import { createVehicleAction } from "../actions";
+import { portalsForVehicleForm } from "../portals-data";
 
 export const metadata = { title: "Cadastrar carro" };
 
@@ -10,8 +11,9 @@ export default async function NewVehiclePage({
 }: {
   searchParams: Promise<{ primeiro?: string }>;
 }) {
-  await requireStaff();
+  const { tenant } = await requireStaff();
   const { primeiro } = await searchParams;
+  const { portals } = await portalsForVehicleForm(tenant, null);
   return (
     <div className="mx-auto max-w-3xl space-y-5">
       {primeiro === "1" && (
@@ -33,6 +35,7 @@ export default async function NewVehiclePage({
         action={createVehicleAction}
         submitLabel="Publicar anúncio"
         withPhotoStage
+        portals={portals}
       />
     </div>
   );

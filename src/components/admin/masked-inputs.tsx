@@ -148,6 +148,46 @@ export function CepInput({
   );
 }
 
+function formatCnpj(digits: string): string {
+  const d = digits.slice(0, 14);
+  let out = d.slice(0, 2);
+  if (d.length > 2) out += `.${d.slice(2, 5)}`;
+  if (d.length > 5) out += `.${d.slice(5, 8)}`;
+  if (d.length > 8) out += `/${d.slice(8, 12)}`;
+  if (d.length > 12) out += `-${d.slice(12)}`;
+  return out;
+}
+
+/** CNPJ: 12.345.678/0001-90. Só dígitos no submit. */
+export function CnpjInput({
+  name,
+  id,
+  defaultValue,
+  placeholder = "12.345.678/0001-90",
+}: {
+  name: string;
+  id?: string;
+  defaultValue?: string | null;
+  placeholder?: string;
+}) {
+  const [digits, setDigits] = useState(
+    defaultValue ? defaultValue.replace(/\D/g, "").slice(0, 14) : "",
+  );
+  return (
+    <>
+      <Input
+        id={id}
+        inputMode="numeric"
+        autoComplete="off"
+        placeholder={placeholder}
+        value={formatCnpj(digits)}
+        onChange={(ev) => setDigits(ev.target.value.replace(/\D/g, "").slice(0, 14))}
+      />
+      <input type="hidden" name={name} value={digits} />
+    </>
+  );
+}
+
 /** Idem, com sufixo (ex.: km). */
 export function SuffixNumberInput({
   name,

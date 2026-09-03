@@ -105,6 +105,16 @@ export default function TermosPage() {
               hospedar e exibir esse conteúdo, exclusivamente para a prestação
               do serviço. O conteúdo continua sendo do Lojista.
             </p>
+            <p>
+              <strong>Integrações com portais.</strong> No plano Pro, o Lojista
+              pode autorizar a Plataforma a publicar seus anúncios em portais
+              de terceiros (como Mercado Livre e OLX) e a receber os contatos
+              gerados por eles. A contratação de planos ou pacotes junto a cada
+              portal, o cumprimento das regras de anúncio de cada um e a
+              guarda das credenciais da conta são responsabilidade do Lojista;
+              a Plataforma atua como integradora e pode suspender uma
+              integração quando o portal a recusar ou revogar.
+            </p>
 
             <h2>4. Planos, pagamento e cancelamento</h2>
             <ul>

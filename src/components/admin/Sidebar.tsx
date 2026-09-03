@@ -11,6 +11,7 @@ import {
   Globe,
   LogOut,
   MessageSquareText,
+  Plug,
   Plus,
   Settings,
   Store,
@@ -63,6 +64,12 @@ const NAV: NavItem[] = [
   { href: "/admin/veiculos", label: "Estoque", icon: Car },
   { href: "/admin/leads", label: "Leads", icon: MessageSquareText },
   { href: "/admin/site", label: "Meu site", icon: Globe, staffOnly: true },
+  {
+    href: "/admin/integracoes",
+    label: "Integrações",
+    icon: Plug,
+    staffOnly: true,
+  },
   { href: "/admin/equipe", label: "Equipe", icon: Users, staffOnly: true },
   {
     href: "/admin/configuracoes",

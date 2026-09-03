@@ -189,6 +189,8 @@ export interface Tenant {
   custom_domain: string | null;
   /** 'pending' até o apontamento ser verificado, depois 'active' */
   custom_domain_status: "pending" | "active";
+  /** CNPJ (14 dígitos) — exigido para conectar Webmotors/Mercado Livre */
+  cnpj: string | null;
   /** cópia de conveniência; fonte da verdade é subscriptions.status */
   plan: PlanId | null;
   created_at: string;
@@ -259,11 +261,57 @@ export const VEHICLE_FLAGS = [
 ] as const;
 export type VehicleFlag = (typeof VEHICLE_FLAGS)[number];
 
-/** Foto com id estável (v1 manipulava por índice e corrompia o array). */
+/** Carroceria — exigida pelos portais (ML VEHICLE_BODY_TYPE, OLX cartype). */
+export const BODY_TYPES = [
+  "hatch",
+  "sedan",
+  "suv",
+  "picape",
+  "perua",
+  "minivan",
+  "cupe",
+  "conversivel",
+  "van",
+  "utilitario",
+  "outro",
+] as const;
+export type BodyType = (typeof BODY_TYPES)[number];
+
+export const BODY_TYPE_LABELS: Record<BodyType, string> = {
+  hatch: "Hatch",
+  sedan: "Sedã",
+  suv: "SUV",
+  picape: "Picape",
+  perua: "Perua / SW",
+  minivan: "Minivan",
+  cupe: "Cupê",
+  conversivel: "Conversível",
+  van: "Van",
+  utilitario: "Utilitário",
+  outro: "Outro",
+};
+
+export const STEERINGS = ["hidraulica", "eletrica", "mecanica", "assistida"] as const;
+export type Steering = (typeof STEERINGS)[number];
+
+export const STEERING_LABELS: Record<Steering, string> = {
+  hidraulica: "Hidráulica",
+  eletrica: "Elétrica",
+  mecanica: "Mecânica",
+  assistida: "Assistida",
+};
+
+/**
+ * Foto com id estável (v1 manipulava por índice e corrompia o array).
+ * `jpeg_*` é a variante 1920×1440 para os portais (ML não aceita WebP);
+ * opcional porque fotos antigas e o hero da vitrine usam só {id,path,url}.
+ */
 export interface VehiclePhoto {
   id: string;
   path: string;
   url: string;
+  jpeg_path?: string;
+  jpeg_url?: string;
 }
 
 export interface Vehicle {
@@ -291,6 +339,16 @@ export interface Vehicle {
   consigned: boolean;
   /** marcadores de condição (Blindado, IPVA pago, Leilão…) */
   condition_flags: VehicleFlag[];
+  // campos exigidos pelos portais (docs/integracoes-portais.md §5.3)
+  body_type: BodyType | null;
+  /** "1.0", "2.0 turbo", "1.6 16V" */
+  engine: string | null;
+  steering: Steering | null;
+  /** 6 últimos dígitos do chassi (ML VIN_LAST_DIGITS) — nunca público */
+  vin_last6: string | null;
+  /** vídeo do YouTube */
+  video_url: string | null;
+  zero_km: boolean;
   sold_at: string | null;
   /** snapshot FIPE (cascata no cadastro); null = cadastro manual */
   fipe_code: string | null;
@@ -301,11 +359,57 @@ export interface Vehicle {
   updated_at: string;
 }
 
+/** Tipos criados pela vitrine (RPC create_lead). 'portal' só entra pelo worker. */
 export const LEAD_TYPES = ["proposal", "whatsapp", "phone"] as const;
-export type LeadType = (typeof LEAD_TYPES)[number];
+export const ALL_LEAD_TYPES = [...LEAD_TYPES, "portal"] as const;
+export type LeadType = (typeof ALL_LEAD_TYPES)[number];
 
 export const LEAD_STATUSES = ["new", "in_progress", "won", "lost"] as const;
 export type LeadStatus = (typeof LEAD_STATUSES)[number];
+
+// ------------------------------------------------------------
+// Portais de anúncios (integrações)
+// ------------------------------------------------------------
+export const PORTAL_IDS = [
+  "mercadolivre",
+  "olx",
+  "webmotors",
+  "chavesnamao",
+  "usadosbr",
+  "meta_catalog",
+] as const;
+export type PortalId = (typeof PORTAL_IDS)[number];
+
+export const PORTAL_LABELS: Record<PortalId, string> = {
+  mercadolivre: "Mercado Livre",
+  olx: "OLX",
+  webmotors: "Webmotors",
+  chavesnamao: "Chaves na Mão",
+  usadosbr: "Usadosbr",
+  meta_catalog: "Meta (Facebook/Instagram)",
+};
+
+/** Origem do lead: site próprio ou um portal. */
+export const LEAD_SOURCES = [
+  "site",
+  "mercadolivre",
+  "olx",
+  "webmotors",
+  "chavesnamao",
+  "usadosbr",
+  "meta",
+] as const;
+export type LeadSource = (typeof LEAD_SOURCES)[number];
+
+export const LEAD_SOURCE_LABELS: Record<LeadSource, string> = {
+  site: "Site",
+  mercadolivre: "Mercado Livre",
+  olx: "OLX",
+  webmotors: "Webmotors",
+  chavesnamao: "Chaves na Mão",
+  usadosbr: "Usadosbr",
+  meta: "Meta",
+};
 
 export interface Lead {
   id: string;
@@ -322,6 +426,12 @@ export interface Lead {
   notes: string | null;
   utm: Record<string, string> | null;
   device: string | null;
+  /** 'site' (vitrine) ou o portal de origem */
+  source: LeadSource;
+  /** contact_type cru do portal (whatsapp, call, question, chat…) */
+  channel: string | null;
+  external_id: string | null;
+  external_url: string | null;
   created_at: string;
   updated_at: string;
   /** join opcional */
@@ -389,6 +499,7 @@ export const LEAD_TYPE_LABELS: Record<LeadType, string> = {
   proposal: "Proposta",
   whatsapp: "WhatsApp",
   phone: "Ligação",
+  portal: "Portal",
 };
 
 export const LEAD_STATUS_LABELS: Record<LeadStatus, string> = {

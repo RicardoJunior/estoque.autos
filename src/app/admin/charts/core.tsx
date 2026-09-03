@@ -14,6 +14,8 @@ export const SERIES = {
   amber: "var(--chart-1)",
   blue: "var(--chart-2)",
   green: "var(--chart-3)",
+  /** 4º slot da paleta (validado junto com os três primeiros) — leads de portais */
+  violet: "var(--chart-4)",
 } as const;
 
 export const CHROME = {

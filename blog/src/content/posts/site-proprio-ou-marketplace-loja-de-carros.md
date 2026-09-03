@@ -24,7 +24,7 @@ A boa notícia é que essa escolha é um falso dilema. Os dois canais fazem trab
 
 ## O que o marketplace entrega (e o que cobra)
 
-Webmotors, OLX, iCarros e Mercado Livre têm algo que nenhuma loja constrói sozinha: milhões de compradores navegando com intenção de compra agora. Anunciou hoje, seu carro aparece hoje.
+Webmotors, OLX e Mercado Livre têm algo que nenhuma loja constrói sozinha: milhões de compradores navegando com intenção de compra agora. Anunciou hoje, seu carro aparece hoje.
 
 Os pontos fortes:
 

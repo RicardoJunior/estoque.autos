@@ -3,9 +3,14 @@
 import { useActionState, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useFormStatus } from "react-dom";
+import { Megaphone } from "lucide-react";
 import {
+  BODY_TYPES,
+  BODY_TYPE_LABELS,
   FUELS,
   FUEL_LABELS,
+  STEERINGS,
+  STEERING_LABELS,
   TRANSMISSIONS,
   TRANSMISSION_LABELS,
   VEHICLE_CATEGORIES,
@@ -17,6 +22,8 @@ import {
 } from "@/lib/types";
 import { FipePicker, type FipeFill } from "./FipePicker";
 import { PhotoStage } from "./PhotoStage";
+import type { FormPortal } from "./portals-data";
+import { Checkbox } from "@/components/ui/checkbox";
 import { COMMON_OPTIONALS, VEHICLE_COLORS } from "@/lib/optionals";
 import { ChipPicker } from "@/components/admin/ChipPicker";
 import { CheckboxGrid } from "@/components/admin/CheckboxGrid";
@@ -85,12 +92,15 @@ export function VehicleForm({
   initial,
   submitLabel,
   withPhotoStage,
+  portals = [],
 }: {
   action: Action;
   initial?: Vehicle;
   submitLabel: string;
   /** cadastro novo: fotos sobem junto (staging) */
   withPhotoStage?: boolean;
+  /** portais conectados (plano Pro) — seção "Publicar em" */
+  portals?: FormPortal[];
 }) {
   const router = useRouter();
   const [state, formAction] = useActionState<VehicleFormState, FormData>(
@@ -328,16 +338,99 @@ export function VehicleForm({
             <FieldError msg={e.color} />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="plate">Placa (uso interno)</Label>
+            <Label htmlFor="plate">Placa</Label>
             <Input
               id="plate"
               name="plate"
               defaultValue={initial?.plate ?? ""}
               placeholder="ABC1D23"
             />
+            <p className="text-xs text-muted-foreground">
+              Não aparece no site. Os portais (OLX, Mercado Livre) usam para
+              validar o anúncio.
+            </p>
             <FieldError msg={e.plate} />
           </div>
         </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-2">
+            <Label htmlFor="body_type">Carroceria</Label>
+            <Select name="body_type" defaultValue={initial?.body_type ?? ""}>
+              <SelectTrigger id="body_type" className="w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false} align="start">
+                {BODY_TYPES.map((b) => (
+                  <SelectItem key={b} value={b}>
+                    {BODY_TYPE_LABELS[b]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError msg={e.body_type} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="engine">Motor</Label>
+            <Input
+              id="engine"
+              name="engine"
+              defaultValue={initial?.engine ?? ""}
+              placeholder="1.0 turbo"
+              maxLength={40}
+            />
+            <FieldError msg={e.engine} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="steering">Direção</Label>
+            <Select name="steering" defaultValue={initial?.steering ?? ""}>
+              <SelectTrigger id="steering" className="w-full">
+                <SelectValue placeholder="Selecione" />
+              </SelectTrigger>
+              <SelectContent alignItemWithTrigger={false} align="start">
+                {STEERINGS.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {STEERING_LABELS[s]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError msg={e.steering} />
+          </div>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-[180px_1fr]">
+          <div className="grid gap-2">
+            <Label htmlFor="vin_last6">Final do chassi</Label>
+            <Input
+              id="vin_last6"
+              name="vin_last6"
+              defaultValue={initial?.vin_last6 ?? ""}
+              placeholder="6 últimos"
+              maxLength={6}
+              className="uppercase"
+            />
+            <p className="text-xs text-muted-foreground">
+              Uso interno — pedido pelo Mercado Livre.
+            </p>
+            <FieldError msg={e.vin_last6} />
+          </div>
+          <div className="grid gap-2">
+            <Label htmlFor="video_url">Vídeo (YouTube)</Label>
+            <Input
+              id="video_url"
+              name="video_url"
+              type="url"
+              defaultValue={initial?.video_url ?? ""}
+              placeholder="https://youtube.com/watch?v=…"
+            />
+            <FieldError msg={e.video_url} />
+          </div>
+        </div>
+        <label className="flex items-center gap-2 text-sm">
+          <Switch name="zero_km" defaultChecked={initial?.zero_km} />
+          Veículo 0 km
+        </label>
       </Section>
 
       {withPhotoStage && (
@@ -412,6 +505,36 @@ export function VehicleForm({
           <FieldError msg={e.description} />
         </div>
       </Section>
+
+      {portals.length > 0 && (
+        <Section
+          title="Publicar em"
+          hint="Marque onde este carro deve ser anunciado. A publicação acontece em segundo plano; acompanhe o status na página do carro."
+        >
+          <input type="hidden" name="portals_present" value="1" />
+          <div className="space-y-3">
+            {portals.map((p) => (
+              <div key={p.portal} className="space-y-1.5">
+                <label className="flex cursor-pointer items-center gap-2.5 text-sm">
+                  <Checkbox name="portals" value={p.portal} defaultChecked={p.checked} />
+                  <Megaphone className="size-4 text-muted-foreground" aria-hidden />
+                  <span className="font-medium">{p.label}</span>
+                </label>
+                {p.attention && (
+                  <FormBanner variant="neutral" className="ml-7">
+                    {p.attention}
+                  </FormBanner>
+                )}
+                {!p.attention && p.missing.length > 0 && (
+                  <FormBanner variant="neutral" className="ml-7">
+                    Para publicar no {p.label} ainda falta: {p.missing.join(", ")}.
+                  </FormBanner>
+                )}
+              </div>
+            ))}
+          </div>
+        </Section>
+      )}
 
       {/* barra de ação grudada no rodapé: salvar sempre à mão num form longo */}
       <div className="sticky bottom-0 z-10 -mx-4 border-t border-border bg-background/85 px-4 py-3 backdrop-blur sm:-mx-6 sm:px-6">

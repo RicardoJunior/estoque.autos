@@ -3,7 +3,7 @@
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { Loader2Icon, SearchIcon, XIcon } from "lucide-react";
-import type { LeadStatus } from "@/lib/types";
+import { LEAD_SOURCES, LEAD_SOURCE_LABELS, type LeadStatus } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +13,13 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /** Rótulos no plural (aba de listagem), com o dot na cor do LeadStatusPill. */
 const STATUS_TABS: { key: "all" | LeadStatus; label: string; dot?: string }[] = [
@@ -23,7 +30,14 @@ const STATUS_TABS: { key: "all" | LeadStatus; label: string; dot?: string }[] = 
   { key: "lost", label: "Perdidos", dot: "bg-muted-foreground" },
 ];
 
-export function LeadFilters({ count }: { count: number }) {
+export function LeadFilters({
+  count,
+  showSource,
+}: {
+  count: number;
+  /** mostra o filtro de origem (loja com portais conectados) */
+  showSource?: boolean;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -31,6 +45,7 @@ export function LeadFilters({ count }: { count: number }) {
 
   const urlQ = params.get("q") ?? "";
   const urlStatus = params.get("status") ?? "";
+  const urlSource = params.get("source") ?? "";
   const active: "all" | LeadStatus = STATUS_TABS.some(
     (t) => t.key === urlStatus,
   )
@@ -78,11 +93,11 @@ export function LeadFilters({ count }: { count: number }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [q]);
 
-  const hasFilters = urlQ !== "" || active !== "all";
+  const hasFilters = urlQ !== "" || active !== "all" || urlSource !== "";
 
   function clearAll() {
     setQ((s) => ({ ...s, value: "" }));
-    apply({ q: null, status: null });
+    apply({ q: null, status: null, source: null });
   }
 
   return (
@@ -121,6 +136,25 @@ export function LeadFilters({ count }: { count: number }) {
           ))}
         </ToggleGroup>
 
+        <div className="flex items-center gap-2">
+        {showSource && (
+          <Select
+            value={urlSource || "all"}
+            onValueChange={(v) => apply({ source: !v || v === "all" ? null : String(v) })}
+          >
+            <SelectTrigger aria-label="Filtrar por origem" className="w-40">
+              <SelectValue placeholder="Origem" />
+            </SelectTrigger>
+            <SelectContent alignItemWithTrigger={false} align="start">
+              <SelectItem value="all">Todas as origens</SelectItem>
+              {LEAD_SOURCES.map((src) => (
+                <SelectItem key={src} value={src}>
+                  {LEAD_SOURCE_LABELS[src]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <InputGroup className="sm:w-64">
           <InputGroupAddon>
             {isPending ? (
@@ -155,6 +189,7 @@ export function LeadFilters({ count }: { count: number }) {
             </InputGroupAddon>
           )}
         </InputGroup>
+        </div>
       </div>
 
       <div className="flex items-center gap-1 text-sm text-muted-foreground">

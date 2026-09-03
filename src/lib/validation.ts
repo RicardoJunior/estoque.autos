@@ -14,9 +14,12 @@ export function fieldErrorsFromZod(error: z.ZodError): Record<string, string> {
   return out;
 }
 import {
+  BODY_TYPES,
   FUELS,
   HERO_MEDIA_TYPES,
+  LEAD_SOURCES,
   LEAD_TYPES,
+  STEERINGS,
   TEMPLATE_IDS,
   TRANSMISSIONS,
   VEHICLE_CATEGORIES,
@@ -144,11 +147,22 @@ export const tenantCustomizationSchema = z.object({
     .optional(),
 });
 
+/** CNPJ: aceita máscara; guarda só os 14 dígitos. Vazio = remover. */
+export const cnpjSchema = z
+  .string()
+  .transform((v) => v.replace(/\D/g, ""))
+  .pipe(
+    z
+      .string()
+      .refine((d) => d === "" || d.length === 14, "CNPJ deve ter 14 dígitos"),
+  );
+
 export const tenantContactSchema = z.object({
   name: z.string().min(2).max(80).optional(),
   phone: z.string().max(20).nullable().optional(),
   whatsapp: z.string().max(20).nullable().optional(),
   email: z.email().nullable().optional().or(z.literal("")),
+  cnpj: cnpjSchema.optional(),
   address: z
     .object({
       cep: z.string().max(9).optional(),
@@ -206,6 +220,28 @@ export const vehicleSchema = z.object({
   condition_flags: z.array(z.enum(VEHICLE_FLAGS)).max(VEHICLE_FLAGS.length).default([]),
   featured: z.boolean().default(false),
   consigned: z.boolean().default(false),
+  // campos dos portais (opcionais no cadastro; exigidos só ao publicar)
+  body_type: z.enum(BODY_TYPES).nullable().optional(),
+  engine: z.string().trim().max(40).nullable().optional(),
+  steering: z.enum(STEERINGS).nullable().optional(),
+  vin_last6: z
+    .string()
+    .trim()
+    .toUpperCase()
+    .regex(/^[A-Z0-9]{6}$/, "Informe os 6 últimos caracteres do chassi")
+    .nullable()
+    .optional(),
+  video_url: z
+    .string()
+    .trim()
+    .max(300)
+    .regex(
+      /^https:\/\/(www\.)?(youtube\.com\/(watch\?v=|shorts\/)|youtu\.be\/)[\w-]{6,}/i,
+      "Use um link do YouTube",
+    )
+    .nullable()
+    .optional(),
+  zero_km: z.boolean().default(false),
   // snapshot FIPE (preenchido pela cascata; cadastro manual = null)
   fipe_code: z.string().max(20).nullable().optional(),
   fipe_year_id: z.string().max(20).nullable().optional(),
@@ -247,6 +283,28 @@ export const publicLeadSchema = z
 export const leadUpdateSchema = z.object({
   status: z.enum(["new", "in_progress", "won", "lost"]).optional(),
   notes: z.string().max(5000).nullable().optional(),
+});
+
+export const leadSourceSchema = z.enum(LEAD_SOURCES);
+
+// ------------------------------------------------------------
+// Integrações com portais (admin → conexão e opções)
+// ------------------------------------------------------------
+
+/** Opções por conexão (settings jsonb da portal_connections). */
+export const portalSettingsSchema = z.object({
+  /** carros novos já nascem marcados para este portal */
+  auto_publish: z.boolean().default(true),
+  /** "Reservado" remove o anúncio do portal (padrão: mantém) */
+  unpublish_on_reserved: z.boolean().default(false),
+  /** Mercado Livre: silver (pacote) · gold · gold_premium (destaque) */
+  listing_type: z.enum(["silver", "gold", "gold_premium"]).optional(),
+  /** telefone de contato no anúncio quando diferente do da loja (só dígitos) */
+  phone_override: z
+    .string()
+    .transform((v) => v.replace(/\D/g, ""))
+    .pipe(z.string().regex(/^$|^[1-9][1-9]\d{8,9}$/, "Informe DDD + número"))
+    .optional(),
 });
 
 // ------------------------------------------------------------

@@ -12,8 +12,10 @@ function validate(file: File): void {
     throw new ImageError("Envie um arquivo de imagem");
 }
 
+type OutputFormat = "image/webp" | "image/jpeg";
+
 /**
- * Redimensiona + converte para WebP usando o binding Cloudflare Images
+ * Redimensiona + converte usando o binding Cloudflare Images
  * (env.IMAGES). Substitui o `sharp`, que é binário nativo (libvips) e NÃO
  * roda no Cloudflare Worker.
  *
@@ -23,11 +25,12 @@ function validate(file: File): void {
  *   (5.000/mês no grátis) — por isso só processamos no UPLOAD, nunca por
  *   request de página.
  */
-async function toWebp(
+async function transform(
   file: File,
   width: number,
   height: number,
   quality: number,
+  format: OutputFormat,
 ): Promise<Buffer> {
   validate(file);
   const { env } = getCloudflareContext();
@@ -42,15 +45,23 @@ async function toWebp(
   }
   const transformed = await env.IMAGES.input(file.stream())
     .transform({ width, height, fit: "scale-down" })
-    .output({ format: "image/webp", quality });
+    .output({ format, quality });
   const arrayBuffer = await transformed.response().arrayBuffer();
   return Buffer.from(arrayBuffer);
 }
 
 /** Foto de veículo: WebP otimizado, máx 1600x1200, mantém proporção. */
 export const processVehiclePhoto = (file: File): Promise<Buffer> =>
-  toWebp(file, 1600, 1200, 80);
+  transform(file, 1600, 1200, 80, "image/webp");
+
+/**
+ * Variante para os portais: JPEG 1920×1440 q85 (Webmotors recomenda
+ * 1920×1440; o Mercado Livre aceita só JPG/PNG até 1920). Falha aqui
+ * não bloqueia o upload — o adapter usa `jpeg_url ?? url`.
+ */
+export const processVehiclePhotoJpeg = (file: File): Promise<Buffer> =>
+  transform(file, 1920, 1440, 85, "image/jpeg");
 
 /** Logo: WebP com transparência preservada, máx 512x512. */
 export const processLogo = (file: File): Promise<Buffer> =>
-  toWebp(file, 512, 512, 90);
+  transform(file, 512, 512, 90, "image/webp");

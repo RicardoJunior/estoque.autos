@@ -3,7 +3,14 @@ import Image from "next/image";
 import { Inbox } from "lucide-react";
 import { requireTenant } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { LEAD_TYPE_LABELS, type Lead, type LeadStatus } from "@/lib/types";
+import {
+  LEAD_SOURCE_LABELS,
+  LEAD_TYPE_LABELS,
+  type Lead,
+  type LeadSource,
+  type LeadStatus,
+} from "@/lib/types";
+import { leadSourceSchema } from "@/lib/validation";
 import { formatRelativeTime, vehicleTitle } from "@/lib/format";
 import { LeadStatusPill } from "./LeadStatusPill";
 import { LeadFilters } from "./LeadFilters";
@@ -30,10 +37,11 @@ function coverUrl(lead: Lead): string | null {
 export default async function LeadsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string; q?: string }>;
+  searchParams: Promise<{ status?: string; q?: string; source?: string }>;
 }) {
   const { tenant } = await requireTenant();
-  const { status, q } = await searchParams;
+  const { status, q, source: rawSource } = await searchParams;
+  const source = leadSourceSchema.safeParse(rawSource).success ? (rawSource as LeadSource) : "";
   const supabase = await createClient();
 
   let query = supabase
@@ -43,6 +51,7 @@ export default async function LeadsPage({
     .order("created_at", { ascending: false });
 
   if (status) query = query.eq("status", status as LeadStatus);
+  if (source) query = query.eq("source", source);
   if (q) {
     const term = q.replace(/[%,()]/g, " ").trim();
     if (term) query = query.or(`name.ilike.%${term}%,phone.ilike.%${term}%`);
@@ -50,29 +59,36 @@ export default async function LeadsPage({
 
   const { data } = await query;
   const leads = (data ?? []) as Lead[];
+  // filtro de origem aparece quando a loja tem (ou já teve) lead de portal
+  const { count: portalCount } = await supabase
+    .from("leads")
+    .select("id", { count: "exact", head: true })
+    .eq("tenant_id", tenant.id)
+    .neq("source", "site");
+  const showSource = (portalCount ?? 0) > 0 || !!source;
 
   return (
     <div className="mx-auto max-w-5xl space-y-5">
       <PageHeader title="Leads" description="Contatos recebidos pelo seu site." />
 
-      <LeadFilters count={leads.length} />
+      <LeadFilters count={leads.length} showSource={showSource} />
 
       {leads.length === 0 ? (
         <Card className="flex flex-col items-center gap-3 p-12 text-center">
           <Inbox className="size-8 text-muted-foreground" aria-hidden />
           <div>
             <p className="font-medium">
-              {status || q
+              {status || q || source
                 ? "Nenhum lead encontrado com esses filtros."
                 : "Nenhum lead ainda."}
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {status || q
+              {status || q || source
                 ? "Ajuste os filtros ou limpe a busca."
                 : "Compartilhe o link da sua loja para começar a receber contatos."}
             </p>
           </div>
-          {!status && !q && (
+          {!status && !q && !source && (
             <a
               href={`/${tenant.slug}`}
               target="_blank"
@@ -133,7 +149,9 @@ export default async function LeadsPage({
                     </TableCell>
                     <TableCell className="hidden sm:table-cell">
                       <Badge variant="outline" className="text-muted-foreground">
-                        {LEAD_TYPE_LABELS[lead.type]}
+                        {lead.type === "portal"
+                          ? LEAD_SOURCE_LABELS[lead.source] ?? LEAD_TYPE_LABELS.portal
+                          : LEAD_TYPE_LABELS[lead.type]}
                       </Badge>
                     </TableCell>
                     <TableCell className="hidden text-sm text-muted-foreground sm:table-cell">

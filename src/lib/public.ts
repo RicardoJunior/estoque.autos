@@ -34,8 +34,14 @@ export interface Storefront {
  */
 export type PublicVehicle = Omit<
   Vehicle,
-  // consigned é interno (a view vehicles_public não o projeta)
-  "plate" | "sold_at" | "updated_at" | "fipe_code" | "fipe_year_id" | "consigned"
+  // consigned e vin_last6 são internos (a view vehicles_public não os projeta)
+  | "plate"
+  | "sold_at"
+  | "updated_at"
+  | "fipe_code"
+  | "fipe_year_id"
+  | "consigned"
+  | "vin_last6"
 >;
 
 function normalizeColors(raw: unknown): TenantColors {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLeadsSeries,
+  leadsDayTotal,
   buildRevenueSeries,
   buildStockValueSeries,
   dayKey,
@@ -313,5 +314,20 @@ describe("buildLeadsSeries", () => {
     expect(d10).toMatchObject({ whatsapp: 1, proposal: 1, phone: 1 });
     const total = series.reduce((s, p) => s + p.proposal + p.whatsapp + p.phone, 0);
     expect(total).toBe(4);
+  });
+
+  it("conta leads de portal na série própria (sem NaN em tipo desconhecido)", () => {
+    const series = buildLeadsSeries(
+      [
+        { created_at: "2026-08-10T12:00:00Z", type: "portal" },
+        { created_at: "2026-08-10T12:30:00Z", type: "portal" },
+        { created_at: "2026-08-10T13:00:00Z", type: "desconhecido" as never },
+      ],
+      days,
+    );
+    const d10 = series.find((p) => p.day === "2026-08-10")!;
+    expect(d10).toMatchObject({ portal: 2, whatsapp: 0, proposal: 0, phone: 0 });
+    expect(leadsDayTotal(d10)).toBe(2);
+    expect(series.every((p) => Number.isFinite(leadsDayTotal(p)))).toBe(true);
   });
 });

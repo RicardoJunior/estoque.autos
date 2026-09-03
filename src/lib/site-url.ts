@@ -39,3 +39,22 @@ export function storefrontUrl(
   }
   return `${SITE_URL}/${slug}${path}`;
 }
+
+/**
+ * URL canônica SEM request (cron/worker dos portais): domínio próprio
+ * quando verificado, senão a rota da plataforma. É para onde os
+ * anúncios nos portais apontam.
+ */
+export function canonicalStorefrontUrl(
+  tenant: {
+    slug: string;
+    custom_domain?: string | null;
+    custom_domain_status?: "pending" | "active" | null;
+  },
+  path = "",
+): string {
+  if (tenant.custom_domain && tenant.custom_domain_status === "active") {
+    return `https://${tenant.custom_domain}${path}`;
+  }
+  return `${SITE_URL}/${tenant.slug}${path}`;
+}

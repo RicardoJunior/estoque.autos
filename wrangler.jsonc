@@ -2,7 +2,9 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "estoque-autos",
   "account_id": "72a91b2baaad8894362c2fea41b93a6d",
-  "main": ".open-next/worker.js",
+  // Worker custom: reexporta o handler do OpenNext (.open-next/worker.js)
+  // e adiciona o `scheduled` do Cron Trigger (fila dos portais).
+  "main": "worker.ts",
   "compatibility_date": "2025-05-06",
   // nodejs_compat: Buffer/process usados por @supabase/ssr e pelo Worker do
   // OpenNext. global_fetch_strictly_public: recomendado pelo OpenNext.
@@ -23,6 +25,9 @@
     "NEXT_PUBLIC_APP_URL": "https://estoque.autos"
   },
   "observability": { "enabled": true },
+  // Cron Trigger: processa a fila de sincronização com os portais
+  // (POST /api/integrations/worker com INTEGRATIONS_CRON_SECRET).
+  "triggers": { "crons": ["*/2 * * * *"] },
   // Domínio principal (app + vitrines por slug). www redireciona via regra na
   // zona. Domínios próprios por loja chegam via Cloudflare for SaaS (custom
   // hostnames) e caem no Worker pelo fallback da zona.

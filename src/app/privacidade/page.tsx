@@ -78,8 +78,10 @@ export default function PrivacidadePage() {
             <h2>3. Leads: quem é responsável pelos dados dos compradores</h2>
             <p>
               Quando um interessado envia uma proposta ou clica no WhatsApp na
-              vitrine de uma loja, os dados dele (nome, telefone, e-mail,
-              mensagem) são coletados <strong>em nome do lojista</strong>:
+              vitrine de uma loja, ou entra em contato por um anúncio que a
+              loja publicou em um portal integrado (Mercado Livre, OLX e
+              outros), os dados dele (nome, telefone, e-mail, mensagem) são
+              recebidos e tratados <strong>em nome do lojista</strong>:
             </p>
             <ul>
               <li>
@@ -94,6 +96,12 @@ export default function PrivacidadePage() {
                 próprios.
               </li>
             </ul>
+            <p>
+              Leads recebidos de portais chegam pelas integrações oficiais de
+              cada portal (notificações e APIs), que são a origem desses dados;
+              a plataforma guarda a mensagem original do portal por até 90 dias
+              para diagnóstico e depois a descarta.
+            </p>
             <p>
               Se você é comprador e quer exercer seus direitos sobre dados
               enviados a uma loja, contate diretamente a loja. Como operadora, a

@@ -6,7 +6,9 @@ import { vehicleTitle } from "@/lib/format";
 import { VehicleForm } from "../VehicleForm";
 import { PhotoManager } from "./PhotoManager";
 import { VehicleActions } from "./VehicleActions";
+import { PortalListingsPanel } from "./PortalListingsPanel";
 import { updateVehicleAction } from "../actions";
+import { portalsForVehicleForm } from "../portals-data";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { buttonVariants } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -51,6 +53,7 @@ export default async function EditVehiclePage({
 
   if (!data) notFound();
   const vehicle = data as Vehicle;
+  const { portals, listings } = await portalsForVehicleForm(tenant, vehicle);
 
   return (
     <div className="mx-auto max-w-3xl space-y-5">
@@ -84,10 +87,26 @@ export default async function EditVehiclePage({
         consigned={vehicle.consigned}
       />
 
+      {portals.length > 0 && (
+        <PortalListingsPanel
+          vehicleId={vehicle.id}
+          listings={listings.map((l) => ({
+            portal: l.portal,
+            desired: l.desired,
+            status: l.status,
+            external_url: l.external_url,
+            last_error: l.last_error,
+            last_synced_at: l.last_synced_at,
+          }))}
+          portals={portals.map((p) => ({ portal: p.portal, label: p.label }))}
+        />
+      )}
+
       <VehicleForm
         action={updateVehicleAction.bind(null, vehicle.id)}
         initial={vehicle}
         submitLabel="Salvar alterações"
+        portals={portals}
       />
     </div>
   );

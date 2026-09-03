@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { CepInput, PhoneInput } from "@/components/admin/masked-inputs";
+import { CepInput, CnpjInput, PhoneInput } from "@/components/admin/masked-inputs";
 import { updateContactAction, type ContactState } from "./actions";
 import type { Tenant } from "@/lib/types";
 
@@ -90,19 +90,31 @@ export function ContactForm({ tenant }: { tenant: Tenant }) {
               />
             </div>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              name="email"
-              type="email"
-              defaultValue={tenant.email ?? ""}
-            />
-            {state.fieldErrors?.email && (
-              <p className="text-xs text-destructive">
-                {state.fieldErrors.email}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                defaultValue={tenant.email ?? ""}
+              />
+              {state.fieldErrors?.email && (
+                <p className="text-xs text-destructive">
+                  {state.fieldErrors.email}
+                </p>
+              )}
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="cnpj">CNPJ</Label>
+              <CnpjInput id="cnpj" name="cnpj" defaultValue={tenant.cnpj} />
+              <p className="text-xs text-muted-foreground">
+                Não aparece no site. Pedido pelos portais de anúncios.
               </p>
-            )}
+              {state.fieldErrors?.cnpj && (
+                <p className="text-xs text-destructive">{state.fieldErrors.cnpj}</p>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>

@@ -138,6 +138,8 @@ export type LeadsDayPoint = {
   proposal: number;
   whatsapp: number;
   phone: number;
+  /** leads vindos dos portais (Mercado Livre, OLX…) */
+  portal: number;
 };
 
 export type OldestVehicle = {
@@ -297,13 +299,21 @@ export function buildLeadsSeries(
   days: string[],
 ): LeadsDayPoint[] {
   const byDay = new Map<string, LeadsDayPoint>(
-    days.map((d) => [d, { day: d, proposal: 0, whatsapp: 0, phone: 0 }]),
+    days.map((d) => [
+      d,
+      { day: d, proposal: 0, whatsapp: 0, phone: 0, portal: 0 },
+    ]),
   );
   for (const r of rows) {
     const bucket = byDay.get(dayKey(r.created_at));
-    if (bucket) bucket[r.type] += 1;
+    // tipo desconhecido (coluna nova antes do deploy) não vira NaN
+    if (bucket && r.type in bucket) bucket[r.type] += 1;
   }
   return days.map((d) => byDay.get(d)!);
+}
+
+export function leadsDayTotal(p: LeadsDayPoint): number {
+  return p.proposal + p.whatsapp + p.phone + p.portal;
 }
 
 // ------------------------------------------------------------
@@ -460,10 +470,7 @@ export async function getDashboardMetrics(
       total: inStock.length,
     },
     leads,
-    leadsTotal30d: leads.reduce(
-      (s, p) => s + p.proposal + p.whatsapp + p.phone,
-      0,
-    ),
+    leadsTotal30d: leads.reduce((s, p) => s + leadsDayTotal(p), 0),
     leadsPrev30d: leadRows.filter((r) => prevSet.has(dayKey(r.created_at)))
       .length,
     oldest,

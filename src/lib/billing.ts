@@ -33,12 +33,22 @@ export const PLANS: Record<PlanId, PlanInfo> = {
 export interface PlanLimits {
   /** máximo de veículos com status available/reserved */
   activeVehicles: number;
+  /** publicar o estoque nos portais (Mercado Livre, OLX…) */
+  portals: boolean;
 }
 
 export const PLAN_LIMITS: Record<PlanId, PlanLimits> = {
-  basico: { activeVehicles: 20 },
-  pro: { activeVehicles: 60 },
+  basico: { activeVehicles: 20, portals: false },
+  pro: { activeVehicles: 60, portals: true },
 };
+
+/** Integração com portais é recurso do Pro; sem plano sincronizado = Básico. */
+export function portalsAllowed(plan: PlanId | null | undefined): boolean {
+  return PLAN_LIMITS[plan ?? "basico"].portals;
+}
+
+export const PORTALS_PLAN_MESSAGE =
+  "Publicar nos portais é um recurso do plano Pro. Faça upgrade em Configurações → Assinatura.";
 
 /** Limite de carros ativos do plano; tenant sem plano sincronizado cai no Básico. */
 export function activeVehicleLimit(plan: PlanId | null | undefined): number {

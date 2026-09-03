@@ -15,6 +15,8 @@ const eslintConfig = defineConfig([
     // Artefatos gerados (OpenNext/Cloudflare) — não são código-fonte:
     ".open-next/**",
     "cloudflare-env.d.ts",
+    // Worker custom (importa o artefato gerado pelo OpenNext):
+    "worker.ts",
     // Código v1 mantido só como referência (não faz parte do app):
     "legacy/**",
     // Projeto Astro independente (blog) — tem lint próprio:

@@ -41,6 +41,19 @@ if [ -z "${STRIPE_WEBHOOK_SECRET:-}" ]; then
   fi
 fi
 
+# cofre de credenciais dos portais + segredo do cron: gera e persiste no
+# .env.local na primeira vez (perder a KMS key invalida todas as conexões)
+if [ -z "${INTEGRATIONS_KMS_KEY:-}" ]; then
+  INTEGRATIONS_KMS_KEY="$(openssl rand -base64 32)"
+  printf '\nINTEGRATIONS_KMS_KEY="%s"\n' "$INTEGRATIONS_KMS_KEY" >> .env.local
+  echo "  ✓ INTEGRATIONS_KMS_KEY gerada e salva no .env.local"
+fi
+if [ -z "${INTEGRATIONS_CRON_SECRET:-}" ]; then
+  INTEGRATIONS_CRON_SECRET="$(openssl rand -base64 32 | tr -d '=/+')"
+  printf 'INTEGRATIONS_CRON_SECRET="%s"\n' "$INTEGRATIONS_CRON_SECRET" >> .env.local
+  echo "  ✓ INTEGRATIONS_CRON_SECRET gerado e salvo no .env.local"
+fi
+
 # chave estável de Server Actions (gera uma se não existir no env)
 if [ -z "${NEXT_SERVER_ACTIONS_ENCRYPTION_KEY:-}" ]; then
   NEXT_SERVER_ACTIONS_ENCRYPTION_KEY="$(openssl rand -base64 32)"
@@ -78,6 +91,17 @@ SECRETS=(
   # SEM filtro de IP (o Worker chama a API da CF em runtime)
   CLOUDFLARE_API_TOKEN
   CLOUDFLARE_ZONE_ID
+  # integração com portais (docs/integracoes-portais.md §5.10):
+  # chave do cofre de credenciais (32 bytes base64), segredo do cron e
+  # credenciais dos apps registrados em cada portal
+  INTEGRATIONS_KMS_KEY
+  INTEGRATIONS_CRON_SECRET
+  ML_CLIENT_ID
+  ML_CLIENT_SECRET
+  OLX_CLIENT_ID
+  OLX_CLIENT_SECRET
+  WEBMOTORS_CLIENT_ID
+  WEBMOTORS_CLIENT_SECRET
 )
 
 echo "── secrets no Worker ──"

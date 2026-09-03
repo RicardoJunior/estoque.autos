@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import type { LeadsDayPoint } from "@/lib/metrics";
+import { leadsDayTotal, type LeadsDayPoint } from "@/lib/metrics";
 import { LEAD_TYPE_LABELS } from "@/lib/types";
 import {
   barPath,
@@ -24,11 +24,13 @@ import {
 const H = 200;
 const M = { top: 12, right: 4, bottom: 20 };
 
-/** Ordem da pilha (base → topo) = ordem dos slots validados da paleta. */
+/** Ordem da pilha (base → topo) = ordem dos slots validados da paleta.
+ *  'portal' usa o 4º slot (violeta) — os três primeiros não mudam. */
 const STACK = [
   { key: "proposal", color: SERIES.amber },
   { key: "phone", color: SERIES.blue },
   { key: "whatsapp", color: SERIES.green },
+  { key: "portal", color: SERIES.violet },
 ] as const;
 
 export function LeadsChart({
@@ -136,9 +138,7 @@ export function LeadsChart({
   );
 }
 
-function dayTotal(p: LeadsDayPoint): number {
-  return p.proposal + p.whatsapp + p.phone;
-}
+const dayTotal = leadsDayTotal;
 
 function geometry(data: LeadsDayPoint[], width: number) {
   const max = Math.max(...data.map(dayTotal));

@@ -1,6 +1,26 @@
 # Integração com portais de anúncios — plano e especificação técnica
 
-**Data:** 3 de setembro de 2026 · **Status:** proposta (nada implementado) · **Escopo:** publicar o estoque das lojas nos portais e trazer os leads de volta para o painel.
+**Data:** 3 de setembro de 2026 · **Status:** fundação + Mercado Livre + OLX + feeds implementados na branch `feat/integracoes-portais` (ver §0) · **Escopo:** publicar o estoque das lojas nos portais e trazer os leads de volta para o painel.
+
+---
+
+## 0. Estado da implementação (3/09/2026)
+
+Implementado no código (build, typecheck, lint e testes verdes):
+
+- **Fundação (Fase 0):** migration `20260903000000_portais.sql` (tabelas `portal_connections`, `portal_listings`, `portal_sync_jobs`, `portal_events`, `portal_taxonomy(_map)`; RPCs `enqueue_portal_job`, `claim_portal_jobs` com `skip locked`, `release_stale_portal_jobs`, `portal_taxonomy_search` (pg_trgm), `portal_connection_status`, `portal_retention_sweep`; campos novos em `vehicles`/`tenants`/`leads`; view `vehicles_public` recriada). Cofre AES-256-GCM (`src/lib/integrations/crypto.ts`), fila + worker (`queue.ts`, `worker.ts`), Worker custom `worker.ts` na raiz com Cron Trigger `*/2 * * * *`, rota `/api/integrations/worker`, disparo imediato por `after()` (`kick.ts`), contrato `PortalAdapter` (`types.ts`), canônico (`canonical.ts`), taxonomia em camadas (`taxonomy.ts`), fotos JPEG 1920×1440 no upload + job `photos_jpeg` de backfill (o binding Images só existe no Worker; o script `scripts/photos-backfill-jpeg.ts` apenas enfileira). Lead com `type='portal'`, `source`, `channel`, `external_id`, dedupe e notificação por e-mail; série `portal` no gráfico.
+- **Mercado Livre (Fase 1):** OAuth + PKCE com `state` HMAC e cookie, refresh de uso único agendado 30 min antes do vencimento, `POST /items` classificado + descrição, `PUT` de atualização, fechamento, renovação (republica se `closed`), catálogo leve de BRAND/atributos (`sync_taxonomy`), webhook `vis_leads`/`questions` (busca o recurso com o token da loja), pull de segurança `fetch_leads` de hora em hora.
+- **OLX (Fase 2):** OAuth, `PUT /autoupload/import` em lote por loja fatiado em 1 MB, `delete` por anúncio, catálogo `car_info` (marcas no Worker; modelos/versões no GitHub Actions `portal-taxonomy.yml`), webhook de leads com segredo por conexão na URL e registro em `/autoservice/v1/lead`.
+- **Feeds (Fase 4, parcial):** `/api/feeds/{token}/meta-vehicles.csv` (Meta AIA) e `/api/feeds/{token}/usadosbr.xml`, com token por conexão e gate de assinatura.
+- **Admin:** `/admin/integracoes` (cards por portal, estado `needs_plan`/erro com instrução), `/admin/integracoes/[portal]` (conectar/reautorizar/desconectar, opções, pendências de mapeamento com busca no catálogo, anúncios, atividade recente), seção "Publicar em" + campos novos no formulário do veículo com aviso do que falta, painel "Anúncios nos portais" com Reenviar, filtro/badge de origem nos leads, CNPJ em Configurações. Gate no plano Pro; cancelamento/downgrade remove anúncios e desconecta (`billing-sync.ts`).
+- **Conteúdo:** ajuda `integracoes-com-portais.mdx`, ajuste em `como-funcionam-os-leads.mdx`, Política de Privacidade §3, Termos §3, blog sem iCarros.
+
+Pendente / a confirmar em homologação (não dá para validar sem credenciais reais):
+
+- Registrar o app no DevCenter do ML e o integrador na OLX; configurar os secrets `INTEGRATIONS_KMS_KEY`, `INTEGRATIONS_CRON_SECRET`, `ML_*`, `OLX_*` (o `deploy-prod.sh` gera os dois primeiros). Cadastrar a URL de notificações do ML (`/api/integrations/mercadolivre/webhook`).
+- Detalhes de API inferidos da documentação pública e marcados no código como "a confirmar": nomes exatos de `value_name` do ML (carroceria, cor), ids `HAS_*` aceitos (o adapter filtra pelo catálogo quando sincronizado), `location.city` por nome, formato do lead em `/vis/leads/{id}` e de `/vis/users/{id}/leads/buyers`; na OLX, numeração de `carcolor`, nome do campo da URL em `/autoservice/v1/lead` (envia `url` e `webhook_url`), formato de resposta do `car_info`, expiração do token.
+- Webmotors e Chaves na Mão: registrados no registry como "em breve" (sem adapter). Layout XML da Usadosbr a confirmar com o suporte.
+- Aplicar a migration no Supabase de produção (`supabase db push`) antes do deploy; rodar `scripts/photos-backfill-jpeg.ts` depois.
 
 Este documento tem três partes: (1) o que cada portal oferece hoje e a dificuldade real de integrar, com fontes; (2) o que a plataforma tem hoje; (3) a arquitetura e as mudanças técnicas necessárias, com roadmap e estimativas.
 

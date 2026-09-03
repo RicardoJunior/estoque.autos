@@ -1,7 +1,8 @@
 import type Stripe from "stripe";
 import { getStripe } from "./stripe";
 import { createAdminClient } from "./supabase/admin";
-import { isPlanId } from "./billing";
+import { isPlanId, portalsAllowed } from "./billing";
+import { unpublishAllForTenant } from "./integrations/listings";
 import type { PlanId } from "./types";
 
 // ============================================================
@@ -98,7 +99,26 @@ export async function syncStripeSubscription(
     .eq("stripe_subscription_id", sub.id)
     .maybeSingle();
   if (row?.tenant_id) {
+    const { data: before } = await admin
+      .from("tenants")
+      .select("plan")
+      .eq("id", row.tenant_id)
+      .maybeSingle();
     await admin.from("tenants").update({ plan }).eq("id", row.tenant_id);
+
+    // Portais: assinatura encerrada (canceled/unpaid/incomplete_expired)
+    // ou downgrade para plano sem portais → tira os anúncios do ar e
+    // desconecta (senão ficam anúncios órfãos apontando para uma VDP 404).
+    // past_due mantém — mesma tolerância da vitrine.
+    const lost = ["canceled", "unpaid", "incomplete_expired"].includes(sub.status);
+    const downgraded = !portalsAllowed(plan) && before?.plan != null && portalsAllowed(before.plan as PlanId);
+    if (lost || downgraded) {
+      try {
+        await unpublishAllForTenant(admin, row.tenant_id, true);
+      } catch (err) {
+        console.error("billing-sync: unpublishAllForTenant falhou", err);
+      }
+    }
   }
 }
 

@@ -52,6 +52,7 @@ export const AJUDA_SLUGS = [
   "como-funcionam-os-leads",
   "dados-de-contato-e-whatsapp",
   "integracoes-de-marketing",
+  "integracoes-com-portais",
   "convidar-e-gerenciar-equipe",
   "apontar-dominio-proprio-cname",
   "cobranca-e-troca-de-plano",

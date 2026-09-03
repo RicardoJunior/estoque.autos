@@ -1,19 +1,27 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireStaff } from "@/lib/auth";
-import { activeVehicleLimit, activeVehicleLimitMessage } from "@/lib/billing";
+import { activeVehicleLimit, activeVehicleLimitMessage, portalsAllowed } from "@/lib/billing";
 import { createClient } from "@/lib/supabase/server";
-import { ImageError, processVehiclePhoto } from "@/lib/images";
-import { uploadPublic, removePublic, pathFromPublicUrl } from "@/lib/storage";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { ImageError } from "@/lib/images";
+import { storeVehiclePhoto } from "@/lib/vehicle-photos";
+import { removePublic, pathFromPublicUrl } from "@/lib/storage";
 import {
   fieldErrorsFromZod,
   vehicleSchema,
   vehicleStatusSchema,
 } from "@/lib/validation";
-import type { VehiclePhoto, VehicleStatus } from "@/lib/types";
+import { PORTAL_IDS, type PortalId, type VehiclePhoto, type VehicleStatus } from "@/lib/types";
+import {
+  applyDesiredPortals,
+  enqueueForStatus,
+  enqueueUnpublishBeforeDelete,
+  enqueueVehicleUpdate,
+} from "@/lib/integrations/listings";
+import { kickWorker } from "@/lib/integrations/kick";
 
 export interface VehicleFormState {
   error?: string;
@@ -71,7 +79,24 @@ function parseVehicleForm(formData: FormData) {
     fipe_year_id: formData.get("fipe_year_id") || null,
     fipe_price: formData.get("fipe_price") || null,
     fipe_reference: formData.get("fipe_reference") || null,
+    // campos dos portais
+    body_type: formData.get("body_type") || null,
+    engine: formData.get("engine") || null,
+    steering: formData.get("steering") || null,
+    vin_last6: formData.get("vin_last6") || null,
+    video_url: formData.get("video_url") || null,
+    zero_km: formData.get("zero_km") === "on",
   });
+}
+
+/** Portais marcados em "Publicar em" (só ids conhecidos). */
+function parsePortals(formData: FormData): PortalId[] | null {
+  // sem o campo-sentinela o form não tinha a seção (plano sem portais)
+  if (!formData.has("portals_present")) return null;
+  return formData
+    .getAll("portals")
+    .map(String)
+    .filter((p): p is PortalId => (PORTAL_IDS as readonly string[]).includes(p));
 }
 
 /** Fotos enviadas durante o cadastro (PhotoStage) — valida que os
@@ -80,6 +105,7 @@ function parseStagedPhotos(formData: FormData, tenantId: string): VehiclePhoto[]
   try {
     const raw = JSON.parse(String(formData.get("staged_photos") || "[]"));
     if (!Array.isArray(raw)) return [];
+    const prefix = `${tenantId}/novo/`;
     return raw
       .filter(
         (p): p is VehiclePhoto =>
@@ -87,11 +113,46 @@ function parseStagedPhotos(formData: FormData, tenantId: string): VehiclePhoto[]
           typeof p.id === "string" &&
           typeof p.url === "string" &&
           typeof p.path === "string" &&
-          p.path.startsWith(`${tenantId}/novo/`),
+          p.path.startsWith(prefix) &&
+          (p.jpeg_path === undefined ||
+            (typeof p.jpeg_path === "string" && p.jpeg_path.startsWith(prefix))),
       )
+      .map((p) => ({
+        id: p.id,
+        path: p.path,
+        url: p.url,
+        ...(p.jpeg_path && p.jpeg_url ? { jpeg_path: p.jpeg_path, jpeg_url: p.jpeg_url } : {}),
+      }))
       .slice(0, MAX_PHOTOS);
   } catch {
     return [];
+  }
+}
+
+/**
+ * Sincroniza a escolha de portais e enfileira (nunca chama portal
+ * dentro da action). Erros aqui não desfazem o salvamento do carro.
+ */
+async function syncPortals(
+  tenantId: string,
+  plan: string | null,
+  vehicleId: string,
+  portals: PortalId[] | null,
+  opts: { vehicleActive: boolean; changed: boolean },
+): Promise<void> {
+  if (!portalsAllowed(plan as "basico" | "pro" | null)) return;
+  try {
+    const admin = createAdminClient();
+    if (portals) {
+      await applyDesiredPortals(admin, tenantId, vehicleId, portals, {
+        vehicleActive: opts.vehicleActive,
+      });
+    } else if (opts.changed && opts.vehicleActive) {
+      await enqueueVehicleUpdate(admin, tenantId, vehicleId);
+    }
+    kickWorker(tenantId);
+  } catch (err) {
+    console.error("syncPortals:", err);
   }
 }
 
@@ -125,6 +186,11 @@ export async function createVehicleAction(
     return { error: "Não foi possível salvar o veículo." };
   }
 
+  await syncPortals(tenant.id, tenant.plan, data.id, parsePortals(formData), {
+    vehicleActive: true,
+    changed: true,
+  });
+
   revalidatePath("/admin/veiculos");
   redirect(`/admin/veiculos/${data.id}${photos.length ? "" : "?novo=1"}`);
 }
@@ -143,15 +209,22 @@ export async function updateVehicleAction(
   const supabase = await createClient();
   // .eq(tenant_id) SEMPRE: a RLS permite todas as lojas do usuário
   // (multi-loja) — o escopo da loja ativa é responsabilidade daqui
-  const { error } = await supabase
+  const { data: updated, error } = await supabase
     .from("vehicles")
     .update(parsed.data)
     .eq("id", vehicleId)
-    .eq("tenant_id", tenant.id);
+    .eq("tenant_id", tenant.id)
+    .select("status")
+    .maybeSingle();
 
   if (error) {
     return { error: "Não foi possível salvar as alterações." };
   }
+
+  await syncPortals(tenant.id, tenant.plan, vehicleId, parsePortals(formData), {
+    vehicleActive: ACTIVE_STATUSES.includes((updated?.status as VehicleStatus) ?? "archived"),
+    changed: true,
+  });
 
   revalidatePath("/admin/veiculos");
   revalidatePath(`/admin/veiculos/${vehicleId}`);
@@ -194,12 +267,23 @@ export async function setVehicleStatusAction(
     return { error: "Não foi possível alterar o status. Tente novamente." };
   }
 
+  // portais: vendido/desativado saem do ar; disponível volta
+  if (portalsAllowed(tenant.plan)) {
+    try {
+      await enqueueForStatus(createAdminClient(), tenant.id, vehicleId, parsed.data.status);
+      kickWorker(tenant.id);
+    } catch (err) {
+      console.error("enqueueForStatus:", err);
+    }
+  }
+
   revalidatePath("/admin/veiculos");
   revalidatePath(`/admin/veiculos/${vehicleId}`);
   return {};
 }
 
-/** Marca/desmarca o veículo como consignado (controle interno). */
+/** Marca/desmarca o veículo como consignado (controle interno — não
+ *  sincroniza com portais). */
 export async function setVehicleConsignedAction(
   vehicleId: string,
   consigned: boolean,
@@ -230,10 +314,20 @@ export async function deleteVehicleAction(vehicleId: string): Promise<void> {
     .single();
   if (!vehicle) redirect("/admin/veiculos");
 
+  // anúncios nos portais: o job de remoção leva o external_id no payload
+  // e sobrevive ao cascade da linha do veículo
+  if (portalsAllowed(tenant.plan)) {
+    try {
+      await enqueueUnpublishBeforeDelete(createAdminClient(), tenant.id, vehicleId);
+    } catch (err) {
+      console.error("enqueueUnpublishBeforeDelete:", err);
+    }
+  }
+
   if (vehicle?.photos?.length) {
     const paths = (vehicle.photos as VehiclePhoto[])
-      .map((p) => p.path)
-      .filter(Boolean);
+      .flatMap((p) => [p.path, p.jpeg_path])
+      .filter((p): p is string => !!p);
     await removePublic(supabase, "vehicle-photos", paths);
   }
 
@@ -242,11 +336,45 @@ export async function deleteVehicleAction(vehicleId: string): Promise<void> {
     .delete()
     .eq("id", vehicleId)
     .eq("tenant_id", tenant.id);
-  // garante que sobras de storage do tenant não fiquem órfãs é tratado acima
-  void tenant;
+
+  if (portalsAllowed(tenant.plan)) kickWorker(tenant.id);
 
   revalidatePath("/admin/veiculos");
   redirect("/admin/veiculos");
+}
+
+/** Reenvia o veículo para os portais marcados (botão "Reenviar"). */
+export async function resyncVehiclePortalsAction(
+  vehicleId: string,
+): Promise<{ error?: string }> {
+  const { tenant } = await requireStaff();
+  if (!portalsAllowed(tenant.plan)) return { error: "Recurso do plano Pro." };
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("vehicles")
+    .select("status")
+    .eq("id", vehicleId)
+    .eq("tenant_id", tenant.id)
+    .maybeSingle();
+  if (!data) return { error: "Veículo não encontrado nesta loja." };
+  try {
+    const admin = createAdminClient();
+    // limpa erros antigos para o lojista ver o novo resultado
+    await admin
+      .from("portal_listings")
+      .update({ last_error: null, status: "queued" })
+      .eq("tenant_id", tenant.id)
+      .eq("vehicle_id", vehicleId)
+      .eq("desired", true)
+      .in("status", ["error", "rejected"]);
+    await enqueueForStatus(admin, tenant.id, vehicleId, data.status as VehicleStatus);
+    kickWorker(tenant.id);
+  } catch (err) {
+    console.error("resyncVehiclePortalsAction:", err);
+    return { error: "Não foi possível reenviar. Tente novamente." };
+  }
+  revalidatePath(`/admin/veiculos/${vehicleId}`);
+  return {};
 }
 
 // ------------------------------------------------------------
@@ -281,6 +409,20 @@ export interface UploadPhotosResult {
   skipped?: SkippedPhoto[];
 }
 
+function photoPaths(p: VehiclePhoto): string[] {
+  return [p.path ?? pathFromPublicUrl(p.url, "vehicle-photos") ?? "", p.jpeg_path ?? ""].filter(Boolean);
+}
+
+async function afterPhotosChanged(tenantId: string, plan: string | null, vehicleId: string) {
+  if (!portalsAllowed(plan as "basico" | "pro" | null)) return;
+  try {
+    await enqueueVehicleUpdate(createAdminClient(), tenantId, vehicleId);
+    kickWorker(tenantId);
+  } catch (err) {
+    console.error("afterPhotosChanged:", err);
+  }
+}
+
 export async function uploadPhotosAction(
   vehicleId: string,
   formData: FormData,
@@ -310,11 +452,7 @@ export async function uploadPhotosAction(
 
   for (const file of files.slice(0, room)) {
     try {
-      const buf = await processVehiclePhoto(file);
-      const id = randomUUID();
-      const path = `${tenant.id}/${vehicleId}/${id}.webp`;
-      const url = await uploadPublic(supabase, "vehicle-photos", path, buf);
-      added.push({ id, path, url });
+      added.push(await storeVehiclePhoto(supabase, file, `${tenant.id}/${vehicleId}`));
     } catch (err) {
       skipped.push({
         name: file.name,
@@ -341,11 +479,7 @@ export async function uploadPhotosAction(
 
   if (updateError) {
     // não finge sucesso nem deixa arquivo órfão no storage
-    await removePublic(
-      supabase,
-      "vehicle-photos",
-      added.map((p) => p.path),
-    );
+    await removePublic(supabase, "vehicle-photos", added.flatMap(photoPaths));
     return {
       error: "Não foi possível salvar as fotos. Tente novamente.",
       photos: existing,
@@ -353,6 +487,7 @@ export async function uploadPhotosAction(
     };
   }
 
+  await afterPhotosChanged(tenant.id, tenant.plan, vehicleId);
   revalidatePath(`/admin/veiculos/${vehicleId}`);
   return {
     added: added.length,
@@ -372,9 +507,7 @@ export async function removePhotoAction(
   const target = photos.find((p) => p.id === photoId);
   if (!target) return { photos };
 
-  await removePublic(supabase, "vehicle-photos", [
-    target.path ?? pathFromPublicUrl(target.url, "vehicle-photos") ?? "",
-  ]);
+  await removePublic(supabase, "vehicle-photos", photoPaths(target));
 
   const next = photos.filter((p) => p.id !== photoId);
   const { error } = await supabase
@@ -385,6 +518,7 @@ export async function removePhotoAction(
   if (error) {
     return { photos, error: "Não foi possível remover a foto. Tente de novo." };
   }
+  await afterPhotosChanged(tenant.id, tenant.plan, vehicleId);
   revalidatePath(`/admin/veiculos/${vehicleId}`);
   return { photos: next };
 }
@@ -416,6 +550,7 @@ export async function reorderPhotosAction(
   if (error) {
     return { photos, error: "Não foi possível reordenar as fotos. Tente de novo." };
   }
+  await afterPhotosChanged(tenant.id, tenant.plan, vehicleId);
   revalidatePath(`/admin/veiculos/${vehicleId}`);
   return { photos: next };
 }

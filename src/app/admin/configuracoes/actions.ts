@@ -41,6 +41,7 @@ export async function updateContactAction(
     phone: formData.get("phone") || null,
     whatsapp: formData.get("whatsapp") || null,
     email: formData.get("email") || "",
+    cnpj: String(formData.get("cnpj") ?? ""),
     address: {
       cep: formData.get("cep") || undefined,
       street: formData.get("street") || undefined,
@@ -64,6 +65,7 @@ export async function updateContactAction(
       phone: parsed.data.phone || null,
       whatsapp: parsed.data.whatsapp || null,
       email: parsed.data.email || null,
+      cnpj: parsed.data.cnpj || null,
       address: parsed.data.address ?? null,
     })
     .eq("id", tenant.id);

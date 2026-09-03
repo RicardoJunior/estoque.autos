@@ -1,11 +1,11 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
 import { requireStaff } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { ImageError, processVehiclePhoto } from "@/lib/images";
-import { uploadPublic, removePublic } from "@/lib/storage";
+import { ImageError } from "@/lib/images";
+import { removePublic } from "@/lib/storage";
 import type { VehiclePhoto } from "@/lib/types";
+import { storeVehiclePhoto } from "@/lib/vehicle-photos";
 import type { SkippedPhoto } from "./actions";
 
 // ============================================================
@@ -36,11 +36,8 @@ export async function stagePhotosAction(
 
   for (const file of files) {
     try {
-      const buf = await processVehiclePhoto(file);
-      const id = randomUUID();
-      const path = `${tenant.id}/novo/${id}.webp`;
-      const url = await uploadPublic(supabase, "vehicle-photos", path, buf);
-      staged.push({ id, path, url });
+      // WebP (vitrine) + JPEG (portais) no mesmo prefixo de staging
+      staged.push(await storeVehiclePhoto(supabase, file, `${tenant.id}/novo`));
     } catch (err) {
       skipped.push({
         name: file.name,
@@ -62,8 +59,9 @@ export async function stagePhotosAction(
 
 export async function unstagePhotoAction(path: string): Promise<void> {
   const { tenant } = await requireStaff();
-  // só apaga arquivo de staging da PRÓPRIA loja
+  // só apaga arquivo de staging da PRÓPRIA loja (as duas variantes)
   if (!path.startsWith(`${tenant.id}/novo/`)) return;
   const supabase = await createClient();
-  await removePublic(supabase, "vehicle-photos", [path]);
+  const jpeg = path.replace(/\.webp$/i, ".jpg");
+  await removePublic(supabase, "vehicle-photos", jpeg !== path ? [path, jpeg] : [path]);
 }

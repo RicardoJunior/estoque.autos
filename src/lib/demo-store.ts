@@ -155,9 +155,25 @@ const vehicle = (
     | "doors"
     | "color"
     | "condition_flags"
+    | "body_type"
+    | "engine"
+    | "steering"
+    | "video_url"
+    | "zero_km"
   > &
     Partial<
-      Pick<PublicVehicle, "optionals" | "doors" | "color" | "condition_flags">
+      Pick<
+        PublicVehicle,
+        | "optionals"
+        | "doors"
+        | "color"
+        | "condition_flags"
+        | "body_type"
+        | "engine"
+        | "steering"
+        | "video_url"
+        | "zero_km"
+      >
     > & {
       photoName: string;
       createdDaysAgo: number;
@@ -170,6 +186,11 @@ const vehicle = (
     color: null,
     optionals: [],
     condition_flags: [],
+    body_type: null,
+    engine: null,
+    steering: null,
+    video_url: null,
+    zero_km: false,
     photos: [photo(photoName, 1), photo(photoName, 2)],
     // datas fixas (build determinístico) espaçadas para o sort "recentes"
     created_at: new Date(

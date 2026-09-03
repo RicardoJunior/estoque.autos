@@ -63,6 +63,39 @@ export function vehicleTitle(v: {
     .join(" ");
 }
 
+/**
+ * Título para os portais, limitado a `max` caracteres (ML 60, OLX 90),
+ * cortando por palavra: "Honda Civic Touring 1.5 Turbo 2023". Marca +
+ * modelo + ano têm prioridade sobre a versão quando não cabe tudo.
+ */
+export function portalTitle(
+  v: {
+    brand: string;
+    model: string;
+    version?: string | null;
+    year_model?: number | null;
+  },
+  max: number,
+): string {
+  const clean = (s: string) => s.replace(/\s+/g, " ").trim();
+  const base = clean([v.brand, v.model].join(" "));
+  const year = v.year_model ? String(v.year_model) : "";
+  const version = clean(v.version ?? "");
+
+  const full = [base, version, year].filter(Boolean).join(" ");
+  if (full.length <= max) return full;
+
+  // corta a versão por palavra até caber; ano sempre no fim
+  const words = version.split(" ");
+  while (words.length > 0) {
+    words.pop();
+    const candidate = [base, words.join(" "), year].filter(Boolean).join(" ");
+    if (candidate.length <= max) return candidate;
+  }
+  const short = [base, year].filter(Boolean).join(" ");
+  return short.length <= max ? short : short.slice(0, max).trimEnd();
+}
+
 export function slugify(input: string): string {
   return input
     .normalize("NFD")

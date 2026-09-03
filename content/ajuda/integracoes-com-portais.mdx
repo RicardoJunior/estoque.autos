@@ -1,0 +1,148 @@
+export const meta = {
+  title: "Integrações com portais: Mercado Livre, OLX e feeds",
+  description:
+    "Como publicar seu estoque automaticamente no Mercado Livre e na OLX, gerar os feeds da Meta e da Usadosbr e receber os leads dos portais no painel.",
+  date: "2026-09-03",
+  category: "Configurações da loja",
+  slug: "integracoes-com-portais",
+  faq: [
+    {
+      q: "Preciso pagar algo a mais para publicar nos portais?",
+      a: "Na estoque.autos, a integração faz parte do plano Pro. Cada portal cobra o próprio plano ou pacote de anúncios diretamente da loja: o Mercado Livre exige um pacote de veículos contratado com o time comercial deles e a OLX exige um plano Empresa.",
+    },
+    {
+      q: "Editei o carro aqui. Preciso editar no portal também?",
+      a: "Não. A estoque.autos é a fonte da verdade: preço, fotos e ficha são reenviados sozinhos em alguns minutos. Alterações feitas direto no portal são sobrescritas na próxima sincronização.",
+    },
+    {
+      q: "Marquei como vendido e o anúncio continua no portal?",
+      a: "A remoção acontece em segundo plano, normalmente em até 2 minutos. Se demorar, abra a página do carro e clique em Reenviar; se o portal estiver com erro, o motivo aparece em Integrações.",
+    },
+  ],
+};
+
+# Integrações com portais: Mercado Livre, OLX e feeds
+
+No plano Pro, cada carro do seu estoque pode ir **automaticamente** para os
+portais de anúncios, e os contatos que chegam por lá aparecem na sua lista de
+**Leads**, junto com os do seu site. Você cadastra uma vez, aqui, e a
+plataforma cuida do resto.
+
+## Como funciona
+
+1. Você conecta o portal em **Integrações** (uma vez por loja).
+2. Todo carro **Disponível** marcado em “Publicar em” é enviado ao portal.
+3. Editou preço, fotos ou ficha? A alteração é reenviada em alguns minutos.
+4. Marcou como **Vendido** ou **Desativado**? O anúncio sai do portal.
+5. Alguém entra em contato pelo portal? O lead entra no painel com a origem
+   (ex.: “Mercado Livre · WhatsApp”) e você recebe o e-mail de aviso.
+
+A sincronização roda em segundo plano. Na página do carro, o painel
+**Anúncios nos portais** mostra o status em cada um (na fila, no ar, com
+erro), o link do anúncio e um botão **Reenviar**.
+
+## Antes de conectar: o que cada portal exige
+
+Os grandes portais só liberam a integração para lojas que já contrataram um
+plano ou pacote **diretamente com eles**. A plataforma não consegue contratar
+por você.
+
+- **Mercado Livre** — pacote de publicação de veículos, negociado com o time
+  comercial do Mercado Livre. Sem o pacote, o portal recusa a publicação e a
+  conexão fica como “Aguardando plano no portal”.
+- **OLX** — plano **Empresa** (Essencial, Plus ou Premium Empresa),
+  contratado pelo 0800 022 9800. Planos de autônomo não têm acesso à
+  integração.
+- **Meta (Facebook/Instagram)** — feed para anúncios de inventário
+  automotivo. É um produto pago do Gerenciador de Anúncios; você cadastra a
+  URL do feed no Gerenciador de Comércio.
+- **Usadosbr** — feed XML. Você envia a URL do feed e o CNPJ para
+  suporte@usadosbr.com e eles configuram a leitura.
+- **Webmotors** — em homologação. Exige Cockpit com Plano Controle ou
+  Performance.
+
+## Conectando o Mercado Livre ou a OLX
+
+1. No menu lateral, clique em **Integrações** e depois em **Conectar** no
+   portal.
+2. Você será levado ao site do portal para **autorizar** a estoque.autos na
+   conta da loja. Use a conta da loja (a mesma que tem o plano/pacote).
+3. De volta ao painel, a conexão aparece como **Ativo** e os carros marcados
+   entram na fila.
+
+Em **Opções** você define:
+
+- **Publicar carros novos automaticamente** — todo carro cadastrado já nasce
+  marcado para o portal (ligado por padrão).
+- **Tirar do portal quando marcar como reservado** — desligado por padrão: o
+  anúncio continua no ar enquanto o carro está reservado.
+- **Tipo de anúncio** (Mercado Livre) — pacote padrão ou destaque.
+- **Telefone de contato nos anúncios** — se for diferente do telefone da loja.
+
+## Gerando os feeds (Meta e Usadosbr)
+
+1. Em **Integrações**, abra o portal e clique em **Gerar URL do feed**.
+2. Copie a URL e cadastre no portal (Gerenciador de Comércio da Meta, ou por
+   e-mail para a Usadosbr).
+3. O feed inclui os carros **Disponíveis** e **Reservados** com foto e é
+   atualizado a cada hora.
+
+## O que o portal pede na ficha do carro
+
+Cada portal tem campos obrigatórios. Ao editar um carro com portais
+conectados, a seção **Publicar em** avisa o que ainda falta (por exemplo:
+quilometragem, combustível, câmbio, cor, foto). Alguns campos novos entraram
+no cadastro por causa disso:
+
+- **Carroceria, motor e direção** — pedidos por Mercado Livre e OLX.
+- **Placa** — a OLX valida a placa do anúncio. Ela **não aparece** no seu
+  site.
+- **Final do chassi** — pedido pelo Mercado Livre; também não é público.
+- **Vídeo (YouTube)** e **Veículo 0 km**.
+
+Na loja, em **Configurações**, preencha **telefone**, **CEP** e **CNPJ**: os
+portais usam para o contato e a localização do anúncio.
+
+## Marca, modelo e versão: pendências de mapeamento
+
+Cada portal tem o próprio catálogo de marcas, modelos e versões. A plataforma
+casa o seu cadastro com o catálogo automaticamente; quando não encontra uma
+correspondência segura, o carro aparece em **Pendências de mapeamento** na
+página do portal. Basta buscar o valor certo no catálogo e clicar nele: a
+escolha fica salva para os próximos carros iguais e o anúncio é reenviado.
+
+## Status da conexão
+
+- **Ativo** — tudo certo.
+- **Aguardando plano no portal** — o portal recusou por falta de pacote/plano.
+  Contrate com o portal e clique em **Já contratei — sincronizar**.
+- **Precisa de atenção** — a autorização expirou ou foi revogada. Clique em
+  **Reautorizar**.
+- **Desconectado** — os anúncios foram removidos do portal e a autorização
+  apagada.
+
+## Leads dos portais
+
+Os contatos recebidos pelos portais entram na lista de **Leads** com o tipo
+**Portal** e a origem (Mercado Livre, OLX…). No detalhe do lead você vê o
+canal (WhatsApp, ligação, pergunta, chat) e um link para o anúncio de origem.
+Use o filtro **Origem** para separar os leads do site dos leads dos portais.
+
+Perguntas públicas do Mercado Livre e conversas do chat da OLX viram leads
+aqui, mas a **resposta** continua sendo feita no próprio portal.
+
+## Deu errado?
+
+- **“Faltam no cadastro: …”** — complete os campos listados na página do carro
+  e clique em Reenviar.
+- **“Rejeitado pelo portal: …”** — o portal recusou o anúncio por regra
+  própria (título, foto, atributo). A mensagem do portal aparece junto.
+- **“mapeamento pendente”** — resolva em Pendências de mapeamento.
+- **Anúncio não some do portal** — o worker roda a cada 2 minutos; aguarde e,
+  se persistir, clique em **Sincronizar tudo** na página do portal.
+
+## Privacidade
+
+Os dados dos interessados que chegam pelos portais são tratados em nome da
+loja, como os leads do site. A mensagem original do portal fica guardada por
+90 dias para diagnóstico e depois é descartada.
